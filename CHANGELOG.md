@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.15] - 2026-05-20
+
+### Added
+- **`tossctl quote chart <종목>`** — 1/3/5/10/15/30/60분봉 ASCII 캔들 차트. 반블록 문자로 세로 해상도 2배, 한국 호가단위 자동 적용, ANSI 색상 (양봉 빨강 / 음봉 파랑). table · json · csv 모두 지원. (PR #32, author: @Castor103)
+- **`tossctl quote batch ... --chart`** — 종목별 스파크라인을 테이블 우측 컬럼으로 표시. 차트 API 실패 시 warning 만 출력하고 나머지는 정상 표시.
+- `quote get` / `quote chart` 가 복수 단어 종목명 지원 (`"KODEX 인버스"` 등).
+
+### Changed
+- 차트/스파크라인 ANSI 색상이 stdout 이 tty 가 아니거나 `NO_COLOR` 환경변수가 설정되어 있으면 자동 비활성화. cron · agent pipe · redirect 환경에서 raw escape sequence 가 출력에 섞이지 않음.
+
+### Internal
+- `internal/client/chart.go` 의 `normalizeChartInterval`, `deriveSecurityType` 단위 테스트 추가.
+- `internal/output/chart.go` 의 `tickSizeKR`, `formatPriceKR`, `renderSparkline` 단위 테스트 추가.
+
 ## [0.4.14] - 2026-05-14
 
 ### Changed

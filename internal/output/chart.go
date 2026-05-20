@@ -6,18 +6,44 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"strings"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/domain"
 )
 
-const (
-	chartColorReset = "\033[0m"
-	chartColorRed   = "\033[31m"
-	chartColorBlue  = "\033[34m"
-	chartColorBold  = "\033[1m"
-	chartColorDim   = "\033[2m"
+// ANSI color codes for chart rendering. Populated only when stdout is a TTY
+// and NO_COLOR is unset — non-tty pipes (cron, AI-agent capture) get plain
+// text so structured output and agent context stay clean.
+var (
+	chartColorReset string
+	chartColorRed   string
+	chartColorBlue  string
+	chartColorBold  string
+	chartColorDim   string
 )
+
+func init() {
+	if !colorEnabled() {
+		return
+	}
+	chartColorReset = "\033[0m"
+	chartColorRed = "\033[31m"
+	chartColorBlue = "\033[34m"
+	chartColorBold = "\033[1m"
+	chartColorDim = "\033[2m"
+}
+
+func colorEnabled() bool {
+	if os.Getenv("NO_COLOR") != "" {
+		return false
+	}
+	fi, err := os.Stdout.Stat()
+	if err != nil {
+		return false
+	}
+	return (fi.Mode() & os.ModeCharDevice) != 0
+}
 
 func WriteChart(w io.Writer, format Format, chart domain.Chart) error {
 	switch format {
