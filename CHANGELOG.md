@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.16] - 2026-05-28
+
+### Added
+- **`tossctl quote batch --live`** — `watch`/`viddy` 대체용 갱신 모드. alternate screen buffer (`\033[?1049h`) 로 깔끔한 화면 전환, 더블 버퍼링으로 깜빡임 방지, `--interval` 으로 갱신 주기 (기본 2초, 최소 1초 클램핑). `signal.NotifyContext` 로 Ctrl+C 안전 종료. 에러 시 마지막 성공 결과 보존 + 빨간 에러. **non-tty 환경에서 거부** — cron/agent pipe 에서 ANSI escape 오염 방지. (PR #33, author: @Castor103)
+- **`quote batch` 의 comma-separated symbol 인자** — `tossctl quote batch "삼성전자,KB금융,현대차"` 처럼 한 인자에 여러 종목 가능. agent 가 array 를 join 해서 한 번에 넘기기 좋음.
+
+### Internal
+- `parseBatchSymbols` 단위 테스트 추가 (single/space-sep/comma-sep/mixed/whitespace/empty 케이스).
+
 ## [0.4.15] - 2026-05-20
 
 ### Added
