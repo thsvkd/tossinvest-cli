@@ -4,11 +4,11 @@
   "chunk_size": 4790,
   "keywords_found": [],
   "openapi_base_probes": {
-    "/": "ERR",
-    "/v1/": "ERR",
-    "/v1/health": "ERR",
-    "/health": "ERR",
-    "/.well-known/openid-configuration": "ERR"
+    "/": "403",
+    "/v1/": "403",
+    "/v1/health": "403",
+    "/health": "403",
+    "/.well-known/openid-configuration": "403"
   },
   "updated_at": "2026-06-02"
 }
