@@ -1,0 +1,14 @@
+{
+  "chunk_url": "static/chunks/app/%5Blocale%5D/(main)/open-api/page-c35db437d43227c4.js",
+  "chunk_sha256": "73b54d2256a373370cdac31a14feeea5e896a6d067a8032ccfd586b7c7d28c89",
+  "chunk_size": 4790,
+  "keywords_found": [],
+  "openapi_base_probes": {
+    "/": "ERR",
+    "/v1/": "ERR",
+    "/v1/health": "ERR",
+    "/health": "ERR",
+    "/.well-known/openid-configuration": "ERR"
+  },
+  "updated_at": "2026-06-02"
+}
