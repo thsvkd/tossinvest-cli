@@ -7,7 +7,7 @@
     "/": "403",
     "/v1/": "403",
     "/v1/health": "403",
-    "/health": "403",
+    "/health": "200",
     "/.well-known/openid-configuration": "403"
   },
   "updated_at": "2026-06-02"
