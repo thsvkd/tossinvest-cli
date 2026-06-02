@@ -114,33 +114,42 @@ jobs:
           TOSS_REASONS=$(cat /tmp/toss_reasons.txt)
           PR_COUNT=$(jq 'length' /tmp/prs.json)
 
+          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+
           if [ "$PR_COUNT" = "0" ]; then
-            PR_BLOCK="• 신규 PR 없음"
+            PR_BLOCK="신규 PR 없음"
           else
-            PR_BLOCK=$(jq -r '.[] | "• #\(.number) \(.title) (by @\(.author.login)) — +\(.additions)/-\(.deletions)"' /tmp/prs.json)
+            PR_BLOCK=$(jq -r --arg url "$REPO_URL" '.[] | "• [#\(.number)](\($url)/pull/\(.number)) \(.title) · **@\(.author.login)** · `+\(.additions)/-\(.deletions)`"' /tmp/prs.json)
           fi
 
           if [ "$API_CODE" = "200" ]; then
-            API_LINE="핵심 API: stock-infos/A005930 → 200 OK"
+            API_LINE='`stock-infos/A005930` → **200 OK**'
           else
-            API_LINE="핵심 API: 🔴 status=$API_CODE (GitHub Actions IP 차단 vs 실제 회귀 — 본인 머신 \`tossctl monitor api\` 로 확인)"
+            API_LINE="🔴 status=\`$API_CODE\` — GitHub Actions IP 차단 vs 실제 회귀, 본인 머신 \`tossctl monitor api\` 로 확인"
+          fi
+
+          if [ "$TOSS_CHANGED" = "false" ]; then
+            TOSS_BLOCK="⚪️ 변화 없음"
+          else
+            TOSS_BLOCK=$(printf '%s\n' "$TOSS_REASONS" | sed 's/^/• /')
           fi
 
           if [ "$PR_COUNT" = "0" ] && [ "$API_CODE" = "200" ] && [ "$TOSS_CHANGED" = "false" ]; then
-            printf '%s\n' "✅ 24h 신규 PR 없음 · 핵심 API OK · 토스 Open API ⚪️ ($NOW_KST KST)" > /tmp/msg.txt
+            printf '## ✅ tossctl daily — `%s KST`\n신규 PR 없음 · 핵심 API OK · 토스 Open API ⚪️\n' "$NOW_KST" > /tmp/msg.txt
           else
             {
-              echo "📊 tossctl daily ($NOW_KST KST)"
+              printf '## 📊 tossctl daily — `%s KST`\n' "$NOW_KST"
               echo ""
-              echo "PR 24h:"
+              echo "### 🔀 PR (24h)"
               echo "$PR_BLOCK"
               echo ""
+              echo "### ❤️ 핵심 API"
               echo "$API_LINE"
               echo ""
-              echo "토스 Open API (issue #31):"
-              echo "$TOSS_REASONS" | sed 's/^/• /'
+              echo "### 🔭 토스 Open API · [issue #31](${REPO_URL}/issues/31)"
+              echo "$TOSS_BLOCK"
               echo ""
-              echo "인증 필요 endpoint 5개는 본인 머신 \`tossctl monitor api\` 로 확인."
+              echo "-# 인증 필요 endpoint 는 본인 머신 \`tossctl monitor api\` 로 확인"
             } > /tmp/msg.txt
           fi
 
