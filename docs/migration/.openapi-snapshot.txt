@@ -1,0 +1,1 @@
+static/chunks/app/%5Blocale%5D/(main)/open-api/page-c35db437d43227c4.js
