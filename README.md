@@ -220,7 +220,7 @@ tossctl config show
 > - **경로 게이트** (`place`, `cancel`, `amend`) — broker API 분기가 실제로 다른 세 동작을 각각 독립적으로 켬/끔
 > - **스코프 선언** (`sell`, `kr`, `fractional`) — 유저가 스스로 "난 이 범주의 주문은 안 낸다"고 선언하여 실수/버그/agent 오작동 방지
 >
-> `v0.4.3`에서 `trading.grant`, `dangerous_automation.complete_trade_auth`, `dangerous_automation.accept_product_ack`는 제거되었습니다. 남아있는 구 설정은 자동 무시되며 `doctor`에서 경고로 표시됩니다.
+> `v0.4.3`에서 `trading.grant`, `dangerous_automation.complete_trade_auth`, `dangerous_automation.accept_product_ack`는 제거되었습니다. 남아있는 구 설정은 자동 무시되며, 일반 명령 실행 시 stderr 경고 1줄(24h backoff)로 안내되고 `config status`/`doctor`에서도 표시됩니다.
 
 ## 주문 예시
 
@@ -427,8 +427,8 @@ US/KR 지정가 매수/매도, US 소수점 매수, 당일 미체결 취소가 l
 |------|------|
 | `<config dir>/config.json` | 거래 설정 |
 | `<config dir>/session.json` | 브라우저 세션 |
-| `<config dir>/trading-permission.json` | 임시 거래 권한 |
 | `<config dir>/trading-lineage.json` | 주문 ref 추적 |
+| `<cache dir>/update-check.json` | 버전·세션만료·config 경고 backoff 캐시 |
 
 `--config-dir`, `--session-file` 플래그로 경로를 덮어쓸 수 있습니다.
 
