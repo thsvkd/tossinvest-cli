@@ -117,7 +117,7 @@ Waiting for approval in the Toss app on your phone...
 유일하게 제공합니다. `tossctl` 칼럼이 우리가 제공하는 범위입니다.
 
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
-- **공식 API 가 ❌ 인 행 = tossctl 고유 범위(해자).**
+- **공식 API 가 ❌ 인 행 = tossctl 고유 범위.**
 
 ### 조회 (읽기 전용) · US·KR 공통
 

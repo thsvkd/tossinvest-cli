@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.5.0] - 2026-06-04
 
-공식 Open API 에 없는 web 전용 표면(해자) 대거 확장 + 첫 mutation 기능(관심종목 관리)
+공식 Open API 에 없는 web 전용 표면 대거 확장 + 첫 mutation 기능(관심종목 관리)
 + 거래 안전 모델 간소화. minor 버전 bump.
 
 ### Added
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - `monitor api` 에 public/auth probe 추가 (market-index, stock-ranking, trading-flows, ai-signals, screener-presets, watchlist-groups).
 
 ### Changed
-- README "지원 범위" 를 **`공식 API` / `tossctl` 칼럼 ✅/❌/🔸 매트릭스**로 재편 (조회 + 거래 모두). 토스 공식 Open API 가 사전 신청 단계(미출시)임을 명시. 공식 API 가 ❌ 인 행 = tossctl 고유 범위(해자): 수급·지수·인기순위·AI시그널·스크리너·watchlist 관리·ledger·overview·CSV·push·멀티시세·소수점주문·dry-run preview 등. 앞으로 표면 추가 시 이 매트릭스 유지.
+- README "지원 범위" 를 **`공식 API` / `tossctl` 칼럼 ✅/❌/🔸 매트릭스**로 재편 (조회 + 거래 모두). 토스 공식 Open API 가 사전 신청 단계(미출시)임을 명시. 공식 API 가 ❌ 인 행 = tossctl 고유 범위: 수급·지수·인기순위·AI시그널·스크리너·watchlist 관리·ledger·overview·CSV·push·멀티시세·소수점주문·dry-run preview 등. 앞으로 표면 추가 시 이 매트릭스 유지.
 - **거래 안전 모델 간소화** — 중복이던 TTL grant 레이어 제거. `allow_live_order_actions` 마스터 스위치가 동일 보호를 이미 하므로, 남은 게이트(per-action 토글 + 마스터 스위치 + `--execute` + `--dangerously-skip-permissions` + confirm token)로 충분. 거래 차단 강도는 동일, 표면만 −500 라인.
 
 ### Removed
