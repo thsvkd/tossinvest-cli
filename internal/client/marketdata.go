@@ -205,6 +205,105 @@ func (c *Client) GetExchangeRates(ctx context.Context) (domain.ExchangeRates, er
 	return out, nil
 }
 
+type screenerPresetRaw struct {
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Filters     json.RawMessage `json:"filters"`
+}
+
+// GetScreenerPresets returns predefined stock screens (조건검색 프리셋).
+func (c *Client) GetScreenerPresets(ctx context.Context) (domain.ScreenerPresets, error) {
+	var envelope quoteEnvelope[[]screenerPresetRaw]
+	endpoint := c.certBaseURL + "/api/v2/screener/presets/common?useCustom=true"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.ScreenerPresets{}, err
+	}
+	out := domain.ScreenerPresets{FetchedAt: time.Now().UTC()}
+	for _, p := range envelope.Result {
+		out.Presets = append(out.Presets, domain.ScreenerPreset{ID: p.ID, Name: p.Name, Description: p.Description})
+	}
+	return out, nil
+}
+
+type screenerResultRaw struct {
+	TotalCount int `json:"totalCount"`
+	Stocks     []struct {
+		StockCode string `json:"stockCode"`
+		Name      string `json:"name"`
+		Base      struct {
+			KRW float64 `json:"krw"`
+			USD float64 `json:"usd"`
+		} `json:"base"`
+		Close struct {
+			KRW float64 `json:"krw"`
+			USD float64 `json:"usd"`
+		} `json:"close"`
+	} `json:"stocks"`
+}
+
+// RunScreener executes a preset screen by id and returns matching stocks.
+// nation: "kr" | "us". 공식 API 에 없는 조건검색 표면.
+func (c *Client) RunScreener(ctx context.Context, presetID, nation string, size int) (domain.ScreenerResult, error) {
+	if nation == "" {
+		nation = "kr"
+	}
+	if size <= 0 {
+		size = 30
+	}
+	// 프리셋 정의(filters)를 받아온다.
+	var presetEnv quoteEnvelope[[]screenerPresetRaw]
+	if err := c.getJSON(ctx, c.certBaseURL+"/api/v2/screener/presets/common?useCustom=true", &presetEnv); err != nil {
+		return domain.ScreenerResult{}, err
+	}
+	var preset *screenerPresetRaw
+	for i := range presetEnv.Result {
+		if presetEnv.Result[i].ID == presetID {
+			preset = &presetEnv.Result[i]
+			break
+		}
+	}
+	if preset == nil {
+		return domain.ScreenerResult{}, fmt.Errorf("screener preset %q not found (run `market screener` to list)", presetID)
+	}
+
+	usd := nation == "us"
+	body, err := json.Marshal(map[string]any{
+		"pagingParam": map[string]any{"key": nil, "number": 1, "size": size},
+		"filters":     preset.Filters,
+		"nation":      nation,
+	})
+	if err != nil {
+		return domain.ScreenerResult{}, err
+	}
+
+	var env quoteEnvelope[screenerResultRaw]
+	if err := c.postJSON(ctx, c.certBaseURL+"/api/v2/screener/screen", body, &env); err != nil {
+		return domain.ScreenerResult{}, err
+	}
+
+	out := domain.ScreenerResult{
+		PresetID:   presetID,
+		PresetName: preset.Name,
+		Nation:     nation,
+		TotalCount: env.Result.TotalCount,
+		FetchedAt:  time.Now().UTC(),
+	}
+	for _, s := range env.Result.Stocks {
+		base, close := s.Base.KRW, s.Close.KRW
+		if usd {
+			base, close = s.Base.USD, s.Close.USD
+		}
+		st := domain.ScreenedStock{ProductCode: s.StockCode, Name: s.Name, Close: close}
+		st.Change = close - base
+		if base != 0 {
+			st.ChangeRate = st.Change / base
+		}
+		out.Stocks = append(out.Stocks, st)
+	}
+	return out, nil
+}
+
 type aiSignalRaw struct {
 	Label string `json:"label"`
 	Data  []struct {

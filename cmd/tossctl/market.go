@@ -93,6 +93,36 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd)
+	var (
+		screenerNation string
+		screenerSize   int
+	)
+	screenerCmd := &cobra.Command{
+		Use:   "screener [preset-id]",
+		Short: "Stock screeners (조건검색: 가치주·배당주·성장주 등). 인자 없으면 프리셋 목록",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			if len(args) == 0 {
+				presets, err := app.client.GetScreenerPresets(cmd.Context())
+				if err != nil {
+					return err
+				}
+				return output.WriteScreenerPresets(cmd.OutOrStdout(), app.format, presets)
+			}
+			res, err := app.client.RunScreener(cmd.Context(), args[0], screenerNation, screenerSize)
+			if err != nil {
+				return err
+			}
+			return output.WriteScreenerResult(cmd.OutOrStdout(), app.format, res)
+		},
+	}
+	screenerCmd.Flags().StringVar(&screenerNation, "nation", "kr", "market: kr | us")
+	screenerCmd.Flags().IntVar(&screenerSize, "size", 30, "max stocks to return")
+
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, screenerCmd)
 	return cmd
 }

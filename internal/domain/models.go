@@ -147,6 +147,37 @@ type ExchangeRates struct {
 	FetchedAt time.Time      `json:"fetched_at"`
 }
 
+// ScreenerPreset is a predefined stock screen (조건검색 프리셋: 가치주·배당주 등).
+// 공식 API 에 없는 web 전용 표면.
+type ScreenerPreset struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type ScreenerPresets struct {
+	Presets   []ScreenerPreset `json:"presets"`
+	FetchedAt time.Time        `json:"fetched_at"`
+}
+
+// ScreenedStock is one stock matching a screener run.
+type ScreenedStock struct {
+	ProductCode string  `json:"product_code"`
+	Name        string  `json:"name"`
+	Close       float64 `json:"close"`
+	Change      float64 `json:"change,omitempty"`
+	ChangeRate  float64 `json:"change_rate,omitempty"`
+}
+
+type ScreenerResult struct {
+	PresetID   string          `json:"preset_id"`
+	PresetName string          `json:"preset_name,omitempty"`
+	Nation     string          `json:"nation"`
+	TotalCount int             `json:"total_count"`
+	Stocks     []ScreenedStock `json:"stocks"`
+	FetchedAt  time.Time       `json:"fetched_at"`
+}
+
 // AISignal is one entry of Toss's AI market signal feed (토스증권 AI 시그널).
 // 공식 API 에 없는 web 전용 표면 — hero(AI 연결)와 정합.
 type AISignal struct {

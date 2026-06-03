@@ -33,6 +33,37 @@ func TestWriteStockWarningsEmpty(t *testing.T) {
 	}
 }
 
+func TestWriteScreenerResultTable(t *testing.T) {
+	var buf bytes.Buffer
+	sr := domain.ScreenerResult{
+		PresetName: "꾸준한 배당주", Nation: "kr", TotalCount: 26,
+		Stocks: []domain.ScreenedStock{{ProductCode: "A095570", Name: "AJ네트웍스", Close: 4380, ChangeRate: 0.0023}},
+	}
+	if err := WriteScreenerResult(&buf, FormatTable, sr); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "꾸준한 배당주") || !strings.Contains(out, "AJ네트웍스") {
+		t.Errorf("expected screener row: %q", out)
+	}
+	if !strings.Contains(out, "26종목") {
+		t.Errorf("expected total count: %q", out)
+	}
+}
+
+func TestWriteScreenerPresetsTable(t *testing.T) {
+	var buf bytes.Buffer
+	sp := domain.ScreenerPresets{Presets: []domain.ScreenerPreset{
+		{ID: "8", Name: "꾸준한 배당주", Description: "배당을 꾸준히 주는 주식"},
+	}}
+	if err := WriteScreenerPresets(&buf, FormatTable, sp); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "꾸준한 배당주") {
+		t.Errorf("expected preset row: %q", buf.String())
+	}
+}
+
 func TestWriteAISignalsTable(t *testing.T) {
 	var buf bytes.Buffer
 	sg := domain.AISignals{Label: "AI 시그널", Signals: []domain.AISignal{

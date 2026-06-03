@@ -202,6 +202,76 @@ func WriteExchangeRates(w io.Writer, format Format, er domain.ExchangeRates) err
 	}
 }
 
+func WriteScreenerPresets(w io.Writer, format Format, sp domain.ScreenerPresets) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sp)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"id", "name", "description"}); err != nil {
+			return err
+		}
+		for _, p := range sp.Presets {
+			if err := cw.Write([]string{p.ID, p.Name, p.Description}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		headers := []string{"ID", "이름", "설명"}
+		rows := make([][]string, 0, len(sp.Presets))
+		for _, p := range sp.Presets {
+			rows = append(rows, []string{p.ID, p.Name, p.Description})
+		}
+		if err := renderTable(w, headers, rows); err != nil {
+			return err
+		}
+		_, err := fmt.Fprintln(w, "\n실행: tossctl market screener <ID> [--nation kr|us]")
+		return err
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+func WriteScreenerResult(w io.Writer, format Format, sr domain.ScreenerResult) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sr)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"product_code", "name", "close", "change", "change_rate"}); err != nil {
+			return err
+		}
+		for _, s := range sr.Stocks {
+			if err := cw.Write([]string{
+				s.ProductCode, s.Name, formatFloat(s.Close), formatFloat(s.Change), formatFloat(s.ChangeRate),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		if _, err := fmt.Fprintf(w, "%s (%s) — %d종목 중 상위 %d\n",
+			sr.PresetName, sr.Nation, sr.TotalCount, len(sr.Stocks)); err != nil {
+			return err
+		}
+		headers := []string{"종목", "이름", "현재가", "변동률"}
+		rows := make([][]string, 0, len(sr.Stocks))
+		for _, s := range sr.Stocks {
+			rows = append(rows, []string{s.ProductCode, s.Name, formatFloat(s.Close), formatPct(s.ChangeRate)})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
 func WriteAISignals(w io.Writer, format Format, sg domain.AISignals) error {
 	switch format {
 	case FormatJSON:

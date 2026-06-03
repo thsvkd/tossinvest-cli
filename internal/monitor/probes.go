@@ -251,6 +251,17 @@ func Probes() []Probe {
 				return expectPath(body, "result.data", "array")
 			},
 		},
+		{
+			Name:   "screener-presets",
+			Method: "GET",
+			URL:    cert + "/api/v2/screener/presets/common?useCustom=true",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result", "array")
+			},
+		},
 	}
 }
 
