@@ -1,14 +1,21 @@
-# Multi-Broker 추상화 방향
+# Multi-Broker 추상화 방향 (보류 — future option)
 
-> **중요 (2026-06-03): 이 멀티-브로커 CLI 는 tossctl 이 *아니다*.**
-> 별도 레포 **`oss-kr-investctl`** (바이너리 `investctl`) 에서 **공식 API only** 로
-> 만든다. tossctl(이 레포)은 "비공식·넓은 표면" 도구로 영구 유지하며 여기로
-> 흡수되지 않는다. 이유는 [open-api.md](./open-api.md) 의 "포지셔닝" 참조 — 공식
-> API 는 상위호환이 아니라 표면이 좁은 다른 trade-off 라, tossctl 이 갈아타면
-> 해자를 잃는다.
+> **🟡 status: 보류 (2026-06-03).** 현재 채택 전략이 **아니다.** 지금 방향은
+> "tossctl 단일 레포 + web 주력 + 공식 API 보완 fallback" ([open-api.md](./open-api.md)
+> "채택 전략" 참조). 별도 멀티-브로커 레포(investctl)는 **"별도 사유가 생기기 전까지"
+> 착수하지 않는다.** 이 문서는 그 사유가 생겼을 때 꺼내볼 **future-option anchor** 로만
+> 보존한다.
 >
-> 이 문서는 그 **investctl 의 설계 방향**을 정리한 living document 다 (설계 anchor).
-> tossctl 자체의 일은 거의 없다 (open-api.md "tossctl 이 실제로 할 일" 표 참조).
+> 보류 이유: ① 공식 API 가 좁아 별도 제품화 동인이 약함 ② 공식의 실익(무인 자가갱신
+> 토큰 + 안정성 fallback)은 별도 레포가 아니라 tossctl 안 하이브리드로 흡수하는 게
+> 맞음. ③ KIS 통합 등 cross-broker 의 분명한 수요/사유가 아직 없음.
+>
+> **언제 이 문서를 다시 꺼내나 (트리거):** 토스 비공식 endpoint 가 차단돼 web 해자가
+> 무너질 때 / KIS·키움 등 다른 증권사 통합의 구체적 수요가 생길 때 / 공식 토큰만으로도
+> 충분한 사용자층이 확인될 때.
+>
+> 아래 설계는 그 시점 기준의 초안이다 (별도 레포 `oss-kr-investctl`, 공식 API only).
+> 다른 세션의 `oss-koreainvestment-cli` KIS MVP 스펙과 동일 설계.
 
 목표: **"한국 증권사를 AI 에이전트에 통일된 인터페이스로 연결하는 공식 API CLI."**
 KIS(한국투자) 공식 API 부터, 토스 공식(승인 후), 키움·미래에셋 등으로 확장.
@@ -158,9 +165,11 @@ investctl 은 공식 열만 다룬다. 맨 왼쪽 tossctl(비공식) 열은 *대
 
 각 항목은 *그 시점의* stance. 뒤집힐 때 사전 공지 없이 새 항목만 추가.
 
-- **2026-06-03** — multi-broker 를 **별도 레포 investctl(공식 only)** 로 결정.
-  tossctl 전환/흡수 아님 (공식은 표면이 좁아 tossctl 해자를 죽임 — open-api.md 참조).
-  MVP = KIS read-only (토스 승인 불요, 지금 아키텍처 검증 가능). 첫 커밋부터
-  core+adapter+capability 골격 (cross-broker 가 목적이므로). core 는 tossctl 에서
-  copy-first. 다른 세션의 `oss-koreainvestment-cli` 스펙/계획과 통합 — 레포명
-  `oss-kr-investctl` 로 정리.
+- **2026-06-03a** — multi-broker 를 별도 레포 investctl(공식 only)로 잠정 결정.
+  MVP = KIS read-only. (아래 06-03b 에서 보류로 정정됨.)
+- **2026-06-03b** — **보류 결정.** 현재 채택 전략을 "tossctl 단일 레포 + web 주력 +
+  공식 보완 fallback" 으로 확정 (open-api.md 06-03b). 공식의 실익(무인 자가갱신 토큰·
+  안정성 fallback)은 별도 레포가 아니라 tossctl 안 하이브리드로 흡수가 맞고, KIS 등
+  cross-broker 의 구체적 사유가 아직 없음. 이 문서는 future-option anchor 로 보존 —
+  상단 트리거 조건이 충족되면 재개. 그때 다른 세션 `oss-koreainvestment-cli` KIS
+  스펙과 통합, 레포명 `oss-kr-investctl`.

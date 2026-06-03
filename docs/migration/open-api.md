@@ -51,22 +51,42 @@ session 은 deprecate" 였다. 이는 *"공식 = 상위호환"* 이라는 잘못
 | 진입 | `auth login` 1회 | 사전신청→승인→토큰 24h 재발급 |
 | 합법성·안정성 | 약함 (TOS 리스크, 예고 없는 변경) | 강함 (계약된 versioned spec) |
 
-→ tossctl 이 공식으로 이주하면 **우리 해자(넓은 표면 + 무제한)를 스스로 버린다.**
-그래서 **이주·deprecation 하지 않는다.** tossctl 은 "비공식·넓은 표면" 도구로 영구 유지.
+→ tossctl 이 공식으로 *통째* 이주하면 **해자(넓은 표면 + 무제한)를 스스로 버린다.**
+그래서 **이주·deprecation 하지 않는다.** web session 이 영구 주력.
 
-**토스 공식 adapter 는 tossctl 이 아니라 별도 멀티-브로커 CLI (investctl) 로 간다.**
-공식의 강점(합법성·통합)은 거기서, 비공식의 강점(표면·무제한)은 여기서 — 두 제품이
-다른 수요를 영구히 분담한다. 자기잠식 없음. 상세: [multi-broker.md](./multi-broker.md).
+## 채택 전략 — 단일 레포 하이브리드 (2026-06-03 확정)
 
-## tossctl 이 공식 출시에 실제로 할 일 (작음)
+별도 레포로 쪼개지 않는다 ("별도 사유 생기기 전까지"). tossctl **이 레포 안에서**,
+web 을 주력으로 두고 공식 API 를 **선택적 보완 fallback** 으로만 흡수한다.
 
-이주가 아니므로 할 일은 작다:
+- **web session = 주력.** 넓은 표면(transactions·watchlist·push)은 web 만 가능 →
+  계속 web RE 로 표면 확장 (지금까지 trades·limits·warnings·hours·fx 추가한 흐름 유지).
+- **공식 토큰 = 보완.** 딱 두 가지 가치에서만 끌어온다:
+
+  1. **안정성 fallback** — web endpoint 가 깨질 때(#29/#30급) 공식과 겹치는 subset
+     (account·holdings·quote·orders·candle 등)은 공식으로 대체 호출. 사용자 체감
+     중단을 줄인다.
+  2. **무인 지속성** — 핵심. 토큰 수명 비교:
+
+     | | 명목 수명 | 갱신 |
+     |---|---|---|
+     | web session | ~7일 (extend 가능) | 만료 시 **QR+폰 재인증 (사람 필요)** |
+     | 공식 토큰 | 24h (refresh 없음) | **client_id/secret 무인 재발급 (사람 불필요)** |
+
+     공식 토큰은 명목상 더 짧지만 **무인 자가갱신**이라, cron·monitor·agent 처럼
+     사람이 못 끼는 환경에서 *실효 지속성*이 훨씬 길다 (web 은 결국 QR+폰에서 끊김).
+     → **무인 시나리오의 auth 는 공식 토큰을, 대화형·넓은표면은 web 을** 쓰는 하이브리드.
+
+- **NOT 통짜 백엔드 교체.** 공식 토큰은 공식 endpoint 만 인증한다 — web 전용 표면
+  (transactions·watchlist·push)은 여전히 web 쿠키 필수. 하이브리드는 *endpoint 별*.
+
+## 실제 할 일
 
 | 시점 | tossctl 동작 |
 |---|---|
-| **지금** | 현행 유지. issue #31 모니터링 (spec version 추적 — daily-monitor.yml) |
-| **공식 안정 후** | README 에 "합법성·통합 원하면 investctl" 교차 링크. tossctl 은 그대로 |
-| **비공식 endpoint 차단 시** (위험 1) | 그때만 대응 — 공식 adapter 옵션 추가 검토. 그 전엔 불필요 |
+| **지금** | web 주력 유지 + 표면 계속 확장. issue #31 모니터링 (spec version 추적). 토스 토큰 **승인 대기** |
+| **토큰 승인 후** | ① 공식 OAuth2 auth 추가 (config 에 client_id/secret) ② 무인 경로(monitor/cron)에서 공식 토큰 우선 ③ web↔공식 겹치는 endpoint 에 fallback |
+| **별도 사유 생기면** | 그때 multi-broker 분리 재검토 ([multi-broker.md](./multi-broker.md) — 현재 보류) |
 
 ## 위험 요소
 
@@ -74,8 +94,11 @@ session 은 deprecate" 였다. 이는 *"공식 = 상위호환"* 이라는 잘못
    정책/기술적으로 막을 수 있음. 이것이 tossctl 의 유일한 실존적 위험 (해자인 넓은
    표면이 통째로 사라짐). 차단되면 그때 공식 adapter 옵션을 검토 — 단 공식은 표면이
    좁아 완전 대체는 안 되므로 일부 기능 손실 감수. 그 전엔 선제 이주 불필요.
-2. **investctl 과의 중복 유지비** — 두 레포에 core(auth/output/config) 가 copy-first
-   로 갈라져 유지비 발생. 두 번째 구현으로 패턴 검증되면 공유 모듈화 검토 (그 전엔 X).
+2. **하이브리드 복잡도** — auth 경로가 web 쿠키 + 공식 토큰 둘로 갈림. endpoint 별
+   라우팅(공식 가능 subset vs web 전용)이 명확해야 혼란이 없음. → 공식 토큰은 무인
+   경로 + fallback 에만 쓰고 대화형 기본은 web 으로 단순 유지.
+3. **공식 토큰 24h no-refresh** — 무인 갱신 로직(만료 전 client_credentials 재발급)
+   을 직접 구현해야 함. 캐시 + 만료 마진 처리 필요.
 
 ## 결정 log
 
@@ -84,7 +107,8 @@ session 은 deprecate" 였다. 이는 *"공식 = 상위호환"* 이라는 잘못
 
 - **2026-05-19** — issue #31 등록 (제보: @DaeHyeoNi). 사전 신청 페이지 확인. 사전 신청 진행. tossctl 의 일반화 (multi-broker) 방향을 *현재로서는* 선호. Phase 1 진입 전까지 코드 추상화는 보류 — 공식 표면을 보기 전 추상화는 잘못 잡을 확률이 크다는 판단
 - **2026-06-02** — 공식 개발자 문서 + OpenAPI spec 공개 확인 (제보: @skyisle). `developers.tossinvest.com/docs` + `openapi.tossinvest.com/openapi-docs/.../openapi.json` (v1.0.3, 20 endpoints, OAuth2 Client Credentials). 모니터링 신호를 corp 페이지 chunk hash → spec version + endpoint 목록 hash 로 교체 (훨씬 강한 신호). endpoint 표면이 tossctl 명령과 거의 1:1 매핑 확인.
-- **2026-06-03** — **이주·deprecation 계획 철회.** 공식 API 가 상위호환이 아니라 다른 trade-off (표면 좁고 rate limit 있음) 임이 spec 으로 확인됨. tossctl 이 공식으로 갈아타면 해자(transactions·watchlist·push·무제한)를 스스로 버림. → tossctl 은 "비공식·넓은 표면" 으로 영구 유지. 토스 공식 adapter 는 tossctl 이 아니라 별도 멀티-브로커 CLI(investctl, `oss-kr-investctl`)로. 두 제품이 다른 수요를 분담, 자기잠식 없음. 이 문서의 Broker 추상화 범위는 "tossctl 자체가 공식으로 갈아타기"(폐기) 가 아니라 investctl 의 cross-broker 통합 ([multi-broker.md](./multi-broker.md)) 으로 이관.
+- **2026-06-03a** — **이주·deprecation 계획 철회.** 공식 API 가 상위호환이 아니라 다른 trade-off (표면 좁고 rate limit 있음) 임이 spec 으로 확인됨. tossctl 이 공식으로 갈아타면 해자(transactions·watchlist·push·무제한)를 스스로 버림. → web session 영구 주력.
+- **2026-06-03b** — **단일 레포 하이브리드로 확정 (별도 레포 보류).** 같은 날 잠깐 "공식은 별도 investctl 레포로" 를 적었으나 (06-03a 후속), 재검토 끝에 **이 레포 안에서 web 주력 + 공식 보완 fallback** 으로 정정. 이유: ① 공식이 좁아 별도 제품화 동인 약함 ② 공식 토큰의 진짜 가치는 "통합"이 아니라 **무인 자가갱신**(24h no-refresh 지만 client_secret 로 사람 없이 재발급 → cron/agent 가 web 의 QR+폰 재인증 없이 영구 운영) + 안정성 fallback. 이 둘은 별도 레포가 아니라 tossctl 안 hybrid 로 흡수가 맞음. multi-broker/investctl 분리는 **"별도 사유 생기기 전까지" 보류** ([multi-broker.md](./multi-broker.md) = future-option). 착수는 토스 토큰 승인 후.
 
 ## 외부 contributor / 사용자에게 부탁
 
