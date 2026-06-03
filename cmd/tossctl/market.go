@@ -43,6 +43,40 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(hoursCmd, fxCmd)
+	indexCmd := &cobra.Command{
+		Use:   "index",
+		Short: "Major market indices (코스피·코스닥·나스닥·S&P500·VIX 등)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			mi, err := app.client.GetMarketIndices(cmd.Context())
+			if err != nil {
+				return err
+			}
+			return output.WriteMarketIndices(cmd.OutOrStdout(), app.format, mi)
+		},
+	}
+
+	var rankingSize int
+	rankingCmd := &cobra.Command{
+		Use:   "ranking",
+		Short: "Realtime popularity ranking (실시간 인기 종목)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			sr, err := app.client.GetStockRanking(cmd.Context(), rankingSize)
+			if err != nil {
+				return err
+			}
+			return output.WriteStockRanking(cmd.OutOrStdout(), app.format, sr)
+		},
+	}
+	rankingCmd.Flags().IntVar(&rankingSize, "size", 20, "number of ranked stocks")
+
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd)
 	return cmd
 }

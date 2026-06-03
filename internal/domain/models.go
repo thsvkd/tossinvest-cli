@@ -147,6 +147,37 @@ type ExchangeRates struct {
 	FetchedAt time.Time      `json:"fetched_at"`
 }
 
+// MarketIndex is one market index quote (코스피·나스닥·VIX 등). 공식 API 에 없는
+// 표면 — web 전용 해자.
+type MarketIndex struct {
+	Name       string  `json:"name"`
+	Nation     string  `json:"nation,omitempty"` // kr | us
+	Latest     float64 `json:"latest"`
+	Base       float64 `json:"base,omitempty"`
+	Change     float64 `json:"change,omitempty"`
+	ChangeRate float64 `json:"change_rate,omitempty"`
+}
+
+type MarketIndices struct {
+	Indices   []MarketIndex `json:"indices"`
+	FetchedAt time.Time     `json:"fetched_at"`
+}
+
+// RankedStock is one entry in the realtime popularity ranking (실시간 인기 순위).
+// 공식 API 에 없는 discovery 표면 — web 전용 해자.
+type RankedStock struct {
+	Rank        int    `json:"rank"`
+	ProductCode string `json:"product_code"`
+	Symbol      string `json:"symbol,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Market      string `json:"market,omitempty"`
+}
+
+type StockRanking struct {
+	Stocks    []RankedStock `json:"stocks"`
+	FetchedAt time.Time     `json:"fetched_at"`
+}
+
 // MarketSession is one trading day's session times for a market.
 type MarketSession struct {
 	Date      string `json:"date,omitempty"`

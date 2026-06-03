@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.20] - 2026-06-03
+
+### Added
+- **`market index`** — 주요 시장 지수 (코스피·코스닥·나스닥·S&P500·필라델피아 반도체·VIX·다우 등) 현재가·변동·변동률. **토스 공식 Open API 에 없는 web 전용 표면** (해자 확장).
+- **`market ranking --size N`** — 실시간 인기 종목 순위. 공식 API 에 없는 discovery 표면.
+- `monitor api` 에 2개 public probe 추가 (market-index, stock-ranking).
+
+### Changed
+- README "지원 범위" 를 **공식 API 제공(🔓) vs tossctl 전용(⭐)** 구분 구조로 재편. 토스 공식 Open API 가 사전 신청 단계임을 명시하고, tossctl 고유 범위(지수·인기순위·watchlist·ledger·overview·CSV·push·분봉 5종·체결강도 등)를 ⭐ 로 강조. 앞으로 표면 추가 시 이 구분 유지.
+
+### Internal
+- `internal/client/marketdata.go` 에 `GetMarketIndices` / `GetStockRanking` 추가. output formatter + 단위 테스트.
+
 ## [0.4.19] - 2026-06-03
 
 ### Added

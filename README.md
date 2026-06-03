@@ -112,27 +112,34 @@ Waiting for approval in the Toss app on your phone...
 
 ## 지원 범위
 
-### 조회 (읽기 전용)
+토스증권 공식 Open API 는 현재 **사전 신청 단계**(미출시)입니다. 아래 `공식 API` 칼럼은
+출시 시 공식이 커버할 범위로, 지금은 모든 기능을 tossctl 이 유일하게 제공합니다.
 
-| 기능 | 커맨드 | US | KR |
-|------|--------|:--:|:--:|
-| 계좌 목록 / 요약 | `account list`, `account summary` | O | O |
-| 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | O | O |
-| 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도 포함), `quote batch <sym>[,sym,...] [...]` (`--chart` 스파크라인, `--live` 갱신 모드) | O | O |
-| 환율·지수 | `market fx` (달러 환율·달러 인덱스) | O | O |
-| 캔들 차트 | `quote chart <symbol> --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m --count N` (ASCII / JSON / CSV) | O | O |
-| 체결 내역 (틱) | `quote trades <symbol> --count N` | O | O |
-| 상/하한가 | `quote limits <symbol>` | O | O |
-| 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등 badge) | O | O |
-| 장 운영 시간 | `market hours` (오늘 KR·US 개장/마감, 휴장 시 다음 영업일 표시) | O | O |
-| 미체결 주문 | `orders list` | O | O |
-| 체결 내역 | `orders completed --market us\|kr\|all` | O | O |
-| 단건 주문 조회 | `order show <id>` | O | O |
-| 관심 종목 | `watchlist list` | O | O |
-| 거래내역 ledger | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | O | O |
-| 현금 overview | `transactions overview --market us\|kr` (주문가능·출금가능·예정입금) | O | O |
-| CSV 내보내기 | `export positions --market`, `export orders --market`, `transactions list --output csv` | O | O |
-| 실시간 푸시 | `push listen` (SSE, JSONL 스트림 — 주문/가격 변경 알림) | O | O |
+**범례**
+- 🔓 공식 API 출시 후 양쪽 제공 (현재는 tossctl 만)
+- ⭐ **tossctl 전용** — 토스 공식 Open API 에 *없는* 기능 (우리 고유 범위)
+
+### 조회 (읽기 전용) · US·KR 공통
+
+| 기능 | 커맨드 | 공식 API |
+|------|--------|:--:|
+| 계좌 목록 / 요약 | `account list`, `account summary` | 🔓 |
+| 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | 🔓 |
+| 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도), `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | 🔓 ⭐ *(체결강도·52주·`--live` 등 일부는 tossctl 만)* |
+| 캔들 차트 | `quote chart <symbol> --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔓 ⭐ *(공식은 1분·일봉만 — 분봉 5종은 tossctl 만)* |
+| 체결 내역 (틱) | `quote trades <symbol> --count N` | 🔓 |
+| 상/하한가 | `quote limits <symbol>` (KR) | 🔓 |
+| 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등) | 🔓 |
+| 장 운영 시간 | `market hours` (오늘 + 휴장 시 다음 영업일) | 🔓 |
+| 환율 | `market fx` (달러 환율·달러 인덱스) | 🔓 |
+| **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ⭐ |
+| **실시간 인기 순위** | `market ranking --size N` | ⭐ |
+| 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | 🔓 |
+| **관심 종목** | `watchlist list` | ⭐ |
+| **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ⭐ |
+| **현금 overview** | `transactions overview --market us\|kr` (주문가능·출금가능·예정입금) | ⭐ |
+| **CSV 내보내기** | `export positions\|orders --market`, `transactions list --output csv` | ⭐ |
+| **실시간 푸시** | `push listen` (SSE 스트림 — 주문/가격 변경 알림) | ⭐ *(공식은 REST only)* |
 
 ### 거래
 

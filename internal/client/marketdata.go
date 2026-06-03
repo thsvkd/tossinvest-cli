@@ -205,6 +205,86 @@ func (c *Client) GetExchangeRates(ctx context.Context) (domain.ExchangeRates, er
 	return out, nil
 }
 
+type marketIndexRaw struct {
+	MajorIndicatorInfos []struct {
+		DisplayName string `json:"displayName"`
+		Nation      string `json:"nation"`
+		Price       struct {
+			LatestPrice float64 `json:"latestPrice"`
+			BasePrice   float64 `json:"basePrice"`
+		} `json:"price"`
+	} `json:"majorIndicatorInfos"`
+}
+
+// GetMarketIndices returns major market index quotes (코스피·나스닥·VIX 등).
+// 공식 API 에 없는 web 전용 표면.
+func (c *Client) GetMarketIndices(ctx context.Context) (domain.MarketIndices, error) {
+	var envelope quoteEnvelope[marketIndexRaw]
+	endpoint := c.certBaseURL + "/api/v1/dashboard/wts/overview/indicator/index"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.MarketIndices{}, err
+	}
+	out := domain.MarketIndices{FetchedAt: time.Now().UTC()}
+	out.Indices = make([]domain.MarketIndex, 0, len(envelope.Result.MajorIndicatorInfos))
+	for _, r := range envelope.Result.MajorIndicatorInfos {
+		idx := domain.MarketIndex{
+			Name:   r.DisplayName,
+			Nation: r.Nation,
+			Latest: r.Price.LatestPrice,
+			Base:   r.Price.BasePrice,
+		}
+		idx.Change = idx.Latest - idx.Base
+		if idx.Base != 0 {
+			idx.ChangeRate = idx.Change / idx.Base
+		}
+		out.Indices = append(out.Indices, idx)
+	}
+	return out, nil
+}
+
+type rankingRaw struct {
+	Data []struct {
+		Code   string `json:"code"`
+		Symbol string `json:"symbol"`
+		Name   string `json:"name"`
+		Market struct {
+			DisplayName string `json:"displayName"`
+		} `json:"market"`
+	} `json:"data"`
+}
+
+// GetStockRanking returns the realtime popularity ranking (실시간 인기 순위).
+// 공식 API 에 없는 discovery 표면.
+func (c *Client) GetStockRanking(ctx context.Context, size int) (domain.StockRanking, error) {
+	if size <= 0 {
+		size = 20
+	}
+	endpoint, err := url.Parse(c.infoBaseURL + "/api/v1/rankings/realtime/stock")
+	if err != nil {
+		return domain.StockRanking{}, err
+	}
+	q := endpoint.Query()
+	q.Set("size", strconv.Itoa(size))
+	endpoint.RawQuery = q.Encode()
+
+	var envelope quoteEnvelope[rankingRaw]
+	if err := c.getJSON(ctx, endpoint.String(), &envelope); err != nil {
+		return domain.StockRanking{}, err
+	}
+	out := domain.StockRanking{FetchedAt: time.Now().UTC()}
+	out.Stocks = make([]domain.RankedStock, 0, len(envelope.Result.Data))
+	for i, r := range envelope.Result.Data {
+		out.Stocks = append(out.Stocks, domain.RankedStock{
+			Rank:        i + 1,
+			ProductCode: r.Code,
+			Symbol:      r.Symbol,
+			Name:        r.Name,
+			Market:      r.Market.DisplayName,
+		})
+	}
+	return out, nil
+}
+
 // GetTradingHours returns today's KR and US session windows (장 운영 시간).
 func (c *Client) GetTradingHours(ctx context.Context) (domain.TradingHours, error) {
 	var envelope quoteEnvelope[tradingHoursRaw]

@@ -202,6 +202,80 @@ func WriteExchangeRates(w io.Writer, format Format, er domain.ExchangeRates) err
 	}
 }
 
+func WriteMarketIndices(w io.Writer, format Format, mi domain.MarketIndices) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(mi)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"name", "nation", "latest", "base", "change", "change_rate"}); err != nil {
+			return err
+		}
+		for _, x := range mi.Indices {
+			if err := cw.Write([]string{
+				x.Name, x.Nation, formatFloat(x.Latest), formatFloat(x.Base),
+				formatFloat(x.Change), formatFloat(x.ChangeRate),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		headers := []string{"지수", "현재", "변동", "변동률"}
+		rows := make([][]string, 0, len(mi.Indices))
+		for _, x := range mi.Indices {
+			sign := ""
+			if x.Change > 0 {
+				sign = "+"
+			}
+			rows = append(rows, []string{
+				x.Name,
+				fmt.Sprintf("%.2f", x.Latest),
+				sign + fmt.Sprintf("%.2f", x.Change),
+				formatPct(x.ChangeRate),
+			})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+func WriteStockRanking(w io.Writer, format Format, sr domain.StockRanking) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sr)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"rank", "symbol", "name", "market", "product_code"}); err != nil {
+			return err
+		}
+		for _, x := range sr.Stocks {
+			if err := cw.Write([]string{
+				fmt.Sprintf("%d", x.Rank), x.Symbol, x.Name, x.Market, x.ProductCode,
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		headers := []string{"순위", "종목", "이름", "시장"}
+		rows := make([][]string, 0, len(sr.Stocks))
+		for _, x := range sr.Stocks {
+			rows = append(rows, []string{fmt.Sprintf("%d", x.Rank), x.Symbol, x.Name, x.Market})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
 // sessionTime trims the "HH:MM:SS.mmm" wire format down to "HH:MM", and shows a
 // dash for a closed/holiday session (null → empty string).
 func sessionTime(s string) string {

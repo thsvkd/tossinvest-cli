@@ -207,6 +207,28 @@ func Probes() []Probe {
 				return expectPath(body, "result.kr", "object")
 			},
 		},
+		{
+			Name:   "market-index",
+			Method: "GET",
+			URL:    cert + "/api/v1/dashboard/wts/overview/indicator/index",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.majorIndicatorInfos", "array")
+			},
+		},
+		{
+			Name:   "stock-ranking",
+			Method: "GET",
+			URL:    info + "/api/v1/rankings/realtime/stock?size=1",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.data", "array")
+			},
+		},
 	}
 }
 
