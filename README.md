@@ -118,12 +118,13 @@ Waiting for approval in the Toss app on your phone...
 |------|--------|:--:|:--:|
 | 계좌 목록 / 요약 | `account list`, `account summary` | O | O |
 | 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | O | O |
-| 시세 | `quote get <symbol>`, `quote batch <sym>[,sym,...] [...]` (`--chart` 스파크라인, `--live` 갱신 모드) | O | O |
+| 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도 포함), `quote batch <sym>[,sym,...] [...]` (`--chart` 스파크라인, `--live` 갱신 모드) | O | O |
+| 환율·지수 | `market fx` (달러 환율·달러 인덱스) | O | O |
 | 캔들 차트 | `quote chart <symbol> --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m --count N` (ASCII / JSON / CSV) | O | O |
 | 체결 내역 (틱) | `quote trades <symbol> --count N` | O | O |
 | 상/하한가 | `quote limits <symbol>` | O | O |
 | 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등 badge) | O | O |
-| 장 운영 시간 | `market hours` (오늘 KR·US 개장/마감, 휴장 표시) | O | O |
+| 장 운영 시간 | `market hours` (오늘 KR·US 개장/마감, 휴장 시 다음 영업일 표시) | O | O |
 | 미체결 주문 | `orders list` | O | O |
 | 체결 내역 | `orders completed --market us\|kr\|all` | O | O |
 | 단건 주문 조회 | `order show <id>` | O | O |

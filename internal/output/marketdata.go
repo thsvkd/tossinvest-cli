@@ -138,12 +138,14 @@ func WriteTradingHours(w io.Writer, format Format, th domain.TradingHours) error
 		return enc.Encode(th)
 	case FormatCSV:
 		cw := csv.NewWriter(w)
-		if err := cw.Write([]string{"market", "date", "start_time", "end_time"}); err != nil {
+		if err := cw.Write([]string{"market", "session", "date", "start_time", "end_time"}); err != nil {
 			return err
 		}
 		for _, row := range [][]string{
-			{"KR", th.KR.Date, th.KR.StartTime, th.KR.EndTime},
-			{"US", th.US.Date, th.US.StartTime, th.US.EndTime},
+			{"KR", "today", th.KR.Date, th.KR.StartTime, th.KR.EndTime},
+			{"US", "today", th.US.Date, th.US.StartTime, th.US.EndTime},
+			{"KR", "next", th.NextKR.Date, th.NextKR.StartTime, th.NextKR.EndTime},
+			{"US", "next", th.NextUS.Date, th.NextUS.StartTime, th.NextUS.EndTime},
 		} {
 			if err := cw.Write(row); err != nil {
 				return err
@@ -152,10 +154,47 @@ func WriteTradingHours(w io.Writer, format Format, th domain.TradingHours) error
 		cw.Flush()
 		return cw.Error()
 	case FormatTable:
-		headers := []string{"시장", "일자", "개장", "마감"}
+		headers := []string{"시장", "구분", "일자", "개장", "마감"}
 		rows := [][]string{
-			{"KR", th.KR.Date, sessionTime(th.KR.StartTime), sessionTime(th.KR.EndTime)},
-			{"US", th.US.Date, sessionTime(th.US.StartTime), sessionTime(th.US.EndTime)},
+			{"KR", "오늘", th.KR.Date, sessionTime(th.KR.StartTime), sessionTime(th.KR.EndTime)},
+			{"US", "오늘", th.US.Date, sessionTime(th.US.StartTime), sessionTime(th.US.EndTime)},
+		}
+		// 오늘 휴장 시 다음 영업일도 표시
+		if th.KR.StartTime == "" && th.NextKR.Date != "" {
+			rows = append(rows, []string{"KR", "다음", th.NextKR.Date, sessionTime(th.NextKR.StartTime), sessionTime(th.NextKR.EndTime)})
+		}
+		if th.US.StartTime == "" && th.NextUS.Date != "" {
+			rows = append(rows, []string{"US", "다음", th.NextUS.Date, sessionTime(th.NextUS.StartTime), sessionTime(th.NextUS.EndTime)})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+func WriteExchangeRates(w io.Writer, format Format, er domain.ExchangeRates) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(er)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"code", "name", "base", "close"}); err != nil {
+			return err
+		}
+		for _, r := range er.Rates {
+			if err := cw.Write([]string{r.Code, r.Name, formatFloat(r.Base), formatFloat(r.Close)}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		headers := []string{"이름", "기준", "현재"}
+		rows := make([][]string, 0, len(er.Rates))
+		for _, r := range er.Rates {
+			rows = append(rows, []string{r.Name, formatFloat(r.Base), formatFloat(r.Close)})
 		}
 		return renderTable(w, headers, rows)
 	default:

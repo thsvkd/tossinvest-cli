@@ -76,9 +76,9 @@ func writeQuoteCSV(w io.Writer, quote domain.Quote) error {
 }
 
 func writeQuoteTable(w io.Writer, quote domain.Quote) error {
-	_, err := fmt.Fprintf(
+	if _, err := fmt.Fprintf(
 		w,
-		"Product Code: %s\nSymbol: %s\nName: %s\nMarket: %s (%s)\nCurrency: %s\nReference Price: %s\nLast: %s\nChange: %s\nChange Rate: %.2f%%\nVolume: %s\nStatus: %s\nBadges: %d\nNotices: %d\nFetched At: %s\n",
+		"Product Code: %s\nSymbol: %s\nName: %s\nMarket: %s (%s)\nCurrency: %s\nReference Price: %s\nLast: %s\nChange: %s\nChange Rate: %.2f%%\nVolume: %s\n",
 		quote.ProductCode,
 		quote.Symbol,
 		quote.Name,
@@ -90,11 +90,46 @@ func writeQuoteTable(w io.Writer, quote domain.Quote) error {
 		formatFloat(quote.Change),
 		quote.ChangeRate*100,
 		formatFloat(quote.Volume),
-		quote.Status,
-		quote.BadgeCount,
-		quote.NoticeCount,
-		quote.FetchedAt.Format("2006-01-02 15:04:05Z07:00"),
-	)
+	); err != nil {
+		return err
+	}
+
+	// 당일 OHLC + 52주 고저 + 시총/거래대금/체결강도 (v3 details 가 채워준 경우만)
+	if quote.Open != 0 || quote.High != 0 || quote.Low != 0 {
+		if _, err := fmt.Fprintf(w, "OHLC: %s / %s / %s / %s\n",
+			formatFloat(quote.Open), formatFloat(quote.High), formatFloat(quote.Low), formatFloat(quote.Last)); err != nil {
+			return err
+		}
+	}
+	if quote.High52w != 0 || quote.Low52w != 0 {
+		if _, err := fmt.Fprintf(w, "52W High/Low: %s / %s\n", formatFloat(quote.High52w), formatFloat(quote.Low52w)); err != nil {
+			return err
+		}
+	}
+	if quote.MarketCap != 0 {
+		if _, err := fmt.Fprintf(w, "Market Cap: %s\n", formatFloat(quote.MarketCap)); err != nil {
+			return err
+		}
+	}
+	if quote.TradingValue != 0 {
+		if _, err := fmt.Fprintf(w, "Trading Value: %s\n", formatFloat(quote.TradingValue)); err != nil {
+			return err
+		}
+	}
+	if quote.TradingStrength != 0 {
+		if _, err := fmt.Fprintf(w, "Trading Strength: %.2f%%\n", quote.TradingStrength); err != nil {
+			return err
+		}
+	}
+	if quote.UpperLimit != 0 || quote.LowerLimit != 0 {
+		if _, err := fmt.Fprintf(w, "Upper/Lower Limit: %s / %s\n", formatFloat(quote.UpperLimit), formatFloat(quote.LowerLimit)); err != nil {
+			return err
+		}
+	}
+
+	_, err := fmt.Fprintf(w, "Status: %s\nBadges: %d\nNotices: %d\nFetched At: %s\n",
+		quote.Status, quote.BadgeCount, quote.NoticeCount,
+		quote.FetchedAt.Format("2006-01-02 15:04:05Z07:00"))
 	return err
 }
 

@@ -164,22 +164,45 @@ func (c *Client) GetStockWarnings(ctx context.Context, symbol string) (domain.St
 	return out, nil
 }
 
-// trading-hours/integrated returns a bare object keyed by market.
+// trading-hours/integrated session block.
+type tradingSessionRaw struct {
+	Date      string `json:"date"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+}
+
+type tradingMarketRaw struct {
+	Today      tradingSessionRaw `json:"today"`
+	NextBizDay tradingSessionRaw `json:"nextBizDay"`
+}
+
 type tradingHoursRaw struct {
-	KR struct {
-		Today struct {
-			Date      string `json:"date"`
-			StartTime string `json:"startTime"`
-			EndTime   string `json:"endTime"`
-		} `json:"today"`
-	} `json:"kr"`
-	US struct {
-		Today struct {
-			Date      string `json:"date"`
-			StartTime string `json:"startTime"`
-			EndTime   string `json:"endTime"`
-		} `json:"today"`
-	} `json:"us"`
+	KR tradingMarketRaw `json:"kr"`
+	US tradingMarketRaw `json:"us"`
+}
+
+type exchangeRatesRaw struct {
+	ExchangeRates []struct {
+		Code  string  `json:"code"`
+		Name  string  `json:"name"`
+		Base  float64 `json:"base"`
+		Close float64 `json:"close"`
+	} `json:"exchangeRates"`
+}
+
+// GetExchangeRates returns FX/index quotes (USD/KRW, DXY 등).
+func (c *Client) GetExchangeRates(ctx context.Context) (domain.ExchangeRates, error) {
+	var envelope quoteEnvelope[exchangeRatesRaw]
+	endpoint := c.infoBaseURL + "/api/v1/dashboard/wts/overview/exchange-rates"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.ExchangeRates{}, err
+	}
+	out := domain.ExchangeRates{FetchedAt: time.Now().UTC()}
+	out.Rates = make([]domain.ExchangeRate, 0, len(envelope.Result.ExchangeRates))
+	for _, r := range envelope.Result.ExchangeRates {
+		out.Rates = append(out.Rates, domain.ExchangeRate{Code: r.Code, Name: r.Name, Base: r.Base, Close: r.Close})
+	}
+	return out, nil
 }
 
 // GetTradingHours returns today's KR and US session windows (장 운영 시간).
@@ -190,17 +213,14 @@ func (c *Client) GetTradingHours(ctx context.Context) (domain.TradingHours, erro
 		return domain.TradingHours{}, err
 	}
 	raw := envelope.Result
+	sess := func(s tradingSessionRaw) domain.MarketSession {
+		return domain.MarketSession{Date: s.Date, StartTime: s.StartTime, EndTime: s.EndTime}
+	}
 	return domain.TradingHours{
-		KR: domain.MarketSession{
-			Date:      raw.KR.Today.Date,
-			StartTime: raw.KR.Today.StartTime,
-			EndTime:   raw.KR.Today.EndTime,
-		},
-		US: domain.MarketSession{
-			Date:      raw.US.Today.Date,
-			StartTime: raw.US.Today.StartTime,
-			EndTime:   raw.US.Today.EndTime,
-		},
+		KR:        sess(raw.KR.Today),
+		US:        sess(raw.US.Today),
+		NextKR:    sess(raw.KR.NextBizDay),
+		NextUS:    sess(raw.US.NextBizDay),
 		FetchedAt: time.Now().UTC(),
 	}, nil
 }

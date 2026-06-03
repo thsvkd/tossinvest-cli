@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.19] - 2026-06-03
+
+### Added
+- **`quote get` 정보 대폭 확장** — 기존 현재가/변동/거래량에 더해 당일 OHLC, 52주 고저, 시가총액, 거래대금, 체결강도, 상/하한가 추가. web `v3/stock-prices/details` 를 enrichment 용으로 별도 호출 (실패해도 기본 quote 는 동작 — graceful). agent 가 "삼성 52주 고저/시총 알려줘" 류 질의에 직접 응답 가능.
+- **`market fx`** — 달러 환율·달러 인덱스 등 FX/지수 조회. (공식 Open API 의 exchange-rate 대응)
+- **`market hours` 가 다음 영업일도 표시** — 오늘 휴장(예: 선거일)일 때 KR/US 다음 개장일·시간 자동 노출.
+
+### Internal
+- `quote get` 의 주문 흐름(trading)은 기존 v1 endpoint 유지하고 enrichment 만 v3 로 분리 — blast radius 최소화. 신규 fixture + 단위 테스트 추가.
+
 ## [0.4.18] - 2026-06-03
 
 ### Fixed

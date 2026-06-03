@@ -40,6 +40,24 @@ type stockPriceResult struct {
 	Volume      float64 `json:"volume"`
 }
 
+// stockPriceDetailResult is the richer v3 details payload used to enrich
+// `quote get` (OHLC, 52-week high/low, market cap, trading value/strength).
+type stockPriceDetailResult struct {
+	Code            string  `json:"code"`
+	Open            float64 `json:"open"`
+	High            float64 `json:"high"`
+	Low             float64 `json:"low"`
+	Close           float64 `json:"close"`
+	PreDayVolume    float64 `json:"preDayVolume"`
+	High52w         float64 `json:"high52w"`
+	Low52w          float64 `json:"low52w"`
+	MarketCap       float64 `json:"marketCap"`
+	Value           float64 `json:"value"`           // 거래대금
+	TradingStrength float64 `json:"tradingStrength"` // 체결강도
+	UpperLimit      float64 `json:"upperLimit"`
+	LowerLimit      float64 `json:"lowerLimit"`
+}
+
 type stockSearchEnvelope struct {
 	Result struct {
 		Stocks []struct {
@@ -93,6 +111,21 @@ func (c *Client) GetQuote(ctx context.Context, symbol string) (domain.Quote, err
 	if detail != nil {
 		quote.BadgeCount = len(detail.Badges)
 		quote.NoticeCount = len(detail.Notices)
+	}
+
+	// Enrich with richer v3 details (non-fatal — base quote stands on its own).
+	if d, err := c.getStockPriceDetails(ctx, productCode); err == nil && d != nil {
+		quote.Open = d.Open
+		quote.High = d.High
+		quote.Low = d.Low
+		quote.High52w = d.High52w
+		quote.Low52w = d.Low52w
+		quote.MarketCap = d.MarketCap
+		quote.TradingValue = d.Value
+		quote.TradingStrength = d.TradingStrength
+		quote.PrevVolume = d.PreDayVolume
+		quote.UpperLimit = d.UpperLimit
+		quote.LowerLimit = d.LowerLimit
 	}
 
 	return quote, nil
@@ -159,6 +192,27 @@ func (c *Client) getStockPrice(ctx context.Context, productCode string) (stockPr
 	}
 
 	return envelope.Result[0], nil
+}
+
+// getStockPriceDetails fetches the richer v3 details payload. Used only to
+// enrich `quote get`; failure is non-fatal (caller falls back to base fields).
+func (c *Client) getStockPriceDetails(ctx context.Context, productCode string) (*stockPriceDetailResult, error) {
+	endpoint, err := url.Parse(fmt.Sprintf("%s/api/v3/stock-prices/details", c.infoBaseURL))
+	if err != nil {
+		return nil, err
+	}
+	query := endpoint.Query()
+	query.Set("productCodes", productCode)
+	endpoint.RawQuery = query.Encode()
+
+	var envelope quoteEnvelope[[]stockPriceDetailResult]
+	if err := c.getJSON(ctx, endpoint.String(), &envelope); err != nil {
+		return nil, err
+	}
+	if len(envelope.Result) == 0 {
+		return nil, fmt.Errorf("no detail result for %s", productCode)
+	}
+	return &envelope.Result[0], nil
 }
 
 func normalizeProductCode(symbol string) string {

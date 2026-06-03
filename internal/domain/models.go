@@ -134,6 +134,19 @@ type StockWarnings struct {
 	FetchedAt   time.Time      `json:"fetched_at"`
 }
 
+// ExchangeRate is one FX/index quote (e.g. USD/KRW, DXY).
+type ExchangeRate struct {
+	Code  string  `json:"code"`
+	Name  string  `json:"name"`
+	Base  float64 `json:"base,omitempty"`
+	Close float64 `json:"close"`
+}
+
+type ExchangeRates struct {
+	Rates     []ExchangeRate `json:"rates"`
+	FetchedAt time.Time      `json:"fetched_at"`
+}
+
 // MarketSession is one trading day's session times for a market.
 type MarketSession struct {
 	Date      string `json:"date,omitempty"`
@@ -141,10 +154,13 @@ type MarketSession struct {
 	EndTime   string `json:"end_time,omitempty"`
 }
 
-// TradingHours holds today's KR and US session windows (장 운영 시간).
+// TradingHours holds today's (and next business day's) KR and US session
+// windows (장 운영 시간). NextKR/NextUS are useful when today is a holiday.
 type TradingHours struct {
 	KR        MarketSession `json:"kr"`
 	US        MarketSession `json:"us"`
+	NextKR    MarketSession `json:"next_kr,omitempty"`
+	NextUS    MarketSession `json:"next_us,omitempty"`
 	FetchedAt time.Time     `json:"fetched_at"`
 }
 
@@ -251,6 +267,17 @@ type Quote struct {
 	Change         float64   `json:"change,omitempty"`
 	ChangeRate     float64   `json:"change_rate,omitempty"`
 	Volume         float64   `json:"volume,omitempty"`
+	Open           float64   `json:"open,omitempty"`
+	High           float64   `json:"high,omitempty"`
+	Low            float64   `json:"low,omitempty"`
+	High52w        float64   `json:"high_52w,omitempty"`
+	Low52w         float64   `json:"low_52w,omitempty"`
+	MarketCap      float64   `json:"market_cap,omitempty"`
+	TradingValue   float64   `json:"trading_value,omitempty"`   // 거래대금
+	TradingStrength float64  `json:"trading_strength,omitempty"` // 체결강도 (%)
+	PrevVolume     float64   `json:"prev_volume,omitempty"`
+	UpperLimit     float64   `json:"upper_limit,omitempty"`
+	LowerLimit     float64   `json:"lower_limit,omitempty"`
 	Status         string    `json:"status,omitempty"`
 	BadgeCount     int       `json:"badge_count,omitempty"`
 	NoticeCount    int       `json:"notice_count,omitempty"`

@@ -27,6 +27,22 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(hoursCmd)
+	fxCmd := &cobra.Command{
+		Use:   "fx",
+		Short: "FX/index quotes (달러 환율·달러 인덱스 등)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			er, err := app.client.GetExchangeRates(cmd.Context())
+			if err != nil {
+				return err
+			}
+			return output.WriteExchangeRates(cmd.OutOrStdout(), app.format, er)
+		},
+	}
+
+	cmd.AddCommand(hoursCmd, fxCmd)
 	return cmd
 }

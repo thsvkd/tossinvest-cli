@@ -52,6 +52,17 @@ func TestGetQuoteFromFixtures(t *testing.T) {
 	if quote.Volume != 27306483 {
 		t.Fatalf("unexpected volume: %v", quote.Volume)
 	}
+
+	// v3 details enrichment
+	if quote.High52w != 200000 || quote.Low52w != 56800 {
+		t.Fatalf("unexpected 52w high/low: %v / %v", quote.High52w, quote.Low52w)
+	}
+	if quote.MarketCap != 1150000000000000 {
+		t.Fatalf("unexpected market cap: %v", quote.MarketCap)
+	}
+	if quote.TradingStrength != 102.34 {
+		t.Fatalf("unexpected trading strength: %v", quote.TradingStrength)
+	}
 }
 
 func TestGetQuoteResolvesUSSymbolViaSearch(t *testing.T) {
@@ -65,6 +76,8 @@ func TestGetQuoteResolvesUSSymbolViaSearch(t *testing.T) {
 			_, _ = w.Write([]byte(`{"result":{"symbol":"TSLL","name":"TSLL","currency":"USD","status":"N","market":{"code":"NSQ","displayName":"NASDAQ"}}}`))
 		case r.URL.Path == "/api/v1/product/stock-prices":
 			_, _ = w.Write([]byte(`{"result":[{"productCode":"US20220809012","currency":"USD","base":14.38,"close":15.36,"volume":13409779}]}`))
+		case r.URL.Path == "/api/v3/stock-prices/details":
+			_, _ = w.Write([]byte(`{"result":[{"code":"US20220809012","open":14.5,"high":15.6,"low":14.2,"close":15.36,"high52w":20.1,"low52w":8.3,"marketCap":0,"value":0,"tradingStrength":98.7}]}`))
 		case r.URL.Path == "/api/v1/stock-detail/ui/US20220809012/common":
 			_, _ = w.Write([]byte(`{"result":{"badges":[],"notices":[]}}`))
 		default:
@@ -110,6 +123,8 @@ func fixturePathForRequest(t *testing.T, path string) string {
 		return mustPublicFixturePath(t, filepath.Join(root, "stock-detail-common.json"))
 	case "/api/v1/product/stock-prices":
 		return mustPublicFixturePath(t, filepath.Join(root, "stock-price.json"))
+	case "/api/v3/stock-prices/details":
+		return mustPublicFixturePath(t, filepath.Join(root, "stock-price-details.json"))
 	default:
 		t.Fatalf("unexpected request path: %s", path)
 		return ""
