@@ -30,6 +30,7 @@ type cacheEntry struct {
 	LatestVersion    string    `json:"latest_version"`
 	UpdateNotifiedAt time.Time `json:"update_notified_at,omitempty"`
 	ExpiryNotifiedAt time.Time `json:"expiry_notified_at,omitempty"`
+	ConfigNotifiedAt time.Time `json:"config_notified_at,omitempty"`
 }
 
 type Checker struct {
@@ -105,6 +106,21 @@ func (c *Checker) ShouldNotifyExpiry() bool {
 func (c *Checker) MarkExpiryNotified() {
 	entry, _ := c.readCache()
 	entry.ExpiryNotifiedAt = c.now()
+	_ = c.writeCache(entry)
+}
+
+// ShouldNotifyConfig reports whether the caller should emit a "config has
+// legacy/outdated fields" warning right now. It enforces the same 24h backoff
+// as the update notice so the hint doesn't repeat on every command. The caller
+// must call MarkConfigNotified after printing.
+func (c *Checker) ShouldNotifyConfig() bool {
+	entry, _ := c.readCache()
+	return c.now().Sub(entry.ConfigNotifiedAt) >= c.interval
+}
+
+func (c *Checker) MarkConfigNotified() {
+	entry, _ := c.readCache()
+	entry.ConfigNotifiedAt = c.now()
 	_ = c.writeCache(entry)
 }
 

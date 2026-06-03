@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/junghoonkye/tossinvest-cli/internal/config"
 	"github.com/junghoonkye/tossinvest-cli/internal/output"
 	"github.com/junghoonkye/tossinvest-cli/internal/session"
 )
@@ -100,6 +101,126 @@ func TestExpiryWarningRespectsBackoffGate(t *testing.T) {
 	}
 	if markCount != 1 {
 		t.Fatalf("expected mark to be called once, got %d", markCount)
+	}
+}
+
+func TestConfigLegacyWarningOnLegacyFields(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{
+		Exists:       true,
+		ConfigFile:   "/tmp/config.json",
+		LegacyFields: []string{"trading.grant", "trading.allow_dangerous_execute"},
+	}
+	var buf bytes.Buffer
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable, nil, nil)
+	got := buf.String()
+	if !strings.Contains(got, "legacy field") {
+		t.Fatalf("expected legacy-field warning, got %q", got)
+	}
+	if !strings.Contains(got, "trading.grant") {
+		t.Fatalf("expected offending field listed, got %q", got)
+	}
+}
+
+func TestConfigLegacyWarningOnStaleSchema(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{
+		Exists:              true,
+		ConfigFile:          "/tmp/config.json",
+		SourceSchemaVersion: config.SchemaVersion - 1,
+	}
+	var buf bytes.Buffer
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable, nil, nil)
+	if !strings.Contains(buf.String(), "schema is outdated") {
+		t.Fatalf("expected stale-schema warning, got %q", buf.String())
+	}
+}
+
+func TestConfigLegacyWarningSilentWhenClean(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{
+		Exists:              true,
+		ConfigFile:          "/tmp/config.json",
+		SourceSchemaVersion: config.SchemaVersion,
+	}
+	var buf bytes.Buffer
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable, nil, nil)
+	if buf.Len() != 0 {
+		t.Fatalf("expected silence for clean config, got %q", buf.String())
+	}
+}
+
+func TestConfigLegacyWarningSilentInJSONAndSkipCommands(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{
+		Exists:       true,
+		ConfigFile:   "/tmp/config.json",
+		LegacyFields: []string{"trading.grant"},
+	}
+
+	var buf bytes.Buffer
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatJSON, nil, nil)
+	if buf.Len() != 0 {
+		t.Fatalf("expected silence in JSON mode, got %q", buf.String())
+	}
+
+	for _, name := range []string{"config", "doctor", "version", "help"} {
+		buf.Reset()
+		writeConfigLegacyWarningIfNeeded(&buf, status, name, output.FormatTable, nil, nil)
+		if buf.Len() != 0 {
+			t.Fatalf("expected silence for %q, got %q", name, buf.String())
+		}
+	}
+}
+
+func TestConfigLegacyWarningSilentWhenNoConfig(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{Exists: false, LegacyFields: []string{"trading.grant"}}
+	var buf bytes.Buffer
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable, nil, nil)
+	if buf.Len() != 0 {
+		t.Fatalf("expected silence when config absent, got %q", buf.String())
+	}
+}
+
+func TestConfigLegacyWarningRespectsBackoffGate(t *testing.T) {
+	t.Parallel()
+
+	status := config.Status{
+		Exists:       true,
+		ConfigFile:   "/tmp/config.json",
+		LegacyFields: []string{"trading.grant"},
+	}
+
+	var buf bytes.Buffer
+	markCalled := false
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable,
+		func() bool { return false },
+		func() { markCalled = true },
+	)
+	if buf.Len() != 0 {
+		t.Fatalf("expected silence when gate denies, got %q", buf.String())
+	}
+	if markCalled {
+		t.Fatal("expected mark skipped when gate denies")
+	}
+
+	buf.Reset()
+	markCount := 0
+	writeConfigLegacyWarningIfNeeded(&buf, status, "portfolio", output.FormatTable,
+		func() bool { return true },
+		func() { markCount++ },
+	)
+	if !strings.Contains(buf.String(), "legacy field") {
+		t.Fatalf("expected warning when gate permits, got %q", buf.String())
+	}
+	if markCount != 1 {
+		t.Fatalf("expected mark called once, got %d", markCount)
 	}
 }
 

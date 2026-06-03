@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/auth"
@@ -57,12 +58,19 @@ func newRootCmd() *cobra.Command {
 			sess, _ := store.Load(cmd.Context())
 			var gate func() bool
 			var mark func()
+			var configGate func() bool
+			var configMark func()
 			if cachePath, err := resolveUpdateCachePath(opts); err == nil {
 				checker := updatecheck.New(cachePath)
 				gate = checker.ShouldNotifyExpiry
 				mark = checker.MarkExpiryNotified
+				configGate = checker.ShouldNotifyConfig
+				configMark = checker.MarkConfigNotified
 			}
 			writeExpiryWarningIfNeeded(cmd.ErrOrStderr(), sess, cmd.Name(), format, time.Now(), gate, mark)
+			if status, err := loadConfigStatus(opts); err == nil {
+				writeConfigLegacyWarningIfNeeded(cmd.ErrOrStderr(), status, cmd.Name(), format, configGate, configMark)
+			}
 			return nil
 		},
 		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
@@ -163,6 +171,61 @@ func writeExpiryWarningIfNeeded(w io.Writer, sess *session.Session, cmdName stri
 	if mark != nil {
 		mark()
 	}
+}
+
+// configWarningSkipCommands lists commands where a config-legacy nudge is
+// noise: the config command already prints full status (so the warning would
+// be redundant right above it), and version/help don't touch config behavior.
+var configWarningSkipCommands = map[string]struct{}{
+	"config":  {},
+	"doctor":  {},
+	"version": {},
+	"help":    {},
+}
+
+// writeConfigLegacyWarningIfNeeded prints a one-line stderr hint when the
+// user's config carries fields that are no longer wired (LegacyFields) or was
+// written by an older schema than this binary expects. Previously this drift
+// was only surfaced by `tossctl config status`/`doctor`, so a user who never
+// re-ran those could keep a stale config silently. The optional gate/mark
+// callbacks apply the same 24h backoff as the update notice; pass nil for both
+// to disable the backoff (used by unit tests).
+func writeConfigLegacyWarningIfNeeded(w io.Writer, status config.Status, cmdName string, format output.Format, gate func() bool, mark func()) {
+	if !status.Exists || format == output.FormatJSON {
+		return
+	}
+	if _, skip := configWarningSkipCommands[cmdName]; skip {
+		return
+	}
+	stale := status.SourceSchemaVersion != 0 && status.SourceSchemaVersion < config.SchemaVersion
+	if len(status.LegacyFields) == 0 && !stale {
+		return
+	}
+	if gate != nil && !gate() {
+		return
+	}
+	switch {
+	case len(status.LegacyFields) > 0:
+		fmt.Fprintf(w, "⚠ config has unused legacy field(s): %s — run `tossctl config status` and remove them from %s\n",
+			strings.Join(status.LegacyFields, ", "), status.ConfigFile)
+	default:
+		fmt.Fprintf(w, "⚠ config schema is outdated (v%d, current v%d) — run `tossctl config status` to review %s\n",
+			status.SourceSchemaVersion, config.SchemaVersion, status.ConfigFile)
+	}
+	if mark != nil {
+		mark()
+	}
+}
+
+// loadConfigStatus resolves the config file path and returns its Status without
+// requiring the full app context (PersistentPreRunE runs before subcommands
+// build theirs).
+func loadConfigStatus(opts *rootOptions) (config.Status, error) {
+	configFile, err := configFilePath(opts)
+	if err != nil {
+		return config.Status{}, err
+	}
+	return config.NewService(configFile).Status(context.Background())
 }
 
 // writeUpdateNoticeIfNeeded prints a single stderr line when a newer stable

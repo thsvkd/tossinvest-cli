@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **config legacy 자동 경고** — config 에 더 이상 쓰이지 않는 legacy 필드(예: `trading.grant`)가 있거나 스키마 버전이 바이너리보다 낮으면, `config status`/`doctor` 를 직접 돌리지 않아도 일반 명령 실행 시 stderr 에 1줄 경고. update notice 와 동일한 24h backoff 로 매 호출 반복 방지. JSON 출력·`config`/`doctor`/`version`/`help` 명령에서는 무음. 단위 테스트 포함.
+
 ## [0.5.0] - 2026-06-04
 
 공식 Open API 에 없는 web 전용 표면(해자) 대거 확장 + 첫 mutation 기능(관심종목 관리)
