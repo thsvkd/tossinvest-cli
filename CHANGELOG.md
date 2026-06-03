@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.18] - 2026-06-03
+
+### Fixed
+- **`quote limits` 가 미국 종목에 raw 400 에러** 대신 친절한 메시지. 상/하한가는 KRX 전용 제도라 (미국장은 일일 가격제한 없이 LULD circuit breaker 사용) 비-KR 종목은 네트워크 호출 전에 명확한 안내로 거부. 단위 테스트 추가.
+
 ## [0.4.17] - 2026-06-03
 
 ### Added

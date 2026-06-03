@@ -84,11 +84,16 @@ type upperLowerRaw struct {
 	LowerLimit float64 `json:"lowerLimit"`
 }
 
-// GetPriceLimits returns the daily upper/lower price band (상/하한가).
+// GetPriceLimits returns the daily upper/lower price band (상/하한가). This is a
+// KRX-specific concept; US markets use intraday circuit breakers (LULD) instead
+// of a fixed daily band, so non-KR symbols are rejected with a clear message.
 func (c *Client) GetPriceLimits(ctx context.Context, symbol string) (domain.PriceLimits, error) {
 	productCode, err := c.resolveProductCode(ctx, symbol)
 	if err != nil {
 		return domain.PriceLimits{}, err
+	}
+	if deriveSecurityType(productCode) != "kr-s" {
+		return domain.PriceLimits{}, fmt.Errorf("상/하한가는 국내(KRX) 종목만 제공됩니다 (미국장은 일일 가격제한 제도가 없음): %s", symbol)
 	}
 	info, _ := c.getStockInfo(ctx, productCode)
 
