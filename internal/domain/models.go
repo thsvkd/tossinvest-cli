@@ -88,6 +88,66 @@ type WatchlistItem struct {
 	Last     float64 `json:"last,omitempty"`
 }
 
+// Trade is a single executed tick (체결) from the market-data feed.
+type Trade struct {
+	Time             string  `json:"time"`
+	Price            float64 `json:"price"`
+	Base             float64 `json:"base,omitempty"`
+	Volume           float64 `json:"volume"`
+	TradeType        string  `json:"trade_type,omitempty"`        // BUY / SELL
+	CumulativeVolume float64 `json:"cumulative_volume,omitempty"`
+}
+
+type TradeList struct {
+	ProductCode string    `json:"product_code"`
+	Symbol      string    `json:"symbol,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	Trades      []Trade   `json:"trades"`
+	FetchedAt   time.Time `json:"fetched_at"`
+}
+
+// PriceLimits is the daily upper/lower price band (상/하한가).
+type PriceLimits struct {
+	ProductCode string  `json:"product_code"`
+	Symbol      string  `json:"symbol,omitempty"`
+	Name        string  `json:"name,omitempty"`
+	Date        string  `json:"date,omitempty"`
+	UpperLimit  float64 `json:"upper_limit"`
+	LowerLimit  float64 `json:"lower_limit"`
+}
+
+// StockWarning is a buy-caution badge (매수 유의사항). The web feed's badge
+// shape is dynamic, so non-core fields are preserved as raw JSON.
+type StockWarning struct {
+	Type    string          `json:"type,omitempty"`
+	Title   string          `json:"title,omitempty"`
+	Text    string          `json:"text,omitempty"`
+	Level   string          `json:"level,omitempty"`
+	Raw     json.RawMessage `json:"raw,omitempty"`
+}
+
+type StockWarnings struct {
+	ProductCode string         `json:"product_code"`
+	Symbol      string         `json:"symbol,omitempty"`
+	Name        string         `json:"name,omitempty"`
+	Warnings    []StockWarning `json:"warnings"`
+	FetchedAt   time.Time      `json:"fetched_at"`
+}
+
+// MarketSession is one trading day's session times for a market.
+type MarketSession struct {
+	Date      string `json:"date,omitempty"`
+	StartTime string `json:"start_time,omitempty"`
+	EndTime   string `json:"end_time,omitempty"`
+}
+
+// TradingHours holds today's KR and US session windows (장 운영 시간).
+type TradingHours struct {
+	KR        MarketSession `json:"kr"`
+	US        MarketSession `json:"us"`
+	FetchedAt time.Time     `json:"fetched_at"`
+}
+
 type Transaction struct {
 	Type             string          `json:"type"`
 	Category         string          `json:"category"`

@@ -166,7 +166,60 @@ func newQuoteCmd(opts *rootOptions) *cobra.Command {
 	chartCmd.Flags().StringVar(&chartInterval, "interval", "3m", "candle interval: 1m, 3m, 5m, 10m, 15m, 30m, 60m")
 	chartCmd.Flags().IntVar(&chartCount, "count", 30, "number of candles to fetch")
 
-	cmd.AddCommand(getCmd, batchCmd, chartCmd)
+	var tradesCount int
+	tradesCmd := &cobra.Command{
+		Use:   "trades <symbol or name>",
+		Short: "Fetch recent executed ticks (체결) for a symbol",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			list, err := app.client.GetTrades(cmd.Context(), strings.Join(args, " "), tradesCount)
+			if err != nil {
+				return err
+			}
+			return output.WriteTrades(cmd.OutOrStdout(), app.format, list)
+		},
+	}
+	tradesCmd.Flags().IntVar(&tradesCount, "count", 30, "number of recent ticks to fetch")
+
+	limitsCmd := &cobra.Command{
+		Use:   "limits <symbol or name>",
+		Short: "Fetch daily upper/lower price band (상/하한가)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			pl, err := app.client.GetPriceLimits(cmd.Context(), strings.Join(args, " "))
+			if err != nil {
+				return err
+			}
+			return output.WritePriceLimits(cmd.OutOrStdout(), app.format, pl)
+		},
+	}
+
+	warningsCmd := &cobra.Command{
+		Use:   "warnings <symbol or name>",
+		Short: "Fetch buy-caution badges (매수 유의사항)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			sw, err := app.client.GetStockWarnings(cmd.Context(), strings.Join(args, " "))
+			if err != nil {
+				return err
+			}
+			return output.WriteStockWarnings(cmd.OutOrStdout(), app.format, sw)
+		},
+	}
+
+	cmd.AddCommand(getCmd, batchCmd, chartCmd, tradesCmd, limitsCmd, warningsCmd)
 
 	return cmd
 }

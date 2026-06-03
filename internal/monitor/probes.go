@@ -174,6 +174,39 @@ func Probes() []Probe {
 				return expectPath(body, "result", "array")
 			},
 		},
+		{
+			Name:   "quote-trades",
+			Method: "GET",
+			URL:    info + "/api/v2/stock-prices/A005930/ticks?viewType=krx_all&investMode=krx&count=1",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result", "array")
+			},
+		},
+		{
+			Name:   "quote-price-limits",
+			Method: "GET",
+			URL:    info + "/api/v2/stock-prices/A005930/upper-lower",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.upperLimit", "number")
+			},
+		},
+		{
+			Name:   "market-trading-hours",
+			Method: "GET",
+			URL:    api + "/api/v2/system/trading-hours/integrated",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.kr", "object")
+			},
+		},
 	}
 }
 

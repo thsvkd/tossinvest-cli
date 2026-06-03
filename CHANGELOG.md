@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.17] - 2026-06-03
+
+### Added
+- **`quote trades <symbol>`** — 최근 체결 틱 조회 (시각·체결가·수량·매수/매도 구분). `--count` 로 개수 조절. (web `/api/v2/stock-prices/{code}/ticks`)
+- **`quote limits <symbol>`** — 당일 상/하한가 조회. (web `/api/v2/stock-prices/{code}/upper-lower`)
+- **`quote warnings <symbol>`** — 매수 유의사항 badge (정리매매·투자경고/위험·VI 등). badge shape 이 동적이라 type/title/text/level 매핑 + raw 보존. (web `/api/v1/stock-infos/{code}/wts-badges`)
+- **`market hours`** — 오늘 KR·US 장 운영 시간 (개장/마감, 휴장 표시). (web `/api/v2/system/trading-hours/integrated`)
+- 위 4개는 모두 토스 공식 Open API (issue #31) 의 Market Data 카테고리에 대응하는 기능 — 공식 토큰 발급 없이 기존 web session 으로 동작. table / json / csv 지원.
+- `monitor api` 에 3개 public probe 추가 (quote-trades, quote-price-limits, market-trading-hours) — 회귀 조기 감지.
+
+### Internal
+- `internal/client/marketdata.go` 신설 (4개 메서드 + `investModeFor` KR/US 분기). `internal/output/marketdata.go` 신설 (formatter). 단위 테스트 추가.
+
 ## [0.4.16] - 2026-05-28
 
 ### Added
