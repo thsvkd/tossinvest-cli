@@ -37,54 +37,45 @@ document 입니다. issue [#31](https://github.com/JungHoonGhae/tossinvest-cli/i
 
 - **미검증:** client_id/secret 발급 콘솔 절차, 거래 권한 scope 모델, rate limit 실측, candle 이 1분봉·일봉만이라 기존 tossctl 의 3/5/15/30/60분봉과 차이 있음
 
-## 우리 포지셔닝 변화
+## 포지셔닝 — 공식이 나와도 tossctl 은 갈아타지 않는다
 
-현재: "토스증권 웹 세션을 reverse-engineer 한 비공식 CLI"
+**핵심 교정 (2026-06-03):** 초기 계획은 "공식 나오면 tossctl 이 공식으로 이주,
+session 은 deprecate" 였다. 이는 *"공식 = 상위호환"* 이라는 잘못된 가정에 기반했다.
 
-공식 API 출시 후: **"한국 증권사를 AI 에이전트에 통일된 인터페이스로 연결하는 CLI"** —
-백엔드 plugin 으로 추상화해서 official Toss / 비공식 Toss / (장기적으로) KIS · 키움 등을
-같은 명령어로 다룸. 사용자가 토큰을 받았든 안 받았든 `tossctl portfolio positions` 의
-표면은 동일. 추상화 설계 상세는 [multi-broker.md](./multi-broker.md).
+공식 API 는 상위호환이 아니라 **다른 trade-off** 다:
 
-## Phase 별 계획 (잠정)
+| | tossctl (비공식 web session) | 토스 공식 API |
+|---|---|---|
+| 데이터 표면 | **넓음** — transactions ledger·watchlist·push(SSE) 포함 | 좁음 — 시세·계좌·주문만 (ledger/watchlist/push **없음**) |
+| rate limit | 사실상 없음 | 있음 (ACCOUNT 초당 1회 등) |
+| 진입 | `auth login` 1회 | 사전신청→승인→토큰 24h 재발급 |
+| 합법성·안정성 | 약함 (TOS 리스크, 예고 없는 변경) | 강함 (계약된 versioned spec) |
 
-표 안의 phase 정의·동작·작업 모두 잠정. 공식 표면이 드러나면 항목이 합쳐지거나
-분리되거나 순서가 바뀔 수 있습니다.
+→ tossctl 이 공식으로 이주하면 **우리 해자(넓은 표면 + 무제한)를 스스로 버린다.**
+그래서 **이주·deprecation 하지 않는다.** tossctl 은 "비공식·넓은 표면" 도구로 영구 유지.
 
-| Phase | 트리거 | tossctl 동작 | 작업 |
-|---|---|---|---|
-| **0** *(지금)* | 사전 신청만 가능, 토큰 발급 0 | 현행 — session-based 만 | issue #31 트래킹, 사전 신청, 본 문서 유지 |
-| **1** | 일부 사용자 토큰 발급 시작 | `tossctl auth login --official-token <token>` 추가. config 에 토큰 있으면 official, 없으면 session. **명령어 표면 동일** | `Broker` interface 추상화 (`TossSessionBroker` / `TossOfficialBroker`), `OAuthBearer` 인증, doctor 안내 |
-| **2** | 대부분 토큰 발급, official 안정 | default 가 official, session 은 fallback. doctor 가 자동 전환 권장 | 거래 권한 모델 정리 (official 의 trading scope 가 별도 신청이라면 분기) |
-| **3** | 정착 | session-based deprecation. KIS/키움 broker plugin 검토 | `tossctl --broker toss|kis|kiwoom` 가능성 평가 |
+**토스 공식 adapter 는 tossctl 이 아니라 별도 멀티-브로커 CLI (investctl) 로 간다.**
+공식의 강점(합법성·통합)은 거기서, 비공식의 강점(표면·무제한)은 여기서 — 두 제품이
+다른 수요를 영구히 분담한다. 자기잠식 없음. 상세: [multi-broker.md](./multi-broker.md).
 
-## Phase 1 의 UX 원칙
+## tossctl 이 공식 출시에 실제로 할 일 (작음)
 
-- 토큰 받은 사용자: `tossctl auth login --official-token ...` 한 번. 이후 끝
-- 토큰 못 받은 사용자: 기존 흐름 그대로. 아무것도 안 변함
-- **두 그룹이 같은 README, 같은 명령어, 같은 AGENTS.md** 를 봄. tossctl 이 매개
+이주가 아니므로 할 일은 작다:
 
-doctor 출력 예시:
-```
-Backend: toss-session (active)
-Official API: not yet (waitlist) — apply at https://corp.tossinvest.com/ko/open-api
-```
-
-토큰 발급 후 (정확한 필드명/만료 정책은 실제 토큰 받은 후 확정):
-```
-Backend: toss-official (token expires ...)
-Session fallback: configured
-```
+| 시점 | tossctl 동작 |
+|---|---|
+| **지금** | 현행 유지. issue #31 모니터링 (spec version 추적 — daily-monitor.yml) |
+| **공식 안정 후** | README 에 "합법성·통합 원하면 investctl" 교차 링크. tossctl 은 그대로 |
+| **비공식 endpoint 차단 시** (위험 1) | 그때만 대응 — 공식 adapter 옵션 추가 검토. 그 전엔 불필요 |
 
 ## 위험 요소
 
 1. **비공식 endpoint 차단 가능성** — 공식 출시 후 토스가 reverse-engineered 접근을
-   정책/기술적으로 막을 수 있음. 그 시점에 session 백엔드는 빠르게 deprecate 가 강제될
-   수 있음
-2. **공식 API 의 거래 권한** — official 이 거래 권한을 별도 신청해야 할 가능성 (대부분
-   증권사가 그럼). 이 경우 tossctl 의 거래 기능은 official 백엔드에서 분기 처리 필요
-3. **추상화 over-engineering** — 공식 표면을 직접 보기 전에 interface 를 짜면 잘못
-   잡을 확률 ↑. (관련 결정은 아래 *결정 log* 참조)
+   정책/기술적으로 막을 수 있음. 이것이 tossctl 의 유일한 실존적 위험 (해자인 넓은
+   표면이 통째로 사라짐). 차단되면 그때 공식 adapter 옵션을 검토 — 단 공식은 표면이
+   좁아 완전 대체는 안 되므로 일부 기능 손실 감수. 그 전엔 선제 이주 불필요.
+2. **investctl 과의 중복 유지비** — 두 레포에 core(auth/output/config) 가 copy-first
+   로 갈라져 유지비 발생. 두 번째 구현으로 패턴 검증되면 공유 모듈화 검토 (그 전엔 X).
 
 ## 결정 log
 
@@ -92,7 +83,8 @@ Session fallback: configured
 않습니다 — 새 항목을 추가할 뿐입니다.
 
 - **2026-05-19** — issue #31 등록 (제보: @DaeHyeoNi). 사전 신청 페이지 확인. 사전 신청 진행. tossctl 의 일반화 (multi-broker) 방향을 *현재로서는* 선호. Phase 1 진입 전까지 코드 추상화는 보류 — 공식 표면을 보기 전 추상화는 잘못 잡을 확률이 크다는 판단
-- **2026-06-02** — 공식 개발자 문서 + OpenAPI spec 공개 확인 (제보: @skyisle). `developers.tossinvest.com/docs` + `openapi.tossinvest.com/openapi-docs/.../openapi.json` (v1.0.3, 20 endpoints, OAuth2 Client Credentials). 모니터링 신호를 corp 페이지 chunk hash → spec version + endpoint 목록 hash 로 교체 (훨씬 강한 신호). endpoint 표면이 tossctl 명령과 거의 1:1 매핑 확인 → Phase 1 Broker 추상화 설계가 이제 *가능*. 단 client_id/secret 발급 콘솔 절차 미검증이라 실제 구현 착수는 토큰 직접 확보 후로 유지
+- **2026-06-02** — 공식 개발자 문서 + OpenAPI spec 공개 확인 (제보: @skyisle). `developers.tossinvest.com/docs` + `openapi.tossinvest.com/openapi-docs/.../openapi.json` (v1.0.3, 20 endpoints, OAuth2 Client Credentials). 모니터링 신호를 corp 페이지 chunk hash → spec version + endpoint 목록 hash 로 교체 (훨씬 강한 신호). endpoint 표면이 tossctl 명령과 거의 1:1 매핑 확인.
+- **2026-06-03** — **이주·deprecation 계획 철회.** 공식 API 가 상위호환이 아니라 다른 trade-off (표면 좁고 rate limit 있음) 임이 spec 으로 확인됨. tossctl 이 공식으로 갈아타면 해자(transactions·watchlist·push·무제한)를 스스로 버림. → tossctl 은 "비공식·넓은 표면" 으로 영구 유지. 토스 공식 adapter 는 tossctl 이 아니라 별도 멀티-브로커 CLI(investctl, `oss-kr-investctl`)로. 두 제품이 다른 수요를 분담, 자기잠식 없음. 이 문서의 Broker 추상화 범위는 "tossctl 자체가 공식으로 갈아타기"(폐기) 가 아니라 investctl 의 cross-broker 통합 ([multi-broker.md](./multi-broker.md)) 으로 이관.
 
 ## 외부 contributor / 사용자에게 부탁
 

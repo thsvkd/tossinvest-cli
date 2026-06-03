@@ -1,15 +1,28 @@
 # Multi-Broker 추상화 방향
 
-`tossctl` 의 장기 생존 전략은 **"토스 비공식 CLI"** 에서 **"한국 증권사를 AI
-에이전트에 통일된 인터페이스로 연결하는 CLI"** 로 일반화하는 것이다. 이 문서는
-그 추상화 설계 방향을 정리한 living document 다. [open-api.md](./open-api.md)
-의 Phase 계획과 함께 읽는다.
+> **중요 (2026-06-03): 이 멀티-브로커 CLI 는 tossctl 이 *아니다*.**
+> 별도 레포 **`oss-kr-investctl`** (바이너리 `investctl`) 에서 **공식 API only** 로
+> 만든다. tossctl(이 레포)은 "비공식·넓은 표면" 도구로 영구 유지하며 여기로
+> 흡수되지 않는다. 이유는 [open-api.md](./open-api.md) 의 "포지셔닝" 참조 — 공식
+> API 는 상위호환이 아니라 표면이 좁은 다른 trade-off 라, tossctl 이 갈아타면
+> 해자를 잃는다.
+>
+> 이 문서는 그 **investctl 의 설계 방향**을 정리한 living document 다 (설계 anchor).
+> tossctl 자체의 일은 거의 없다 (open-api.md "tossctl 이 실제로 할 일" 표 참조).
+
+목표: **"한국 증권사를 AI 에이전트에 통일된 인터페이스로 연결하는 공식 API CLI."**
+KIS(한국투자) 공식 API 부터, 토스 공식(승인 후), 키움·미래에셋 등으로 확장.
 
 > **status:** 설계 단계 (코드 착수 전) · 마지막 업데이트 2026-06-03
 >
 > **⚠ 계획·인터페이스·우선순위는 사전 공지 없이 바뀔 수 있습니다.** 실제 백엔드
-> (토스 공식 토큰, KIS/키움 키)를 손에 쥐기 전엔 추상화를 확정하지 않는다 —
-> 표면을 보기 전 설계는 잘못 잡을 확률이 크다. 여기 적힌 건 "현 시점 stance".
+> (KIS 키, 토스 공식 토큰)를 손에 쥐기 전엔 추상화를 확정하지 않는다 — 표면을 보기
+> 전 설계는 잘못 잡을 확률이 크다. 여기 적힌 건 "현 시점 stance".
+>
+> **참고:** 다른 세션에서 `oss-koreainvestment-cli` 에 이미 KIS MVP 스펙/계획을
+> 작성해 둠 (rclone/terraform-provider식 core+adapter+capability). 이 문서와
+> 그 스펙은 **동일 설계의 두 사본** — 구현 착수 시 하나로 통합 (레포명
+> `oss-kr-investctl` 로 정리).
 
 ## 왜 multi-broker 인가
 
@@ -27,28 +40,30 @@
 ## 목표 아키텍처
 
 ```
-        cmd/tossctl (명령 레이어 — 백엔드 무관)
+        cmd/investctl (명령 레이어 — 백엔드 무관, 단일 바이너리)
                      │
                      ▼
             internal/broker.Broker  (interface)
-            ┌────────┼─────────┬──────────────┐
-            ▼        ▼         ▼              ▼
-   TossSessionBroker  TossOfficialBroker  KISBroker  KiwoomBroker
-   (web reverse-eng)  (OAuth2 공식)       (한투)     (키움)
-            │              │
-   wts-*.tossinvest   openapi.tossinvest
+            ┌────────────┬──────────────┐
+            ▼            ▼              ▼
+   KISBroker     TossOfficialBroker  KiwoomBroker
+   (한투 공식)   (토스 공식 OAuth2)  (키움 공식)
+        │              │
+   apiportal.kis   openapi.tossinvest
 ```
 
-- **명령 레이어는 broker 를 모른다.** `tossctl portfolio positions` 는 어떤
-  백엔드든 동일하게 동작.
-- 백엔드는 config 또는 `--broker` 플래그로 선택. 미지정 시 사용 가능한 것 자동.
-- 현재 `internal/client.Client` 가 사실상 단일 구현 (`TossSessionBroker`).
-  이것을 interface 뒤로 옮긴다.
+- **공식 API only.** 비공식 web session(tossctl 의 wts-*) 은 여기 들어오지 않는다 —
+  그건 tossctl 레포에 영구히 남는 별도 제품.
+- **명령 레이어는 broker 를 모른다.** `investctl portfolio positions` 는 어떤
+  공식 백엔드든 동일하게 동작.
+- 백엔드는 config 또는 `--broker` 플래그로 선택. 미지정 시 default broker.
+- 첫 구현체는 **KIS** (지금 바로 가능 — 공식 운영 중). 토스 공식은 승인 후.
 
 ## Broker interface (초안 — 미확정)
 
-현재 `internal/client.Client` 의 공개 메서드에서 도출. 모든 백엔드가 전부 구현할
-필요는 없다 — 미지원은 `ErrUnsupported` 를 반환하고 명령 레이어가 친절히 처리.
+tossctl 의 `internal/client.Client` 공개 메서드를 *참고*해 도출 (그대로 복사 아님 —
+investctl 은 공식 API 표면에 맞춤). 모든 백엔드가 전부 구현할 필요는 없다 —
+미지원은 `ErrUnsupported` 를 반환하고 명령 레이어가 친절히 처리.
 
 ```go
 // internal/broker/broker.go (제안)
@@ -85,24 +100,33 @@ type BrokerCapabilities struct {
 
 ## 백엔드별 매핑 (현재까지 파악)
 
-| 기능 | toss-session (현재) | toss-official | KIS / 키움 |
+investctl 은 공식 열만 다룬다. 맨 왼쪽 tossctl(비공식) 열은 *대조용* — investctl 에
+없는 것이 곧 tossctl 의 고유 해자임을 보여준다.
+
+| 기능 | tossctl(비공식, 別제품) | toss-official | KIS / 키움 |
 |---|---|---|---|
 | 계좌·보유·주문·시세 | ✅ | ✅ (OAuth2) | ✅ (각자 OAuth/키) |
 | transactions ledger | ✅ | ❌ (공식 표면 없음) | 미확인 |
 | watchlist | ✅ | ❌ | 미확인 |
-| push (실시간 SSE) | ✅ | ❌ (REST only) | KIS 는 WebSocket 있음 |
-| 매수유의·상하한가·체결·환율·장운영 | ✅ (web) | ✅ (공식 endpoint) | 미확인 |
+| push (실시간) | ✅ (SSE) | ❌ (REST only) | KIS 는 WebSocket 있음 |
+| 매수유의·상하한가·체결·환율·장운영 | ✅ | ✅ | 미확인 |
+| 선물옵션·해외·채권 | ❌ | ❌ | ✅ (KIS) |
 | rate limit | 없음 | 있음 (ACCOUNT 1/s 등) | 있음 |
 | 진입 마찰 | `auth login` 1회 | 사전신청→승인→토큰 | 계좌+키 발급 |
 
-## 단계적 도입 (open-api.md Phase 와 정합)
+→ tossctl 과 investctl 은 표면이 상보적. tossctl=비공식 넓음, investctl=공식 통합+
+선물옵션/해외/채권 같은 공식만의 깊이. 자기잠식 없음.
 
-1. **Phase 1 진입 시 (토스 공식 토큰 확보 후)** — `internal/broker` 패키지 신설,
-   현재 `Client` 를 `TossSessionBroker` 로 래핑 (동작 변화 0, 순수 리팩토링).
-   `TossOfficialBroker` 추가. config 에 `broker` 필드.
-2. **안정화** — `--broker` 플래그 + 자동 선택. doctor 가 사용 가능 백엔드 표시.
-3. **확장** — KIS broker 평가 (한투 open-trading-api 는 성숙·문서 풍부).
-   키움 REST 도 후보.
+## 단계적 도입
+
+1. **MVP (지금 — KIS 만으로 가능)** — `core`(auth/output/config) + `domain` 정규화 +
+   `Broker` interface + `registry` + **KIS read-only adapter**(quote/account/portfolio/
+   chart). 단일 바이너리 `investctl --broker kis`. 이미 KIS 공식 API 가 운영 중이라
+   토스 승인을 기다릴 필요 없이 *지금* 아키텍처를 끝까지 검증 가능.
+2. **거래** — KIS order preview/place/cancel + permission 게이트 (tossctl 의 안전
+   모델 이식).
+3. **토스 공식 adapter** — 승인 후 `--broker toss`. KIS 로 검증된 interface 에 끼움.
+4. **확장** — 키움·미래에셋·NH. 새 증권사 = 폴더 1개 + `registry.Register` 1줄.
 
 ## 설계 원칙
 
@@ -111,27 +135,32 @@ type BrokerCapabilities struct {
 - **거래 안전 게이트(config·permission)는 명령 레이어에 유지** — 백엔드로 내리지
   않는다. 어떤 백엔드든 동일한 안전 모델.
 - **AI ergonomics 레이어(JSON/CSV, AGENTS.md, monitor)는 백엔드 무관 공통자산** —
-  이게 우리 차별점이므로 broker 와 직교하게 유지.
-- **추상화는 두 번째 구현이 생길 때 한다.** 지금 `Client` 하나뿐일 때 interface
-  먼저 파면 잘못 추상화한다 ([YAGNI](https://martinfowler.com/bliki/Yagni.html)).
-  `TossOfficialBroker` 라는 실제 두 번째 구현이 손에 잡힐 때 interface 를 추출.
+  이게 차별점이므로 broker 와 직교하게 유지.
+- **interface 는 두 번째 구현이 생길 때 확정.** MVP 는 KIS 하나로 짜되, 토스 공식이
+  두 번째로 붙을 때 어색한 부분을 리팩토링 ([YAGNI](https://martinfowler.com/bliki/Yagni.html)).
+  단 investctl 은 처음부터 cross-broker 가 목적이라 interface 골격은 1일차부터 둔다
+  (tossctl 처럼 단일 구현으로 출발한 게 아님).
+- **core 는 tossctl 에서 copy-first.** 공유 Go 모듈화는 두 레포가 패턴을 검증한 뒤.
 
 ## 위험·미해결
 
 1. **토스 공식의 AI 레이어 확장** — `llms.txt` 가 신호. 토스가 공식 SDK + agent
-   통합까지 내면 우리 ergonomics 해자 약화. → multi-broker 일반화로 방어.
-2. **각 증권사 ToS** — KIS/키움 공식 API 는 합법이나 약관·계좌 요건 상이. broker
-   별로 문서화 필요.
-3. **interface 조기 확정 risk** — 위 "두 번째 구현 생길 때" 원칙으로 회피.
-4. **거래 권한 모델 차이** — 공식 API 가 거래 scope 별도 신청이면 Capabilities 에
-   반영. KIS 는 모의투자/실전 분리.
+   통합까지 내면 ergonomics 해자 약화. → 단일 증권사가 아닌 cross-broker 통합이
+   방어막 (어느 한 증권사도 "전부 통합"을 대체 못 함).
+2. **KIS 공식 MCP 가 이미 존재** — KIS 단독 가치는 약함. investctl 의 가치는 *통합*
+   에서만 나옴 — 단일 broker 로는 정당화 안 됨을 명심.
+3. **각 증권사 ToS** — 공식 API 는 합법이나 약관·계좌 요건 상이. broker 별 문서화.
+4. **두 레포 core 중복 유지비** — copy-first 의 대가. 공유 모듈화는 검증 후.
+5. **거래 권한 모델 차이** — KIS 모의/실전 분리, 토스 scope 별도 신청 가능성 →
+   Capabilities 에 반영.
 
 ## 결정 log
 
 각 항목은 *그 시점의* stance. 뒤집힐 때 사전 공지 없이 새 항목만 추가.
 
-- **2026-06-03** — multi-broker 방향을 장기 생존 전략으로 채택 (현 시점 선호).
-  공식 API 출시 후에도 우리 우위(넓은 데이터 표면·rate limit 없음·AI ergonomics)
-  를 지키려면 백엔드를 교체 가능 부품으로 만들어야 한다는 판단. **단 코드 착수는
-  토스 공식 토큰을 실제 확보(Phase 1)한 뒤** — interface 는 두 번째 구현이 손에
-  잡힐 때 추출. 그 전까진 본 문서가 방향 anchor.
+- **2026-06-03** — multi-broker 를 **별도 레포 investctl(공식 only)** 로 결정.
+  tossctl 전환/흡수 아님 (공식은 표면이 좁아 tossctl 해자를 죽임 — open-api.md 참조).
+  MVP = KIS read-only (토스 승인 불요, 지금 아키텍처 검증 가능). 첫 커밋부터
+  core+adapter+capability 골격 (cross-broker 가 목적이므로). core 는 tossctl 에서
+  copy-first. 다른 세션의 `oss-koreainvestment-cli` 스펙/계획과 통합 — 레포명
+  `oss-kr-investctl` 로 정리.
