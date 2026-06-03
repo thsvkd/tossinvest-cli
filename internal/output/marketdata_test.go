@@ -33,6 +33,26 @@ func TestWriteStockWarningsEmpty(t *testing.T) {
 	}
 }
 
+func TestWriteTradingFlowsTableSigned(t *testing.T) {
+	var buf bytes.Buffer
+	tf := domain.TradingFlows{
+		ProductCode: "A005930", Name: "삼성전자",
+		Flows: []domain.TradingFlow{
+			{Date: "2026-06-02", NetIndividuals: 10917935, NetForeigner: -13711920, NetInstitution: 2602241},
+		},
+	}
+	if err := WriteTradingFlows(&buf, FormatTable, tf); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "+10,917,935") {
+		t.Errorf("expected signed+comma individuals: %q", out)
+	}
+	if !strings.Contains(out, "-13,711,920") {
+		t.Errorf("expected negative foreigner: %q", out)
+	}
+}
+
 func TestWriteMarketIndicesCSV(t *testing.T) {
 	var buf bytes.Buffer
 	mi := domain.MarketIndices{Indices: []domain.MarketIndex{

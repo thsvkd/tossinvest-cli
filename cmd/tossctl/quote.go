@@ -219,7 +219,26 @@ func newQuoteCmd(opts *rootOptions) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(getCmd, batchCmd, chartCmd, tradesCmd, limitsCmd, warningsCmd)
+	var flowsSize int
+	flowsCmd := &cobra.Command{
+		Use:   "flows <symbol or name>",
+		Short: "Investor-type net flows (수급 — 개인·외국인·기관 순매수, KR)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			tf, err := app.client.GetTradingFlows(cmd.Context(), strings.Join(args, " "), flowsSize)
+			if err != nil {
+				return err
+			}
+			return output.WriteTradingFlows(cmd.OutOrStdout(), app.format, tf)
+		},
+	}
+	flowsCmd.Flags().IntVar(&flowsSize, "size", 20, "number of recent days")
+
+	cmd.AddCommand(getCmd, batchCmd, chartCmd, tradesCmd, limitsCmd, warningsCmd, flowsCmd)
 
 	return cmd
 }

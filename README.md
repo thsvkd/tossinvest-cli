@@ -112,46 +112,52 @@ Waiting for approval in the Toss app on your phone...
 
 ## 지원 범위
 
-토스증권 공식 Open API 는 현재 **사전 신청 단계**(미출시)입니다. 아래 `공식 API` 칼럼은
-출시 시 공식이 커버할 범위로, 지금은 모든 기능을 tossctl 이 유일하게 제공합니다.
+토스증권 공식 Open API 는 현재 **사전 신청 단계**(미출시)입니다. 아래 표의
+`공식 API` 칼럼은 출시 시 공식이 커버할 범위이며, 지금은 모든 기능을 tossctl 이
+유일하게 제공합니다. `tossctl` 칼럼이 우리가 제공하는 범위입니다.
 
-**범례**
-- 🔓 공식 API 출시 후 양쪽 제공 (현재는 tossctl 만)
-- ⭐ **tossctl 전용** — 토스 공식 Open API 에 *없는* 기능 (우리 고유 범위)
+- ✓ 지원 · ✗ 미지원 · △ 부분 지원
+- **공식 API 가 ✗ 인 행 = tossctl 고유 범위(해자).**
 
 ### 조회 (읽기 전용) · US·KR 공통
 
-| 기능 | 커맨드 | 공식 API |
-|------|--------|:--:|
-| 계좌 목록 / 요약 | `account list`, `account summary` | 🔓 |
-| 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | 🔓 |
-| 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도), `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | 🔓 ⭐ *(체결강도·52주·`--live` 등 일부는 tossctl 만)* |
-| 캔들 차트 | `quote chart <symbol> --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔓 ⭐ *(공식은 1분·일봉만 — 분봉 5종은 tossctl 만)* |
-| 체결 내역 (틱) | `quote trades <symbol> --count N` | 🔓 |
-| 상/하한가 | `quote limits <symbol>` (KR) | 🔓 |
-| 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등) | 🔓 |
-| 장 운영 시간 | `market hours` (오늘 + 휴장 시 다음 영업일) | 🔓 |
-| 환율 | `market fx` (달러 환율·달러 인덱스) | 🔓 |
-| **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ⭐ |
-| **실시간 인기 순위** | `market ranking --size N` | ⭐ |
-| 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | 🔓 |
-| **관심 종목** | `watchlist list` | ⭐ |
-| **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ⭐ |
-| **현금 overview** | `transactions overview --market us\|kr` (주문가능·출금가능·예정입금) | ⭐ |
-| **CSV 내보내기** | `export positions\|orders --market`, `transactions list --output csv` | ⭐ |
-| **실시간 푸시** | `push listen` (SSE 스트림 — 주문/가격 변경 알림) | ⭐ *(공식은 REST only)* |
+| 기능 | 커맨드 | 공식 API | tossctl |
+|------|--------|:--:|:--:|
+| 계좌 목록 / 요약 | `account list`, `account summary` | ✓ | ✓ |
+| 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | ✓ | ✓ |
+| 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도) | △ *(체결강도·52주 등 제외)* | ✓ |
+| 멀티 시세 / 실시간 갱신 | `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | ✗ | ✓ |
+| 캔들 차트 | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | △ *(1분·일봉만)* | ✓ |
+| 체결 내역 (틱) | `quote trades <symbol> --count N` | ✓ | ✓ |
+| 상/하한가 | `quote limits <symbol>` (KR) | ✓ | ✓ |
+| 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등) | ✓ | ✓ |
+| 장 운영 시간 | `market hours` (오늘 + 휴장 시 다음 영업일) | ✓ | ✓ |
+| 환율 | `market fx` (달러 환율·달러 인덱스) | ✓ | ✓ |
+| **수급 (투자자별 순매수)** | `quote flows <symbol>` (개인·외국인·기관, KR) | ✗ | ✓ |
+| **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ✗ | ✓ |
+| **실시간 인기 순위** | `market ranking --size N` | ✗ | ✓ |
+| 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | ✓ | ✓ |
+| **관심 종목** | `watchlist list` | ✗ | ✓ |
+| **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ✗ | ✓ |
+| **현금 overview** | `transactions overview --market us\|kr` (주문가능·출금가능·예정입금) | ✗ | ✓ |
+| **CSV 내보내기** | `export positions\|orders --market`, `transactions list --output csv` | ✗ | ✓ |
+| **실시간 푸시** | `push listen` (SSE 스트림 — 주문/가격 변경 알림) | ✗ *(공식 REST only)* | ✓ |
 
 ### 거래
 
-| 기능 | 커맨드 | 필요 config |
-|------|--------|-------------|
-| 지정가 매수 (US/KR) | `order place --side buy --price <value>` | `place` |
-| 지정가 매도 (US/KR) | `order place --side sell --price <value>` | `place` + `sell` |
-| 국내주식 거래 | `order place --market kr` | `place` + `kr` |
-| 소수점 매수 (US) | `order place --fractional --amount <value>` (기본 KRW; `--currency-mode USD`로 USD 금액 입력) | `place` + `fractional` |
-| 주문 취소 | `order cancel --order-id <id>` | `cancel` |
-| 주문 정정 | `order amend --order-id <id>` | `amend` |
-| 거래 권한 관리 | `order permissions grant\|status\|revoke` | `place`/`cancel`/`amend` 중 하나 |
+공식 API 도 주문 생성·정정·취소를 제공하지만, **소수점 주문·통화 모드·로컬 권한
+게이트** 등 tossctl 의 거래 안전장치는 우리 고유입니다.
+
+| 기능 | 커맨드 | 필요 config | 공식 API | tossctl |
+|------|--------|-------------|:--:|:--:|
+| 지정가 매수 (US/KR) | `order place --side buy --price <value>` | `place` | ✓ | ✓ |
+| 지정가 매도 (US/KR) | `order place --side sell --price <value>` | `place` + `sell` | ✓ | ✓ |
+| 국내주식 거래 | `order place --market kr` | `place` + `kr` | ✓ | ✓ |
+| **소수점 매수 (US, 금액 기반)** | `order place --fractional --amount <value>` (기본 KRW; `--currency-mode USD`) | `place` + `fractional` | ✗ | ✓ |
+| 주문 취소 | `order cancel --order-id <id>` | `cancel` | ✓ | ✓ |
+| 주문 정정 | `order amend --order-id <id>` | `amend` | ✓ | ✓ |
+| **로컬 거래 권한 게이트** | `order permissions grant\|status\|revoke` (config 기반 안전장치) | `place`/`cancel`/`amend` 중 하나 | ✗ | ✓ |
+| **주문 dry-run / preview** | `order preview` (실제 전송 없이 검증) | — | ✗ | ✓ |
 
 모든 거래는 `allow_live_order_actions=true`도 필요합니다. 소수점 주문은 시장가(market order)로 자동 전환되며, 금액 기반입니다 (`--currency-mode KRW` 기본 또는 `USD`).
 

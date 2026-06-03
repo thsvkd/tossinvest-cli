@@ -205,6 +205,61 @@ func (c *Client) GetExchangeRates(ctx context.Context) (domain.ExchangeRates, er
 	return out, nil
 }
 
+type tradingTrendRaw struct {
+	Body []struct {
+		BaseDate                string  `json:"baseDate"`
+		NetIndividualsBuyVolume float64 `json:"netIndividualsBuyVolume"`
+		NetForeignerBuyVolume   float64 `json:"netForeignerBuyVolume"`
+		NetInstitutionBuyVolume float64 `json:"netInstitutionBuyVolume"`
+	} `json:"body"`
+}
+
+// GetTradingFlows returns investor-type net flows (수급 — 개인·외국인·기관 순매수).
+// KRX 전용 (해외 종목은 데이터 없음). 공식 API 에 없는 web 전용 표면.
+func (c *Client) GetTradingFlows(ctx context.Context, symbol string, size int) (domain.TradingFlows, error) {
+	productCode, err := c.resolveProductCode(ctx, symbol)
+	if err != nil {
+		return domain.TradingFlows{}, err
+	}
+	if deriveSecurityType(productCode) != "kr-s" {
+		return domain.TradingFlows{}, fmt.Errorf("수급(투자자별 순매수)은 국내(KRX) 종목만 제공됩니다: %s", symbol)
+	}
+	info, _ := c.getStockInfo(ctx, productCode)
+	if size <= 0 {
+		size = 20
+	}
+
+	endpoint, err := url.Parse(c.infoBaseURL + "/api/v1/stock-infos/trade/trend/trading-trend")
+	if err != nil {
+		return domain.TradingFlows{}, err
+	}
+	q := endpoint.Query()
+	q.Set("productCode", productCode)
+	q.Set("size", strconv.Itoa(size))
+	endpoint.RawQuery = q.Encode()
+
+	var envelope quoteEnvelope[tradingTrendRaw]
+	if err := c.getJSON(ctx, endpoint.String(), &envelope); err != nil {
+		return domain.TradingFlows{}, err
+	}
+	out := domain.TradingFlows{
+		ProductCode: productCode,
+		Symbol:      info.Symbol,
+		Name:        info.Name,
+		FetchedAt:   time.Now().UTC(),
+	}
+	out.Flows = make([]domain.TradingFlow, 0, len(envelope.Result.Body))
+	for _, r := range envelope.Result.Body {
+		out.Flows = append(out.Flows, domain.TradingFlow{
+			Date:           r.BaseDate,
+			NetIndividuals: r.NetIndividualsBuyVolume,
+			NetForeigner:   r.NetForeignerBuyVolume,
+			NetInstitution: r.NetInstitutionBuyVolume,
+		})
+	}
+	return out, nil
+}
+
 type marketIndexRaw struct {
 	MajorIndicatorInfos []struct {
 		DisplayName string `json:"displayName"`

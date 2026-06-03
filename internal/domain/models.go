@@ -147,6 +147,23 @@ type ExchangeRates struct {
 	FetchedAt time.Time      `json:"fetched_at"`
 }
 
+// TradingFlow is one day's investor-type net flow (수급 — 개인·외국인·기관 순매수).
+// KRX 전용 · 공식 API 에 없는 web 전용 표면.
+type TradingFlow struct {
+	Date            string  `json:"date"`
+	NetIndividuals  float64 `json:"net_individuals"`  // 개인 순매수 (주)
+	NetForeigner    float64 `json:"net_foreigner"`    // 외국인 순매수
+	NetInstitution  float64 `json:"net_institution"`  // 기관 순매수
+}
+
+type TradingFlows struct {
+	ProductCode string        `json:"product_code"`
+	Symbol      string        `json:"symbol,omitempty"`
+	Name        string        `json:"name,omitempty"`
+	Flows       []TradingFlow `json:"flows"`
+	FetchedAt   time.Time     `json:"fetched_at"`
+}
+
 // MarketIndex is one market index quote (코스피·나스닥·VIX 등). 공식 API 에 없는
 // 표면 — web 전용 해자.
 type MarketIndex struct {

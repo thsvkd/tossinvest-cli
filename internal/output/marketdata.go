@@ -202,6 +202,56 @@ func WriteExchangeRates(w io.Writer, format Format, er domain.ExchangeRates) err
 	}
 }
 
+func WriteTradingFlows(w io.Writer, format Format, tf domain.TradingFlows) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(tf)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"date", "net_individuals", "net_foreigner", "net_institution"}); err != nil {
+			return err
+		}
+		for _, f := range tf.Flows {
+			if err := cw.Write([]string{
+				f.Date, formatFloat(f.NetIndividuals), formatFloat(f.NetForeigner), formatFloat(f.NetInstitution),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		name := tf.Name
+		if name == "" {
+			name = tf.Symbol
+		}
+		if _, err := fmt.Fprintf(w, "%s (%s) 수급 — 순매수(주)\n", name, tf.ProductCode); err != nil {
+			return err
+		}
+		headers := []string{"일자", "개인", "외국인", "기관"}
+		rows := make([][]string, 0, len(tf.Flows))
+		for _, f := range tf.Flows {
+			rows = append(rows, []string{
+				f.Date, signedInt(f.NetIndividuals), signedInt(f.NetForeigner), signedInt(f.NetInstitution),
+			})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// signedInt formats a net volume with explicit +/- sign and thousands commas.
+func signedInt(v float64) string {
+	s := formatKRW(v)
+	if v > 0 {
+		return "+" + s
+	}
+	return s
+}
+
 func WriteMarketIndices(w io.Writer, format Format, mi domain.MarketIndices) error {
 	switch format {
 	case FormatJSON:

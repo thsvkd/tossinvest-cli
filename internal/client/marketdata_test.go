@@ -37,3 +37,14 @@ func TestGetPriceLimitsRejectsUSSymbol(t *testing.T) {
 		t.Errorf("expected KRX-only message, got: %v", err)
 	}
 }
+
+func TestGetTradingFlowsRejectsUSSymbol(t *testing.T) {
+	c := New(Config{})
+	_, err := c.GetTradingFlows(context.Background(), "US19801212001", 5)
+	if err == nil {
+		t.Fatal("expected error for US symbol, got nil")
+	}
+	if !strings.Contains(err.Error(), "KRX") {
+		t.Errorf("expected KRX-only message, got: %v", err)
+	}
+}

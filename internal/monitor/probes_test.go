@@ -18,6 +18,7 @@ func TestProbesRegistryStableNames(t *testing.T) {
 		"market-trading-hours":     true,
 		"market-index":             true,
 		"stock-ranking":            true,
+		"trading-flows":            true,
 	}
 	got := map[string]bool{}
 	for _, p := range Probes() {
