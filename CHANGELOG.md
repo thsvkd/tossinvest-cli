@@ -2,10 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.5.1] - 2026-06-04
+
+0.5.0 직후 같은 날 진행한 후속 정리 모음 — 안전 모델 용어/잉여 게이트 정리 + config 경고 + 문서 일치화.
+
+### Changed
+- **거래 런타임 게이트 정리 (Tier 1 + Tier 2).** live mutation 의 런타임 게이트를 `--execute` + `--confirm <token>` **2개로 축소**. 거짓 이름이던 `--dangerously-skip-permissions` 를 **은퇴** — 0.5.0 에서 `internal/permissions` 패키지를 지웠으므로 가리킬 permissions 가 없었고, 의미도 "보호 skip" 이 아니라 "위험 opt-in" 으로 역방향이었으며, `--execute` 와 중복이었음. 실제 안전장치는 preview 를 봐야만 얻는 주문별 `--confirm <token>`. 영속 게이트(config: per-action + scope + `allow_live_order_actions`)는 그대로. 거래 차단 강도 동일.
+- 내부 식별자 정리: `ErrDangerousExecuteDisabled` → `ErrLiveActionsDisabled`, `ErrDangerousFlagRequired` 제거, `ExecuteOptions.DangerouslySkipPermissions` 제거.
+- README "Safety Model" 을 **mermaid flowchart** 로 도식화 (영속/런타임 게이트 분리 + 거부 경로).
 
 ### Added
 - **config legacy 자동 경고** — config 에 더 이상 쓰이지 않는 legacy 필드(예: `trading.grant`)가 있거나 스키마 버전이 바이너리보다 낮으면, `config status`/`doctor` 를 직접 돌리지 않아도 일반 명령 실행 시 stderr 에 1줄 경고. update notice 와 동일한 24h backoff 로 매 호출 반복 방지. JSON 출력·`config`/`doctor`/`version`/`help` 명령에서는 무음. 단위 테스트 포함.
+
+### Deprecated
+- `--dangerously-skip-permissions` 플래그 — no-op 으로 동작하며 사용 시 deprecation notice 출력. 한 릴리즈 동안 기존 스크립트/agent 호환을 위해 받아들임. `--execute` + `--confirm <token>` 으로 대체.
+
+### Docs
+- README·architecture·configuration·examples 문서를 새 게이트 체인과 0.5.0 스키마 변경(제거된 `trading-permission.json`, `order permissions` 명령, grant 참조)에 맞춰 일치화.
+- 전략 문서에서 "해자" 표현 제거 — 중립적 표현(고유 범위/강점)으로 교체.
 
 ## [0.5.0] - 2026-06-04
 

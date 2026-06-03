@@ -119,7 +119,6 @@ def place_order(symbol: str, amount: int, confirm_token: str) -> dict:
         "--amount", str(amount),
         "--qty", "0",
         "--execute",
-        "--dangerously-skip-permissions",
         "--confirm", confirm_token,
     )
 

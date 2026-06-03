@@ -26,9 +26,8 @@ type Preview struct {
 }
 
 type ExecuteOptions struct {
-	Execute                    bool
-	DangerouslySkipPermissions bool
-	Confirm                    string
+	Execute bool
+	Confirm string
 }
 
 type Service struct {
@@ -189,10 +188,7 @@ func (s *Service) guard(ctx context.Context, action Action, preview Preview, opt
 		return fmt.Errorf("%w; rerun with --execute after reviewing `tossctl order preview`", ErrExecuteRequired)
 	}
 	if !s.policy.AllowLiveOrderActions {
-		return ErrDangerousExecuteDisabled
-	}
-	if !opts.DangerouslySkipPermissions {
-		return fmt.Errorf("%w; explicit danger acknowledgement is required", ErrDangerousFlagRequired)
+		return ErrLiveActionsDisabled
 	}
 	if subtle.ConstantTimeCompare([]byte(opts.Confirm), []byte(preview.ConfirmToken)) != 1 {
 		return ErrConfirmMismatch

@@ -57,7 +57,7 @@ tossctl config init
 - `trading.allow_live_order_actions` — 실계좌에 도달하는 주문 액션(`place`, `cancel`, `amend`) 자체를 허용. **마스터 킬스위치**로 위 경로 게이트가 켜져 있어도 이 값이 false면 broker에 닿지 않음
 - `trading.dangerous_automation.accept_fx_consent` — post-prepare FX confirmation branch를 자동 수락하고 같은 주문을 계속 진행하도록 허용. 현재는 `prepare` 성공 후 `needExchange > 0`인 미국주식 KRW 매수 경로에만 연결됨
 
-즉, 각 액션은 config에서 먼저 열려 있어야 하고, 그 다음에도 실행 게이트(--execute → --dangerously-skip-permissions → --confirm)를 통과해야 합니다.
+즉, 각 액션은 config에서 먼저 열려 있어야 하고, 그 다음에도 런타임 게이트(`--execute` → `--confirm <token>`)를 통과해야 합니다.
 
 ## 실행 순서
 
@@ -65,9 +65,10 @@ tossctl config init
 
 1. `config.json`에서 해당 액션 허용
    - live mutation은 `trading.allow_live_order_actions=true`도 필요
-3. `--execute`
-4. `--dangerously-skip-permissions`
-5. `--confirm`
+2. `--execute`
+3. `--confirm <token>` (`order preview`에서 받은 주문별 토큰)
+
+> v0.5.x에서 중복이던 `--dangerously-skip-permissions` 게이트는 은퇴했습니다(거짓 이름 + `--execute`와 의미 중복). 기존 플래그는 한 릴리즈 동안 deprecated no-op으로 받아들여 호환을 유지합니다.
 
 ## 로컬 파일 권한
 

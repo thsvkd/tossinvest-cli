@@ -26,9 +26,14 @@ type placeFlags struct {
 }
 
 type executeFlags struct {
-	execute                    bool
-	dangerouslySkipPermissions bool
-	confirm                    string
+	execute bool
+	confirm string
+
+	// deprecatedDangerAck backs the retired --dangerously-skip-permissions flag.
+	// It is bound but no longer consulted; the live-mutation gate is now
+	// `--execute` + `--confirm <token>`. Kept for one release so existing
+	// scripts/agents don't break on an unknown flag.
+	deprecatedDangerAck bool
 }
 
 type amendFlags struct {
@@ -169,9 +174,8 @@ func newOrderPlaceCmd(opts *rootOptions) *cobra.Command {
 			}
 
 			result, err := app.tradingService.Place(cmd.Context(), intent, trading.ExecuteOptions{
-				Execute:                    exec.execute,
-				DangerouslySkipPermissions: exec.dangerouslySkipPermissions,
-				Confirm:                    exec.confirm,
+				Execute: exec.execute,
+				Confirm: exec.confirm,
 			})
 			if err != nil {
 				return userFacingPlaceError(app.paths, err, place)
@@ -212,9 +216,8 @@ func newOrderCancelCmd(opts *rootOptions) *cobra.Command {
 			}
 
 			result, err := app.tradingService.Cancel(cmd.Context(), intent, trading.ExecuteOptions{
-				Execute:                    exec.execute,
-				DangerouslySkipPermissions: exec.dangerouslySkipPermissions,
-				Confirm:                    exec.confirm,
+				Execute: exec.execute,
+				Confirm: exec.confirm,
 			})
 			if err != nil {
 				return userFacingTradingError(app.paths, err)
@@ -261,9 +264,8 @@ func newOrderAmendCmd(opts *rootOptions) *cobra.Command {
 			}
 
 			result, err := app.tradingService.Amend(cmd.Context(), intent, trading.ExecuteOptions{
-				Execute:                    exec.execute,
-				DangerouslySkipPermissions: exec.dangerouslySkipPermissions,
-				Confirm:                    exec.confirm,
+				Execute: exec.execute,
+				Confirm: exec.confirm,
 			})
 			if err != nil {
 				return userFacingTradingError(app.paths, err)
@@ -346,9 +348,17 @@ func bindPlaceFlags(cmd *cobra.Command, flags *placeFlags) {
 }
 
 func bindExecuteFlags(cmd *cobra.Command, flags *executeFlags) {
-	cmd.Flags().BoolVar(&flags.execute, "execute", false, "Attempt the live mutation instead of local preview only")
-	cmd.Flags().BoolVar(&flags.dangerouslySkipPermissions, "dangerously-skip-permissions", false, "Acknowledge that this would execute a live trading mutation")
-	cmd.Flags().StringVar(&flags.confirm, "confirm", "", "Confirmation token from a canonical preview")
+	cmd.Flags().BoolVar(&flags.execute, "execute", false, "Perform the live mutation instead of a local preview")
+	cmd.Flags().StringVar(&flags.confirm, "confirm", "", "Confirmation token from `tossctl order preview`")
+
+	// Retired in v0.5.1: the live-mutation gate is now `--execute` + `--confirm <token>`.
+	// The old danger-acknowledgement flag is accepted (and ignored) for one release so
+	// existing scripts/agents keep working; cobra prints a deprecation notice on use and
+	// hides it from help.
+	cmd.Flags().BoolVar(&flags.deprecatedDangerAck, "dangerously-skip-permissions", false, "Deprecated no-op")
+	if err := cmd.Flags().MarkDeprecated("dangerously-skip-permissions", "no longer required — `--execute` + `--confirm <token>` is sufficient"); err != nil {
+		panic(err)
+	}
 }
 
 func optionalFloat64(cmd *cobra.Command, name string, value float64) *float64 {

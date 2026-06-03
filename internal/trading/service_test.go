@@ -51,7 +51,7 @@ func (b *brokerStub) AmendPendingOrder(_ context.Context, intent orderintent.Ame
 	return b.amendResult, nil
 }
 
-func TestPlaceRequiresExecutionFlagsAndGrant(t *testing.T) {
+func TestPlaceRequiresExecutionFlags(t *testing.T) {
 	service := NewService(config.Trading{
 		Place:                 true,
 		AllowLiveOrderActions: true,
@@ -69,23 +69,25 @@ func TestPlaceRequiresExecutionFlagsAndGrant(t *testing.T) {
 		t.Fatalf("NormalizePlace returned error: %v", err)
 	}
 
+	// No flags → --execute required.
 	if _, err := service.Place(context.Background(), intent, ExecuteOptions{}); !errors.Is(err, ErrExecuteRequired) {
 		t.Fatalf("expected ErrExecuteRequired, got %v", err)
 	}
-	if _, err := service.Place(context.Background(), intent, ExecuteOptions{Execute: true}); !errors.Is(err, ErrDangerousFlagRequired) {
-		t.Fatalf("expected ErrDangerousFlagRequired, got %v", err)
+	// --execute but no confirm token → confirm mismatch (empty token).
+	if _, err := service.Place(context.Background(), intent, ExecuteOptions{Execute: true}); !errors.Is(err, ErrConfirmMismatch) {
+		t.Fatalf("expected ErrConfirmMismatch for empty token, got %v", err)
 	}
+	// --execute with a wrong token → confirm mismatch.
 	if _, err := service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    "badtoken",
+		Execute: true,
+		Confirm: "badtoken",
 	}); !errors.Is(err, ErrConfirmMismatch) {
 		t.Fatalf("expected ErrConfirmMismatch, got %v", err)
 	}
+	// --execute + valid token → gates pass; broker is nil so mutation is pending.
 	if _, err := service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	}); !errors.Is(err, ErrLiveMutationPending) {
 		t.Fatalf("expected ErrLiveMutationPending, got %v", err)
 	}
@@ -111,9 +113,8 @@ func TestPlaceCallsBrokerForSupportedIntent(t *testing.T) {
 	}
 
 	result, err := service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	if err != nil {
 		t.Fatalf("Place returned error: %v", err)
@@ -139,9 +140,8 @@ func TestCancelExecutesBrokerAndReconciles(t *testing.T) {
 	}
 
 	result, err := service.Cancel(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewCancel(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewCancel(intent).ConfirmToken,
 	})
 	if err != nil {
 		t.Fatalf("Cancel returned error: %v", err)
@@ -170,9 +170,8 @@ func TestAmendCallsBrokerAfterGate(t *testing.T) {
 	}
 
 	result, err := service.Amend(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewAmend(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewAmend(intent).ConfirmToken,
 	})
 	if err != nil {
 		t.Fatalf("Amend returned error: %v", err)
@@ -203,9 +202,8 @@ func TestPlaceFailsWhenActionDisabledInConfig(t *testing.T) {
 	}
 
 	_, err = service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	var disabled *DisabledActionError
 	if !errors.As(err, &disabled) || disabled.Action != ActionPlace {
@@ -252,9 +250,8 @@ func TestSellPlaceFailsWhenSellDisabledInConfig(t *testing.T) {
 	}
 
 	_, err = service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	var disabled *DisabledActionError
 	if !errors.As(err, &disabled) || disabled.Action != "sell" {
@@ -286,9 +283,8 @@ func TestSellPlaceCallsBrokerWhenSellEnabled(t *testing.T) {
 	}
 
 	result, err := service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	if err != nil {
 		t.Fatalf("Place returned error: %v", err)
@@ -404,7 +400,7 @@ func TestPlaceIntentSupportedRejectsFractionalKR(t *testing.T) {
 func TestFractionalPlaceFailsWhenDisabled(t *testing.T) {
 	svc := NewService(config.Trading{Place: true, Fractional: false, AllowLiveOrderActions: true}, nil)
 	intent := orderintent.PlaceIntent{Symbol: "TSLL", Market: "us", Side: "buy", OrderType: "market", Amount: 18000, CurrencyMode: "KRW", Fractional: true}
-	_, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, DangerouslySkipPermissions: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
+	_, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
 	var disabled *DisabledActionError
 	if !errors.As(err, &disabled) || disabled.Action != "fractional" {
 		t.Fatalf("expected fractional disabled, got %v", err)
@@ -415,7 +411,7 @@ func TestFractionalPlaceCallsBroker(t *testing.T) {
 	broker := &brokerStub{}
 	svc := NewService(config.Trading{Place: true, Fractional: true, AllowLiveOrderActions: true}, broker)
 	intent := orderintent.PlaceIntent{Symbol: "TSLL", Market: "us", Side: "buy", OrderType: "market", Amount: 18000, CurrencyMode: "KRW", Fractional: true}
-	result, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, DangerouslySkipPermissions: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
+	result, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -475,9 +471,8 @@ func TestKRPlaceFailsWhenKRDisabledInConfig(t *testing.T) {
 	}
 
 	_, err = service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	var disabled *DisabledActionError
 	if !errors.As(err, &disabled) || disabled.Action != "kr" {
@@ -509,9 +504,8 @@ func TestKRPlaceCallsBrokerWhenKREnabled(t *testing.T) {
 	}
 
 	result, err := service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
 	if err != nil {
 		t.Fatalf("Place returned error: %v", err)
@@ -620,7 +614,7 @@ func TestPreviewPlaceKREnabled(t *testing.T) {
 	}
 }
 
-func TestPlaceFailsWhenDangerousExecuteIsDisabledInConfig(t *testing.T) {
+func TestPlaceFailsWhenLiveActionsDisabledInConfig(t *testing.T) {
 	service := NewService(config.Trading{
 		Place: true,
 	}, nil)
@@ -638,11 +632,10 @@ func TestPlaceFailsWhenDangerousExecuteIsDisabledInConfig(t *testing.T) {
 	}
 
 	_, err = service.Place(context.Background(), intent, ExecuteOptions{
-		Execute:                    true,
-		DangerouslySkipPermissions: true,
-		Confirm:                    service.PreviewPlace(intent).ConfirmToken,
+		Execute: true,
+		Confirm: service.PreviewPlace(intent).ConfirmToken,
 	})
-	if !errors.Is(err, ErrDangerousExecuteDisabled) {
-		t.Fatalf("expected ErrDangerousExecuteDisabled, got %v", err)
+	if !errors.Is(err, ErrLiveActionsDisabled) {
+		t.Fatalf("expected ErrLiveActionsDisabled, got %v", err)
 	}
 }

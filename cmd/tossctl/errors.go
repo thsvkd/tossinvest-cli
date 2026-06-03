@@ -12,7 +12,7 @@ import (
 	"github.com/junghoonkye/tossinvest-cli/internal/auth"
 	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
 	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	
+
 	"github.com/junghoonkye/tossinvest-cli/internal/session"
 	"github.com/junghoonkye/tossinvest-cli/internal/trading"
 )
@@ -50,9 +50,6 @@ func userFacingCommandError(err error) error {
 	}
 	if errors.Is(err, trading.ErrExecuteRequired) {
 		return fmt.Errorf("live trading is blocked by default; rerun with `--execute` after reviewing `tossctl order preview`")
-	}
-	if errors.Is(err, trading.ErrDangerousFlagRequired) {
-		return fmt.Errorf("live trading requires explicit danger acknowledgement via `--dangerously-skip-permissions`")
 	}
 	if errors.Is(err, trading.ErrConfirmMismatch) {
 		return fmt.Errorf("confirmation token mismatch; rerun `tossctl order preview` and pass the new `--confirm` token")
@@ -98,7 +95,7 @@ func userFacingTradingError(paths config.Paths, err error) error {
 	if errors.As(err, &disabled) {
 		return fmt.Errorf("trading action `%s` is disabled; run `tossctl config init` if needed and update %s", disabled.Action, paths.ConfigFile)
 	}
-	if errors.Is(err, trading.ErrDangerousExecuteDisabled) {
+	if errors.Is(err, trading.ErrLiveActionsDisabled) {
 		return fmt.Errorf("live order actions are disabled; set `trading.allow_live_order_actions=true` in %s", paths.ConfigFile)
 	}
 
@@ -122,9 +119,9 @@ func userFacingPlaceError(paths config.Paths, err error, flags *placeFlags) erro
 			previewCommand = buildPlaceCommand("preview", flags, "")
 		}
 		if message := strings.TrimSpace(prepareRejected.BrokerMessage); message != "" {
-			return fmt.Errorf("broker rejected order preparation before submission: %s\n1. Toss app/web에서 잔액, 환전 동의, 또는 broker prompt를 확인합니다.\n2. 준비가 끝나면 `%s`를 다시 실행합니다.\n3. 새 confirm token으로 `tossctl order place ... --execute --dangerously-skip-permissions --confirm <new-confirm-token>`를 다시 실행합니다.", message, previewCommand)
+			return fmt.Errorf("broker rejected order preparation before submission: %s\n1. Toss app/web에서 잔액, 환전 동의, 또는 broker prompt를 확인합니다.\n2. 준비가 끝나면 `%s`를 다시 실행합니다.\n3. 새 confirm token으로 `tossctl order place ... --execute --confirm <new-confirm-token>`를 다시 실행합니다.", message, previewCommand)
 		}
-		return fmt.Errorf("broker rejected order preparation before submission.\n1. Toss app/web에서 잔액, 환전 동의, 또는 broker prompt를 확인합니다.\n2. 준비가 끝나면 `%s`를 다시 실행합니다.\n3. 새 confirm token으로 `tossctl order place ... --execute --dangerously-skip-permissions --confirm <new-confirm-token>`를 다시 실행합니다.", previewCommand)
+		return fmt.Errorf("broker rejected order preparation before submission.\n1. Toss app/web에서 잔액, 환전 동의, 또는 broker prompt를 확인합니다.\n2. 준비가 끝나면 `%s`를 다시 실행합니다.\n3. 새 confirm token으로 `tossctl order place ... --execute --confirm <new-confirm-token>`를 다시 실행합니다.", previewCommand)
 	}
 
 	return userFacingTradingError(paths, err)
@@ -136,7 +133,7 @@ func formatBranchRequiredError(branchRequired *trading.BranchRequiredError, flag
 	}
 
 	previewCommand := "tossctl order preview ..."
-	placeCommand := "tossctl order place ... --execute --dangerously-skip-permissions --confirm <new-confirm-token>"
+	placeCommand := "tossctl order place ... --execute --confirm <new-confirm-token>"
 	if flags != nil {
 		previewCommand = buildPlaceCommand("preview", flags, "")
 		placeCommand = buildPlaceCommand("place", flags, "<new-confirm-token>")
@@ -200,7 +197,7 @@ func buildPlaceCommand(kind string, flags *placeFlags, confirm string) string {
 		if kind == "preview" {
 			return "tossctl order preview ..."
 		}
-		return "tossctl order place ... --execute --dangerously-skip-permissions --confirm " + confirm
+		return "tossctl order place ... --execute --confirm " + confirm
 	}
 
 	args := []string{
@@ -219,7 +216,7 @@ func buildPlaceCommand(kind string, flags *placeFlags, confirm string) string {
 		args = append(args, "--fractional")
 	}
 	if kind == "place" {
-		args = append(args, "--execute", "--dangerously-skip-permissions", "--confirm", confirm)
+		args = append(args, "--execute", "--confirm", confirm)
 	}
 	return strings.Join(args, " ")
 }
