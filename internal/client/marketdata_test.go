@@ -38,6 +38,17 @@ func TestGetPriceLimitsRejectsUSSymbol(t *testing.T) {
 	}
 }
 
+func TestRunScreenerRawRejectsInvalidJSON(t *testing.T) {
+	c := New(Config{})
+	_, err := c.RunScreenerRaw(context.Background(), "not json", "kr", 5)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON filter")
+	}
+	if !strings.Contains(err.Error(), "JSON") {
+		t.Errorf("expected JSON validation message, got: %v", err)
+	}
+}
+
 func TestGetTradingFlowsRejectsUSSymbol(t *testing.T) {
 	c := New(Config{})
 	_, err := c.GetTradingFlows(context.Background(), "US19801212001", 5)

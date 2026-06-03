@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/domain"
@@ -245,12 +246,6 @@ type screenerResultRaw struct {
 // RunScreener executes a preset screen by id and returns matching stocks.
 // nation: "kr" | "us". 공식 API 에 없는 조건검색 표면.
 func (c *Client) RunScreener(ctx context.Context, presetID, nation string, size int) (domain.ScreenerResult, error) {
-	if nation == "" {
-		nation = "kr"
-	}
-	if size <= 0 {
-		size = 30
-	}
 	// 프리셋 정의(filters)를 받아온다.
 	var presetEnv quoteEnvelope[[]screenerPresetRaw]
 	if err := c.getJSON(ctx, c.certBaseURL+"/api/v2/screener/presets/common?useCustom=true", &presetEnv); err != nil {
@@ -266,11 +261,38 @@ func (c *Client) RunScreener(ctx context.Context, presetID, nation string, size 
 	if preset == nil {
 		return domain.ScreenerResult{}, fmt.Errorf("screener preset %q not found (run `market screener` to list)", presetID)
 	}
+	res, err := c.runScreenerFilters(ctx, preset.Filters, nation, size)
+	if err != nil {
+		return domain.ScreenerResult{}, err
+	}
+	res.PresetID = presetID
+	res.PresetName = preset.Name
+	return res, nil
+}
 
+// RunScreenerRaw executes a screen from a caller-supplied raw filter JSON array
+// (조건검색 custom). 필터 카탈로그는 토스 web 의 JS 번들에 한글 ID 로 내장돼 있어
+// 우리가 typed 로 복제하지 않고 raw passthrough 한다 — agent/파워유저가 직접 구성.
+func (c *Client) RunScreenerRaw(ctx context.Context, filtersJSON, nation string, size int) (domain.ScreenerResult, error) {
+	raw := json.RawMessage(strings.TrimSpace(filtersJSON))
+	if !json.Valid(raw) {
+		return domain.ScreenerResult{}, fmt.Errorf("--filter 는 유효한 JSON 배열이어야 합니다")
+	}
+	return c.runScreenerFilters(ctx, raw, nation, size)
+}
+
+// runScreenerFilters POSTs a filters array and maps the result.
+func (c *Client) runScreenerFilters(ctx context.Context, filters json.RawMessage, nation string, size int) (domain.ScreenerResult, error) {
+	if nation == "" {
+		nation = "kr"
+	}
+	if size <= 0 {
+		size = 30
+	}
 	usd := nation == "us"
 	body, err := json.Marshal(map[string]any{
 		"pagingParam": map[string]any{"key": nil, "number": 1, "size": size},
-		"filters":     preset.Filters,
+		"filters":     filters,
 		"nation":      nation,
 	})
 	if err != nil {
@@ -283,8 +305,6 @@ func (c *Client) RunScreener(ctx context.Context, presetID, nation string, size 
 	}
 
 	out := domain.ScreenerResult{
-		PresetID:   presetID,
-		PresetName: preset.Name,
 		Nation:     nation,
 		TotalCount: env.Result.TotalCount,
 		FetchedAt:  time.Now().UTC(),

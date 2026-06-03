@@ -96,15 +96,30 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	var (
 		screenerNation string
 		screenerSize   int
+		screenerFilter string
 	)
 	screenerCmd := &cobra.Command{
 		Use:   "screener [preset-id]",
 		Short: "Stock screeners (조건검색: 가치주·배당주·성장주 등). 인자 없으면 프리셋 목록",
-		Args:  cobra.MaximumNArgs(1),
+		Long: `조건 검색. 인자 없으면 프리셋 목록, preset-id 주면 해당 조건 종목 반환.
+
+커스텀 조건은 --filter 로 raw JSON 배열을 직접 전달 (토스 web 의 필터 스키마):
+  tossctl market screener --filter '[{"id":"시가총액","conditions":[...]}]' --nation kr
+
+필터 ID/조건 구조는 프리셋 출력(--output json)을 참고해 변형하면 됩니다.`,
+		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			app, err := newAppContext(opts)
 			if err != nil {
 				return err
+			}
+			// --filter (custom raw) 우선
+			if screenerFilter != "" {
+				res, err := app.client.RunScreenerRaw(cmd.Context(), screenerFilter, screenerNation, screenerSize)
+				if err != nil {
+					return err
+				}
+				return output.WriteScreenerResult(cmd.OutOrStdout(), app.format, res)
 			}
 			if len(args) == 0 {
 				presets, err := app.client.GetScreenerPresets(cmd.Context())
@@ -122,6 +137,7 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	}
 	screenerCmd.Flags().StringVar(&screenerNation, "nation", "kr", "market: kr | us")
 	screenerCmd.Flags().IntVar(&screenerSize, "size", 30, "max stocks to return")
+	screenerCmd.Flags().StringVar(&screenerFilter, "filter", "", "custom raw filter JSON array (preset 대신)")
 
 	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, screenerCmd)
 	return cmd
