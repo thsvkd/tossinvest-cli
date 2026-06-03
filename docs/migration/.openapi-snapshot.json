@@ -1,14 +1,12 @@
 {
-  "chunk_url": "static/chunks/app/%5Blocale%5D/(main)/open-api/page-c35db437d43227c4.js",
-  "chunk_sha256": "73b54d2256a373370cdac31a14feeea5e896a6d067a8032ccfd586b7c7d28c89",
-  "chunk_size": 4790,
-  "keywords_found": [],
-  "openapi_base_probes": {
-    "/": "404",
-    "/v1/": "404",
-    "/v1/health": "404",
-    "/health": "200",
-    "/.well-known/openid-configuration": "404"
-  },
-  "updated_at": "2026-06-02"
+  "phase": "spec-public",
+  "spec_url": "https://openapi.tossinvest.com/openapi-docs/latest/openapi.json",
+  "spec_version": "1.0.3",
+  "spec_path_count": 20,
+  "spec_paths_sha256": "aa3227e9050b2bd624cbe6ff686c78bb15dd7df0e2aec543cf94a88e8f5c2dd8",
+  "docs_url": "https://developers.tossinvest.com/docs",
+  "docs_status": "200",
+  "llms_txt_status": "200",
+  "updated_at": "2026-06-03",
+  "note": "2026-06-02 공식 문서 + OpenAPI spec 공개 확인 (제보: skyisle, issue #31). 이전 corp.tossinvest.com 페이지 chunk 추적은 spec version 추적으로 대체."
 }

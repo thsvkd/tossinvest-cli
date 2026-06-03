@@ -43,66 +43,54 @@ jobs:
       - name: 토스 Open API 페이지 모니터
         id: toss
         run: |
-          HTML=$(curl -sS https://corp.tossinvest.com/ko/open-api || true)
-          CHUNK=$(printf '%s' "$HTML" | grep -oE 'static/chunks/app[^"]*open-api[^"]*\.js' | head -1 || true)
-          if [ -n "$CHUNK" ]; then
-            BODY=$(curl -sS "https://corp.tossinvest.com/assets/_next/${CHUNK}" || true)
-            SIZE=${#BODY}
-            SHA=$(printf '%s' "$BODY" | shasum -a 256 | cut -d' ' -f1)
+          # 공식 OpenAPI spec 직접 추적 (spec version + endpoint 목록 hash 가 강한 신호)
+          SPEC_URL="https://openapi.tossinvest.com/openapi-docs/latest/openapi.json"
+          SPEC=$(curl -sS --max-time 15 "$SPEC_URL" || true)
+          if [ -n "$SPEC" ] && printf '%s' "$SPEC" | jq -e . >/dev/null 2>&1; then
+            VERSION=$(printf '%s' "$SPEC" | jq -r '.info.version // ""')
+            PATH_COUNT=$(printf '%s' "$SPEC" | jq '.paths | keys | length')
+            PATHS_SHA=$(printf '%s' "$SPEC" | jq -S '.paths | keys' | shasum -a 256 | cut -d' ' -f1)
           else
-            BODY=""
-            SIZE=0
-            SHA=""
+            VERSION=""
+            PATH_COUNT=0
+            PATHS_SHA=""
           fi
 
-          FOUND=()
-          for kw in "토큰 발급" "토큰 발행" "API 키" "client_id" "client_secret" "OAuth" "openapi.tossinvest.com" "developer.tossinvest" "베타" "정식 출시" "sandbox" "API 문서" "redirect_uri" "scope" "refresh_token"; do
-            printf '%s' "$BODY" | grep -q "$kw" 2>/dev/null && FOUND+=("$kw") || true
-          done
-          KW_JSON='[]'
-          if [ ${#FOUND[@]} -gt 0 ]; then
-            KW_JSON=$(printf '%s\n' "${FOUND[@]}" | jq -R . | jq -s .)
-          fi
-
-          PAIRS=()
-          for path in / /v1/ /v1/health /health /.well-known/openid-configuration; do
-            c=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "https://openapi.tossinvest.com${path}" 2>/dev/null || echo ERR)
-            PAIRS+=("$path=$c")
-          done
-          PR_JSON=$(printf '%s\n' "${PAIRS[@]}" | jq -R 'split("=") | {(.[0]): .[1]}' | jq -s 'add // {}')
+          DOCS_CODE=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 https://developers.tossinvest.com/docs 2>/dev/null || echo ERR)
+          LLMS_CODE=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 https://developers.tossinvest.com/llms.txt 2>/dev/null || echo ERR)
 
           SNAP=docs/migration/.openapi-snapshot.json
-          BASE_SHA=$(jq -r '.chunk_sha256 // ""' "$SNAP" 2>/dev/null || echo "")
-          BASE_KW=$(jq -c '.keywords_found // []' "$SNAP" 2>/dev/null || echo '[]')
-          BASE_PR=$(jq -c '.openapi_base_probes // {}' "$SNAP" 2>/dev/null || echo '{}')
+          BASE_VERSION=$(jq -r '.spec_version // ""' "$SNAP" 2>/dev/null || echo "")
+          BASE_PATHS_SHA=$(jq -r '.spec_paths_sha256 // ""' "$SNAP" 2>/dev/null || echo "")
+          BASE_PATH_COUNT=$(jq -r '.spec_path_count // 0' "$SNAP" 2>/dev/null || echo 0)
 
           REASONS=()
           CHANGED=false
-          if [ -n "$SHA" ] && [ "$SHA" != "$BASE_SHA" ]; then
-            REASONS+=("chunk content 변경")
+
+          if [ -n "$VERSION" ] && [ "$VERSION" != "$BASE_VERSION" ]; then
+            REASONS+=("🚨 spec version: \`${BASE_VERSION}\` → \`${VERSION}\`")
             CHANGED=true
           fi
-          NEW_KW=$(jq -n --argjson cur "$KW_JSON" --argjson base "$BASE_KW" '$cur - $base')
-          if [ "$(printf '%s' "$NEW_KW" | jq 'length')" -gt 0 ]; then
-            REASONS+=("🚨 새 키워드: $(printf '%s' "$NEW_KW" | jq -c .)")
+          if [ -n "$PATHS_SHA" ] && [ "$PATHS_SHA" != "$BASE_PATHS_SHA" ]; then
+            REASONS+=("🚨 endpoint 목록 변경 (${BASE_PATH_COUNT} → ${PATH_COUNT}개)")
             CHANGED=true
           fi
-          PROBE_DIFF=$(jq -n --argjson cur "$PR_JSON" --argjson base "$BASE_PR" \
-            '[($cur | to_entries[]) as $c | ($base[$c.key] // "?") as $b | select($c.value != $b) | "\($c.key) \($b)→\($c.value)"]')
-          if [ "$(printf '%s' "$PROBE_DIFF" | jq 'length')" -gt 0 ]; then
-            REASONS+=("🚨 endpoint: $(printf '%s' "$PROBE_DIFF" | jq -r 'join(", ")')")
-            CHANGED=true
+          # spec fetch 실패는 일시 장애일 수 있어 변경으로 안 봄 (경고만)
+          if [ -z "$VERSION" ]; then
+            REASONS+=("⚠️ spec fetch 실패 (일시 장애 가능)")
           fi
 
-          if $CHANGED; then
-            jq -n --arg url "$CHUNK" --arg sha "$SHA" --argjson size "$SIZE" \
-              --argjson kw "$KW_JSON" --argjson pr "$PR_JSON" \
+          if $CHANGED && [ -n "$VERSION" ]; then
+            jq -n --arg url "$SPEC_URL" --arg ver "$VERSION" --argjson pc "$PATH_COUNT" \
+              --arg psha "$PATHS_SHA" --arg docs "$DOCS_CODE" --arg llms "$LLMS_CODE" \
               --arg ts "$(date -u +%Y-%m-%d)" \
-              '{chunk_url:$url,chunk_sha256:$sha,chunk_size:$size,keywords_found:$kw,openapi_base_probes:$pr,updated_at:$ts}' \
+              '{phase:"spec-public",spec_url:$url,spec_version:$ver,spec_path_count:$pc,spec_paths_sha256:$psha,docs_url:"https://developers.tossinvest.com/docs",docs_status:$docs,llms_txt_status:$llms,updated_at:$ts}' \
               > "$SNAP"
             printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
+          elif [ ${#REASONS[@]} -gt 0 ]; then
+            printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
           else
-            echo "⚪️ 변화 없음" > /tmp/toss_reasons.txt
+            echo "⚪️ 변화 없음 (spec \`${VERSION}\`, ${PATH_COUNT} endpoints)" > /tmp/toss_reasons.txt
           fi
           echo "$CHANGED" > /tmp/toss_changed
 

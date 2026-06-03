@@ -5,23 +5,37 @@
 document 입니다. issue [#31](https://github.com/JungHoonGhae/tossinvest-cli/issues/31)
 이 트래킹 anchor.
 
-> **status:** Phase 0 (사전 신청 진행 중) · 마지막 업데이트 2026-05-19
+> **status:** Phase 0.5 (공식 spec + 문서 공개, 토큰 발급 절차 미검증) · 마지막 업데이트 2026-06-02
 >
 > **⚠ 본 문서의 계획·timeline·phase 정의·우선순위는 사전 공지 없이 바뀔 수 있습니다.**
 > 토스 공식 표면이 실제로 드러나는 시점, 자원/시간 사정, 새로운 정보에 따라 유연하게
 > 재조정합니다. 여기 적힌 내용은 commitment 가 아니라 "현 시점 stance" 입니다.
 
-## 토스 Open API 의 윤곽 (corp.tossinvest.com/ko/open-api 기준)
+## 토스 Open API 의 윤곽 (공식 문서 기준)
 
-아래는 마케팅 페이지에 노출된 example 코드와 본문에서 읽은 내용입니다. 실제 endpoint
-스펙·헤더·필드는 토큰 발급 후 직접 확인하기 전까지 *추정* 입니다.
+2026-06-02 공식 개발자 문서 + OpenAPI spec 이 공개됐습니다 (제보: @skyisle, issue #31).
+아래는 추정이 아니라 **공식 spec 에서 확인된 사실**입니다.
 
-- **Base URL:** `https://openapi.tossinvest.com/v1` *(페이지 예시 코드 기준, 미검증)*
-- **인증:** `Authorization: Bearer <token>` + `X-Tossinvest-Account: <accountSeq>` 헤더 *(페이지 예시 기준, 미검증)*
-- **프로토콜:** REST + WebSocket *(페이지 본문)*
-- **공개 표면:** 시세 (실시간 호가/체결/캔들), 주문 (국내+해외 통합 마케팅), 계좌 조회, 종목/시장 정보. 각 표면의 endpoint 와 거래 권한 모델은 미공개
-- **자격:** 토스증권 계좌 보유자만 사전 신청 가능 *(페이지 본문)*
-- **출시 일자:** 명시되지 않음. 사전 신청 후 순차 롤링은 일반 패턴 추정일 뿐, 토스가 어떤 순서/속도로 푸는지는 미공개
+- **개발자 문서:** https://developers.tossinvest.com/docs (+ AI agent 용 `/llms.txt`)
+- **OpenAPI spec (source of truth):** `https://openapi.tossinvest.com/openapi-docs/latest/openapi.json` (v1.0.3, 20 endpoints)
+- **Base URL:** `https://openapi.tossinvest.com`
+- **인증:** OAuth 2.0 **Client Credentials Grant** — `POST /oauth2/token` 에 `client_id` + `client_secret` (form-urlencoded) → `access_token` (Bearer, `expires_in` 86400, refresh token 없음, client 당 유효 토큰 1개). 계좌·자산·주문 API 는 `Authorization: Bearer` 외에 `X-Tossinvest-Account` 헤더 필수.
+- **프로토콜:** REST only (마케팅 페이지의 WebSocket 언급은 아직 spec 에 없음)
+- **endpoint 표면 (tossctl 명령과의 매핑):**
+
+  | tossctl | 공식 endpoint |
+  |---|---|
+  | `account list` | `GET /api/v1/accounts` |
+  | `portfolio positions` | `GET /api/v1/holdings` |
+  | `quote get` | `GET /api/v1/prices` · `/orderbook` · `/trades` |
+  | `quote chart` | `GET /api/v1/candles` (1분봉·일봉) |
+  | `order place` | `POST /api/v1/orders` |
+  | `order amend` | `POST /api/v1/orders/{orderId}/modify` |
+  | `order cancel` | `POST /api/v1/orders/{orderId}/cancel` |
+  | `orders list` / `order show` | `GET /api/v1/orders` · `/orders/{orderId}` |
+  | (신규) | `buying-power` · `sellable-quantity` · `commissions` · `exchange-rate` · `market-calendar/{KR,US}` · `stocks` · `price-limits` |
+
+- **미검증:** client_id/secret 발급 콘솔 절차, 거래 권한 scope 모델, rate limit 실측, candle 이 1분봉·일봉만이라 기존 tossctl 의 3/5/15/30/60분봉과 차이 있음
 
 ## 우리 포지셔닝 변화
 
@@ -78,6 +92,7 @@ Session fallback: configured
 않습니다 — 새 항목을 추가할 뿐입니다.
 
 - **2026-05-19** — issue #31 등록 (제보: @DaeHyeoNi). 사전 신청 페이지 확인. 사전 신청 진행. tossctl 의 일반화 (multi-broker) 방향을 *현재로서는* 선호. Phase 1 진입 전까지 코드 추상화는 보류 — 공식 표면을 보기 전 추상화는 잘못 잡을 확률이 크다는 판단
+- **2026-06-02** — 공식 개발자 문서 + OpenAPI spec 공개 확인 (제보: @skyisle). `developers.tossinvest.com/docs` + `openapi.tossinvest.com/openapi-docs/.../openapi.json` (v1.0.3, 20 endpoints, OAuth2 Client Credentials). 모니터링 신호를 corp 페이지 chunk hash → spec version + endpoint 목록 hash 로 교체 (훨씬 강한 신호). endpoint 표면이 tossctl 명령과 거의 1:1 매핑 확인 → Phase 1 Broker 추상화 설계가 이제 *가능*. 단 client_id/secret 발급 콘솔 절차 미검증이라 실제 구현 착수는 토큰 직접 확보 후로 유지
 
 ## 외부 contributor / 사용자에게 부탁
 
