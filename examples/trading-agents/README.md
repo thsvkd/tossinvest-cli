@@ -25,10 +25,7 @@ tossctl auth login
 # 3. config.json에서 거래 허용
 # place, fractional, allow_live_order_actions → true
 
-# 4. 거래 권한 부여
-tossctl order permissions grant --ttl 600
-
-# 5. LLM API 키 설정
+# 4. LLM API 키 설정
 export ANTHROPIC_API_KEY=...  # 또는 OPENAI_API_KEY
 ```
 

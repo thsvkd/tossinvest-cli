@@ -88,7 +88,7 @@ tossctl이 저장하는 모든 상태 파일과 디렉토리는 소유자 전용
 
 기존 `schema_version: 1` 파일과 `trading.allow_dangerous_execute`는 계속 읽을 수 있습니다.
 
-`v0.4.3`에서 제거된 필드(`trading.grant`, `trading.dangerous_automation.complete_trade_auth`, `trading.dangerous_automation.accept_product_ack`)는 설정에 남아있어도 무시되며, `doctor`의 `legacy_config` 체크에서 감지해 알려줍니다. 해당 필드들은 실제로 어떤 동작도 제어하지 않던 죽은 토글이었습니다.
+`v0.4.3`에서 제거된 필드(`trading.grant`, `trading.dangerous_automation.complete_trade_auth`, `trading.dangerous_automation.accept_product_ack`)는 설정에 남아있어도 무시됩니다. 해당 필드들은 실제로 어떤 동작도 제어하지 않던 죽은 토글이었습니다. legacy 필드(또는 구버전 스키마)가 남아 있으면 일반 명령 실행 시 stderr 경고 1줄(24h backoff)로 안내되고, `config status`/`doctor`의 `legacy_config` 체크에서도 감지해 알려줍니다.
 
 다만 `config show`와 `doctor`는 새 이름 기준으로 해석해서 보여주고, legacy key를 변환해서 읽고 있으면 그 사실을 따로 알려줍니다.
 

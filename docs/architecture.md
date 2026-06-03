@@ -85,7 +85,7 @@ Rel(agent, goCli, "Calls", "JSON / shell")
 Rel(goCli, authHelper, "Starts for login", "subprocess")
 Rel(authHelper, tossWeb, "Captures login session", "browser automation")
 Rel(authHelper, localFiles, "Writes storage state-derived session", "JSON")
-Rel(goCli, localFiles, "Reads/writes config, session, grant", "JSON files")
+Rel(goCli, localFiles, "Reads/writes config, session, lineage", "JSON files")
 Rel(goCli, tossApi, "Calls read-only and trading APIs", "HTTPS")
 Rel(goCli, docs, "Uses captured knowledge", "dev workflow")
 ```
@@ -182,8 +182,7 @@ sequenceDiagram
     Trading-->>Caller: preview
 
     Caller->>CLI: order place/cancel/amend --execute --dangerously-skip-permissions --confirm
-    CLI->>Config: verify action enabled
-    CLI->>Grant: verify active grant
+    CLI->>Config: verify action enabled + allow_live_order_actions
     CLI->>Trading: guard(action, flags, confirm)
     Trading->>Client: prepare/mutation call
     Client->>API: prepare
@@ -210,7 +209,7 @@ sequenceDiagram
 
 즉, config가 열려 있어도 매번 CLI 실행 시점의 명시적 확인이 필요합니다.
 
-> `v0.4.3`에서 `trading.grant`, `dangerous_automation.complete_trade_auth`, `dangerous_automation.accept_product_ack`는 제거되었습니다 — 모두 실제로 어떤 동작도 제어하지 않던 dead toggle이었습니다. 구 config에 남아있어도 무시되며 `tossctl doctor`의 `legacy_config` 체크에서 감지됩니다.
+> `v0.4.3`에서 `trading.grant`, `dangerous_automation.complete_trade_auth`, `dangerous_automation.accept_product_ack`는 제거되었습니다 — 모두 실제로 어떤 동작도 제어하지 않던 dead toggle이었습니다. `v0.5.0`에서는 중복이던 TTL grant 레이어(`internal/permissions`)도 제거되었습니다 (`allow_live_order_actions` 마스터 스위치가 같은 보호를 제공). 구 config에 남아있어도 무시되며, 일반 명령 실행 시 stderr 경고 1줄(24h backoff)로 안내되고 `tossctl doctor`의 `legacy_config` 체크에서도 감지됩니다.
 
 ## Local State
 
