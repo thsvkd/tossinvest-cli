@@ -33,6 +33,20 @@ func TestWriteStockWarningsEmpty(t *testing.T) {
 	}
 }
 
+func TestWriteAISignalsTable(t *testing.T) {
+	var buf bytes.Buffer
+	sg := domain.AISignals{Label: "AI 시그널", Signals: []domain.AISignal{
+		{AssetName: "아마존", Title: "AI 인프라 투자 부담", Keyword: "AI 투자 부담", Fluctuation: "1.7% 하락"},
+	}}
+	if err := WriteAISignals(&buf, FormatTable, sg); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "아마존") || !strings.Contains(out, "AI 인프라 투자 부담") {
+		t.Errorf("expected signal row: %q", out)
+	}
+}
+
 func TestWriteTradingFlowsTableSigned(t *testing.T) {
 	var buf bytes.Buffer
 	tf := domain.TradingFlows{

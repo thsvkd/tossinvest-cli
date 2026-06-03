@@ -205,6 +205,46 @@ func (c *Client) GetExchangeRates(ctx context.Context) (domain.ExchangeRates, er
 	return out, nil
 }
 
+type aiSignalRaw struct {
+	Label string `json:"label"`
+	Data  []struct {
+		AssetType         string `json:"assetType"`
+		AssetName         string `json:"assetName"`
+		Title             string `json:"title"`
+		Keyword           string `json:"keyword"`
+		FluctuationPhrase string `json:"fluctuationPhrase"`
+		Stocks            []struct {
+			StockCode string `json:"stockCode"`
+		} `json:"stocks"`
+	} `json:"data"`
+}
+
+// GetAISignals returns Toss's AI market signal feed (토스증권 AI 시그널).
+// 공식 API 에 없는 web 전용 표면.
+func (c *Client) GetAISignals(ctx context.Context) (domain.AISignals, error) {
+	var envelope quoteEnvelope[aiSignalRaw]
+	endpoint := c.infoBaseURL + "/api/v2/reasoning-contents/interest"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.AISignals{}, err
+	}
+	out := domain.AISignals{Label: envelope.Result.Label, FetchedAt: time.Now().UTC()}
+	out.Signals = make([]domain.AISignal, 0, len(envelope.Result.Data))
+	for _, d := range envelope.Result.Data {
+		sig := domain.AISignal{
+			AssetName:   d.AssetName,
+			AssetType:   d.AssetType,
+			Title:       d.Title,
+			Keyword:     d.Keyword,
+			Fluctuation: d.FluctuationPhrase,
+		}
+		if len(d.Stocks) > 0 {
+			sig.StockCode = d.Stocks[0].StockCode
+		}
+		out.Signals = append(out.Signals, sig)
+	}
+	return out, nil
+}
+
 type tradingTrendRaw struct {
 	Body []struct {
 		BaseDate                string  `json:"baseDate"`

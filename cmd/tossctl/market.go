@@ -77,6 +77,22 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	}
 	rankingCmd.Flags().IntVar(&rankingSize, "size", 20, "number of ranked stocks")
 
-	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd)
+	signalsCmd := &cobra.Command{
+		Use:   "signals",
+		Short: "Toss AI market signals (토스증권 AI 시그널)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			sg, err := app.client.GetAISignals(cmd.Context())
+			if err != nil {
+				return err
+			}
+			return output.WriteAISignals(cmd.OutOrStdout(), app.format, sg)
+		},
+	}
+
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd)
 	return cmd
 }

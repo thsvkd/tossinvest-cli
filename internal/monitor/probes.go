@@ -240,6 +240,17 @@ func Probes() []Probe {
 				return expectPath(body, "result.body", "array")
 			},
 		},
+		{
+			Name:   "ai-signals",
+			Method: "GET",
+			URL:    info + "/api/v2/reasoning-contents/interest",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.data", "array")
+			},
+		},
 	}
 }
 

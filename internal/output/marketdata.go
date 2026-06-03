@@ -202,6 +202,43 @@ func WriteExchangeRates(w io.Writer, format Format, er domain.ExchangeRates) err
 	}
 }
 
+func WriteAISignals(w io.Writer, format Format, sg domain.AISignals) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sg)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"asset_name", "title", "keyword", "fluctuation", "stock_code"}); err != nil {
+			return err
+		}
+		for _, s := range sg.Signals {
+			if err := cw.Write([]string{s.AssetName, s.Title, s.Keyword, s.Fluctuation, s.StockCode}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		label := sg.Label
+		if label == "" {
+			label = "AI 시그널"
+		}
+		if _, err := fmt.Fprintf(w, "%s\n", label); err != nil {
+			return err
+		}
+		headers := []string{"종목", "시그널", "키워드", "등락"}
+		rows := make([][]string, 0, len(sg.Signals))
+		for _, s := range sg.Signals {
+			rows = append(rows, []string{s.AssetName, s.Title, s.Keyword, s.Fluctuation})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
 func WriteTradingFlows(w io.Writer, format Format, tf domain.TradingFlows) error {
 	switch format {
 	case FormatJSON:

@@ -10,7 +10,8 @@ All notable changes to this project will be documented in this file.
 - **`market index`** — 주요 시장 지수 (코스피·코스닥·나스닥·S&P500·필라델피아 반도체·VIX·다우 등) 현재가·변동·변동률. **공식 API 에 없음.**
 - **`market ranking --size N`** — 실시간 인기 종목 순위. 공식 API 에 없는 discovery 표면.
 - **`quote flows <symbol>`** — 수급 (개인·외국인·기관 일별 순매수, KR 전용). 공식 API 에 없는 프리미엄 표면. US 종목은 친절한 거부.
-- `monitor api` 에 3개 public probe 추가 (market-index, stock-ranking, trading-flows).
+- **`market signals`** — 토스증권 AI 시그널 (종목별 AI 분석 시그널·키워드·등락). 공식 API 에 없고 repo hero(AI 연결)와 정합하는 차별 표면.
+- `monitor api` 에 4개 public probe 추가 (market-index, stock-ranking, trading-flows, ai-signals).
 
 ### Changed
 - README "지원 범위" 를 **`공식 API` / `tossctl` 칼럼 ✓/✗/△ 매트릭스**로 재편 (조회 + 거래 모두). 토스 공식 Open API 가 사전 신청 단계(미출시)임을 명시. 공식 API 가 ✗ 인 행 = tossctl 고유 범위(해자): 수급·지수·인기순위·watchlist·ledger·overview·CSV·push·멀티시세·소수점주문·로컬 권한게이트·dry-run preview 등. 앞으로 표면 추가 시 이 매트릭스 유지.

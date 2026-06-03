@@ -136,6 +136,7 @@ Waiting for approval in the Toss app on your phone...
 | **수급 (투자자별 순매수)** | `quote flows <symbol>` (개인·외국인·기관, KR) | ❌ | ✅ |
 | **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ❌ | ✅ |
 | **실시간 인기 순위** | `market ranking --size N` | ❌ | ✅ |
+| **토스 AI 시그널** | `market signals` (종목별 AI 시그널·키워드·등락) | ❌ | ✅ |
 | 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
 | **관심 종목** | `watchlist list` | ❌ | ✅ |
 | **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ❌ | ✅ |

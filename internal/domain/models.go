@@ -147,6 +147,23 @@ type ExchangeRates struct {
 	FetchedAt time.Time      `json:"fetched_at"`
 }
 
+// AISignal is one entry of Toss's AI market signal feed (토스증권 AI 시그널).
+// 공식 API 에 없는 web 전용 표면 — hero(AI 연결)와 정합.
+type AISignal struct {
+	AssetName   string `json:"asset_name"`
+	AssetType   string `json:"asset_type,omitempty"`
+	Title       string `json:"title"`
+	Keyword     string `json:"keyword,omitempty"`
+	Fluctuation string `json:"fluctuation,omitempty"`
+	StockCode   string `json:"stock_code,omitempty"`
+}
+
+type AISignals struct {
+	Label     string     `json:"label,omitempty"`
+	Signals   []AISignal `json:"signals"`
+	FetchedAt time.Time  `json:"fetched_at"`
+}
+
 // TradingFlow is one day's investor-type net flow (수급 — 개인·외국인·기관 순매수).
 // KRX 전용 · 공식 API 에 없는 web 전용 표면.
 type TradingFlow struct {
