@@ -76,9 +76,28 @@ This file is the source of truth for endpoint discovery. It should grow before t
 
 | Status | Method | Host | Path | Purpose | Observed shape | CLI mapping | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v1/rankings/realtime/stock?size=10` | realtime ranking list | object under `.result` | none | useful for future discovery commands |
+| `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v1/rankings/realtime/stock?size=N` | realtime popularity ranking | `.result.data[]` (stock-info 객체, 순위순) | `market ranking` | 공식 API 에 없음. 캡처 2026-06-03 |
 | `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v1/stock-infos?codes=...` | bulk metadata lookup | object under `.result` | future watchlist | useful companion to bulk price lookup |
-| `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v2/screener/screen/search/modal` | screener modal data | object under `.result` | none | outside first release scope |
+| `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v1/stock-infos/trade/trend/trading-trend?productCode=&size=N` | investor net flows (수급) | `.result.body[]` with `baseDate`, `net{Individuals,Foreigner,Institution}BuyVolume` | `quote flows` | KRX 전용. 공식 API 에 없음. 캡처 2026-06-03 |
+| `public` | `GET` | `wts-cert-api.tossinvest.com` | `/api/v1/dashboard/wts/overview/indicator/index` | market indices (지수) | `.result.majorIndicatorInfos[]` with `displayName`, `nation`, `price.{latestPrice,basePrice}` | `market index` | 코스피·나스닥·VIX 등. 공식 API 에 없음. 캡처 2026-06-03 |
+| `public` | `GET` | `wts-info-api.tossinvest.com` | `/api/v2/reasoning-contents/interest` | Toss AI signals (AI 시그널) | `.result.{label,data[]}` with `assetName`, `title`, `keyword`, `fluctuationPhrase` | `market signals` | hero 정합. 공식 API 에 없음. 캡처 2026-06-03 |
+| `public` | `GET` | `wts-cert-api.tossinvest.com` | `/api/v2/screener/presets/common?useCustom=true` | screener presets (조건검색 프리셋) | `.result[]` with `id`, `name`, `description`, `filters` | `market screener` | 캡처 2026-06-03 |
+| `public` | `POST` | `wts-cert-api.tossinvest.com` | `/api/v2/screener/screen` | run screen | body `{pagingParam,filters,nation}` → `.result.{stocks[],totalCount}` | `market screener [id]`/`--filter` | filters 는 preset 또는 raw passthrough. body 는 fetch 후킹 리버싱. 캡처 2026-06-03 |
+
+## Watchlist Management (mutation — new-watchlists)
+
+토스 web 의 `channel=chrome`(실제 Chrome) 캡처 + 자기계좌 경험적 검증으로 리버싱.
+모든 쓰기에 `X-XSRF-TOKEN`(= XSRF-TOKEN 쿠키값) 필요 — `applySession` 이 자동 적용.
+비금융·되돌림 가능이라 거래 권한 게이트와 별개 (가벼운 scope).
+
+| Status | Method | Host | Path | Purpose | Body | CLI mapping |
+| --- | --- | --- | --- | --- | --- | --- |
+| `auth` | `GET` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists?includePrice=&lazyLoad=` | 폴더+종목 목록 | — | `watchlist groups` |
+| `auth` | `POST` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists/groups` | 폴더 생성 | `{"name":"..."}` → `.result.{id,name,...}` | `watchlist group create` |
+| `auth` | `PATCH` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists/groups/{id}` | 폴더 리네임 | `{"name":"..."}` | `watchlist group rename` |
+| `auth` | `DELETE` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists/groups/{id}` | 폴더 삭제 | — | `watchlist group delete` |
+| `auth` | `POST` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists/items` | 종목 추가 | `{"watchlistId":id,"items":[{"code":"A005930","itemType":"STOCK"}]}` | `watchlist add` |
+| `auth` | `POST` | `wts-cert-api.tossinvest.com` | `/api/v1/new-watchlists/items/remove` | 종목 제거 | 위와 동일 | `watchlist remove` |
 
 ## Account, Portfolio, Orders, Watchlist
 
@@ -119,7 +138,7 @@ The following classes stay blocked:
 
 - any order placement endpoint
 - any order modification or cancelation endpoint
-- any watchlist mutation endpoint unless scope changes
+- ~~any watchlist mutation endpoint~~ — **scope 확장됨 (2026-06-04)**: 비금융·되돌림 가능이라 지원 ("Watchlist Management" 섹션 참조). 거래(금융) mutation 은 여전히 게이트 뒤.
 - telemetry endpoints
 - comment posting or social actions
 

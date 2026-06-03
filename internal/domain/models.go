@@ -260,6 +260,16 @@ type TradingHours struct {
 	FetchedAt time.Time     `json:"fetched_at"`
 }
 
+// WatchlistGroup is a watchlist folder (관심종목 폴더) with its items.
+// 공식 API 에 없는 web 전용 표면 — 읽기 + 쓰기(폴더 CRUD, 종목 add/remove).
+type WatchlistGroup struct {
+	ID        int64           `json:"id"`
+	Name      string          `json:"name"`
+	Type      string          `json:"type,omitempty"` // USER_MADE 등
+	ItemCount int             `json:"item_count"`
+	Items     []WatchlistItem `json:"items,omitempty"`
+}
+
 type Transaction struct {
 	Type             string          `json:"type"`
 	Category         string          `json:"category"`

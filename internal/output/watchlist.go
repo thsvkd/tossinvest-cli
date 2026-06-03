@@ -52,3 +52,35 @@ func WriteWatchlist(w io.Writer, format Format, items []domain.WatchlistItem) er
 		return fmt.Errorf("unsupported output format: %s", format)
 	}
 }
+
+func WriteWatchlistGroups(w io.Writer, format Format, groups []domain.WatchlistGroup) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(groups)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"id", "name", "type", "item_count"}); err != nil {
+			return err
+		}
+		for _, g := range groups {
+			if err := cw.Write([]string{
+				fmt.Sprintf("%d", g.ID), g.Name, g.Type, fmt.Sprintf("%d", g.ItemCount),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		headers := []string{"ID", "폴더", "종목수", "구분"}
+		rows := make([][]string, 0, len(groups))
+		for _, g := range groups {
+			rows = append(rows, []string{fmt.Sprintf("%d", g.ID), g.Name, fmt.Sprintf("%d", g.ItemCount), g.Type})
+		}
+		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}

@@ -262,6 +262,17 @@ func Probes() []Probe {
 				return expectPath(body, "result", "array")
 			},
 		},
+		{
+			Name:   "watchlist-groups",
+			Method: "GET",
+			URL:    cert + "/api/v1/new-watchlists?includePrice=false&lazyLoad=true",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.watchlists", "array")
+			},
+		},
 	}
 }
 
