@@ -2,17 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.21] - 2026-06-04
+## [0.5.0] - 2026-06-04
 
-### Changed
-- **거래 안전 모델 간소화** — 중복이던 TTL grant 레이어 제거. `allow_live_order_actions` 마스터 스위치가 동일한 "정말 실거래할 것인가" 보호를 이미 하므로, 별도 `order permissions grant/status/revoke` 명령 + `trading-permission.json` 파일 + `internal/permissions` 패키지를 들어냄. 남은 게이트(per-action 토글 + 마스터 스위치 + `--execute` + `--dangerously-skip-permissions` + confirm token)로 충분히 안전. doctor/문서에서 permission 항목 정리.
-
-### Removed
-- `tossctl order permissions` (grant/status/revoke) 명령. TTL grant 는 `allow_live_order_actions` 와 중복이라 제거 — 거래 차단 강도는 동일하게 유지.
-
-## [0.4.20] - 2026-06-04
-
-토스 공식 Open API 에 없는 web 전용 표면(해자) 확장 + README 차별점 정리. (모아서 배포)
+공식 Open API 에 없는 web 전용 표면(해자) 대거 확장 + 첫 mutation 기능(관심종목 관리)
++ 거래 안전 모델 간소화. minor 버전 bump.
 
 ### Added
 - **`market index`** — 주요 시장 지수 (코스피·코스닥·나스닥·S&P500·필라델피아 반도체·VIX·다우 등) 현재가·변동·변동률. **공식 API 에 없음.**
@@ -24,10 +17,14 @@ All notable changes to this project will be documented in this file.
 - `monitor api` 에 public/auth probe 추가 (market-index, stock-ranking, trading-flows, ai-signals, screener-presets, watchlist-groups).
 
 ### Changed
-- README "지원 범위" 를 **`공식 API` / `tossctl` 칼럼 ✓/✗/△ 매트릭스**로 재편 (조회 + 거래 모두). 토스 공식 Open API 가 사전 신청 단계(미출시)임을 명시. 공식 API 가 ✗ 인 행 = tossctl 고유 범위(해자): 수급·지수·인기순위·watchlist·ledger·overview·CSV·push·멀티시세·소수점주문·로컬 권한게이트·dry-run preview 등. 앞으로 표면 추가 시 이 매트릭스 유지.
+- README "지원 범위" 를 **`공식 API` / `tossctl` 칼럼 ✅/❌/🔸 매트릭스**로 재편 (조회 + 거래 모두). 토스 공식 Open API 가 사전 신청 단계(미출시)임을 명시. 공식 API 가 ❌ 인 행 = tossctl 고유 범위(해자): 수급·지수·인기순위·AI시그널·스크리너·watchlist 관리·ledger·overview·CSV·push·멀티시세·소수점주문·dry-run preview 등. 앞으로 표면 추가 시 이 매트릭스 유지.
+- **거래 안전 모델 간소화** — 중복이던 TTL grant 레이어 제거. `allow_live_order_actions` 마스터 스위치가 동일 보호를 이미 하므로, 남은 게이트(per-action 토글 + 마스터 스위치 + `--execute` + `--dangerously-skip-permissions` + confirm token)로 충분. 거래 차단 강도는 동일, 표면만 −500 라인.
+
+### Removed
+- `tossctl order permissions` (grant/status/revoke) 명령 + `internal/permissions` 패키지 + `trading-permission.json`. `allow_live_order_actions` 와 중복.
 
 ### Internal
-- `internal/client/marketdata.go` 에 `GetMarketIndices` / `GetStockRanking` / `GetTradingFlows` 추가. output formatter + 단위 테스트 (US 거부, signed/comma 포맷 포함).
+- `internal/client/marketdata.go` 에 `GetMarketIndices` / `GetStockRanking` / `GetTradingFlows` / `GetAISignals` / screener 메서드 추가. `internal/client/watchlist_manage.go` (mutation). output formatter + 단위 테스트 (US 거부, signed/comma, 계약 잠금 httptest).
 
 ## [0.4.19] - 2026-06-03
 
