@@ -153,7 +153,6 @@ func newAuthCmd(opts *rootOptions) *cobra.Command {
 					configStatus,
 					app.loginConfig,
 					app.authService,
-					app.permissionService,
 				).RunAuth(cmd.Context())
 				if err != nil {
 					return err

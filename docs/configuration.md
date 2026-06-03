@@ -57,7 +57,7 @@ tossctl config init
 - `trading.allow_live_order_actions` — 실계좌에 도달하는 주문 액션(`place`, `cancel`, `amend`) 자체를 허용. **마스터 킬스위치**로 위 경로 게이트가 켜져 있어도 이 값이 false면 broker에 닿지 않음
 - `trading.dangerous_automation.accept_fx_consent` — post-prepare FX confirmation branch를 자동 수락하고 같은 주문을 계속 진행하도록 허용. 현재는 `prepare` 성공 후 `needExchange > 0`인 미국주식 KRW 매수 경로에만 연결됨
 
-즉, 각 액션은 config에서 먼저 열려 있어야 하고, 그 다음에도 기존 실행 게이트를 통과해야 합니다. **`order permissions grant`는 별도 토글 없이 `place`/`cancel`/`amend` 중 하나라도 켜져 있으면 실행 가능합니다** (grant 자체는 TTL 부여만 담당).
+즉, 각 액션은 config에서 먼저 열려 있어야 하고, 그 다음에도 실행 게이트(--execute → --dangerously-skip-permissions → --confirm)를 통과해야 합니다.
 
 ## 실행 순서
 
@@ -65,7 +65,6 @@ tossctl config init
 
 1. `config.json`에서 해당 액션 허용
    - live mutation은 `trading.allow_live_order_actions=true`도 필요
-2. `tossctl order permissions grant`
 3. `--execute`
 4. `--dangerously-skip-permissions`
 5. `--confirm`
@@ -79,7 +78,6 @@ tossctl이 저장하는 모든 상태 파일과 디렉토리는 소유자 전용
 | `~/Library/Application Support/tossctl/` (macOS) / `~/.config/tossctl/` (Linux) | `0o700` | 디렉토리 자체 (다른 로컬 사용자의 목록 조회 차단) |
 | `session.json` | `0o600` | 전체 쿠키·localStorage 포함 세션 |
 | `config.json` | `0o600` | 거래 허용 플래그 |
-| `trading-permission.json` | `0o600` | TTL grant |
 | `trading-lineage.json` | `0o600` | order ref 추적 |
 | `~/Library/Caches/tossctl/auth/playwright-storage-state.json` (로그인 중간 산출물) | `0o600` | 로그인 성공 직후 자동 삭제 (v0.4.1+) |
 | `--qr-output <path>` PNG (headless 로그인) | `0o600` | `fchmod`로 기존 파일도 강제 |

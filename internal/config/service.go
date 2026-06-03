@@ -60,7 +60,7 @@ func (d DangerousAutomation) EnabledActions() []string {
 }
 
 // AnyMutationEnabled reports whether any order-mutation toggle is on.
-// Used to decide whether commands like `order permissions grant` are useful
+// Used to decide whether trading-mutation commands are useful
 // (vs. being a no-op because no action gate is open).
 func (t Trading) AnyMutationEnabled() bool {
 	return t.Place || t.Cancel || t.Amend

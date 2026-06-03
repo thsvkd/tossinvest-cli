@@ -3,13 +3,10 @@ package trading
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/config"
 	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
-	"github.com/junghoonkye/tossinvest-cli/internal/permissions"
 )
 
 type brokerStub struct {
@@ -55,13 +52,7 @@ func (b *brokerStub) AmendPendingOrder(_ context.Context, intent orderintent.Ame
 }
 
 func TestPlaceRequiresExecutionFlagsAndGrant(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		AllowLiveOrderActions: true,
 	}, nil)
@@ -101,14 +92,8 @@ func TestPlaceRequiresExecutionFlagsAndGrant(t *testing.T) {
 }
 
 func TestPlaceCallsBrokerForSupportedIntent(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		AllowLiveOrderActions: true,
 	}, broker)
@@ -142,14 +127,8 @@ func TestPlaceCallsBrokerForSupportedIntent(t *testing.T) {
 }
 
 func TestCancelExecutesBrokerAndReconciles(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Cancel:                true,
 		AllowLiveOrderActions: true,
 	}, broker)
@@ -179,14 +158,8 @@ func TestCancelExecutesBrokerAndReconciles(t *testing.T) {
 }
 
 func TestAmendCallsBrokerAfterGate(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Amend:                 true,
 		AllowLiveOrderActions: true,
 	}, broker)
@@ -213,13 +186,7 @@ func TestAmendCallsBrokerAfterGate(t *testing.T) {
 }
 
 func TestPlaceFailsWhenActionDisabledInConfig(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		AllowLiveOrderActions: true,
 	}, nil)
 	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
@@ -265,14 +232,8 @@ func TestPlaceIntentSupportedAcceptsSell(t *testing.T) {
 }
 
 func TestSellPlaceFailsWhenSellDisabledInConfig(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		Sell:                  false,
 		AllowLiveOrderActions: true,
@@ -305,14 +266,8 @@ func TestSellPlaceFailsWhenSellDisabledInConfig(t *testing.T) {
 }
 
 func TestSellPlaceCallsBrokerWhenSellEnabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		Sell:                  true,
 		AllowLiveOrderActions: true,
@@ -347,10 +302,8 @@ func TestSellPlaceCallsBrokerWhenSellEnabled(t *testing.T) {
 }
 
 func TestPreviewPlaceSellDisabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
 
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		Sell:                  false,
 		AllowLiveOrderActions: true,
@@ -385,10 +338,8 @@ func TestPreviewPlaceSellDisabled(t *testing.T) {
 }
 
 func TestPreviewPlaceSellEnabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
 
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		Sell:                  true,
 		AllowLiveOrderActions: true,
@@ -451,10 +402,7 @@ func TestPlaceIntentSupportedRejectsFractionalKR(t *testing.T) {
 }
 
 func TestFractionalPlaceFailsWhenDisabled(t *testing.T) {
-	dir := t.TempDir()
-	ps := permissions.NewService(filepath.Join(dir, "p.json"))
-	ps.Grant(context.Background(), 5*time.Minute)
-	svc := NewService(ps, config.Trading{Place: true, Fractional: false, AllowLiveOrderActions: true}, nil)
+	svc := NewService(config.Trading{Place: true, Fractional: false, AllowLiveOrderActions: true}, nil)
 	intent := orderintent.PlaceIntent{Symbol: "TSLL", Market: "us", Side: "buy", OrderType: "market", Amount: 18000, CurrencyMode: "KRW", Fractional: true}
 	_, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, DangerouslySkipPermissions: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
 	var disabled *DisabledActionError
@@ -464,11 +412,8 @@ func TestFractionalPlaceFailsWhenDisabled(t *testing.T) {
 }
 
 func TestFractionalPlaceCallsBroker(t *testing.T) {
-	dir := t.TempDir()
-	ps := permissions.NewService(filepath.Join(dir, "p.json"))
-	ps.Grant(context.Background(), 5*time.Minute)
 	broker := &brokerStub{}
-	svc := NewService(ps, config.Trading{Place: true, Fractional: true, AllowLiveOrderActions: true}, broker)
+	svc := NewService(config.Trading{Place: true, Fractional: true, AllowLiveOrderActions: true}, broker)
 	intent := orderintent.PlaceIntent{Symbol: "TSLL", Market: "us", Side: "buy", OrderType: "market", Amount: 18000, CurrencyMode: "KRW", Fractional: true}
 	result, err := svc.Place(context.Background(), intent, ExecuteOptions{Execute: true, DangerouslySkipPermissions: true, Confirm: svc.PreviewPlace(intent).ConfirmToken})
 	if err != nil {
@@ -483,9 +428,7 @@ func TestFractionalPlaceCallsBroker(t *testing.T) {
 }
 
 func TestPreviewPlaceFractionalDisabled(t *testing.T) {
-	dir := t.TempDir()
-	ps := permissions.NewService(filepath.Join(dir, "p.json"))
-	svc := NewService(ps, config.Trading{Place: true, Fractional: false, AllowLiveOrderActions: true}, nil)
+	svc := NewService(config.Trading{Place: true, Fractional: false, AllowLiveOrderActions: true}, nil)
 	intent := orderintent.PlaceIntent{Symbol: "TSLL", Market: "us", Side: "buy", OrderType: "market", Amount: 18000, CurrencyMode: "KRW", Fractional: true}
 	preview := svc.PreviewPlace(intent)
 	if preview.MutationReady {
@@ -512,14 +455,8 @@ func TestPlaceIntentSupportedAcceptsKR(t *testing.T) {
 }
 
 func TestKRPlaceFailsWhenKRDisabledInConfig(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		KR:                    false,
 		AllowLiveOrderActions: true,
@@ -552,14 +489,8 @@ func TestKRPlaceFailsWhenKRDisabledInConfig(t *testing.T) {
 }
 
 func TestKRPlaceCallsBrokerWhenKREnabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
 	broker := &brokerStub{}
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		KR:                    true,
 		AllowLiveOrderActions: true,
@@ -594,12 +525,10 @@ func TestKRPlaceCallsBrokerWhenKREnabled(t *testing.T) {
 }
 
 func TestPlacePolicyChecksBeforeGuard(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
 	// NO grant — guard() would fail with ErrExecuteRequired etc.
 	// But policy check should catch it first.
 
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		KR:                    false,
 		AllowLiveOrderActions: true,
@@ -627,10 +556,8 @@ func TestPlacePolicyChecksBeforeGuard(t *testing.T) {
 }
 
 func TestPreviewPlaceKRDisabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
 
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		KR:                    false,
 		AllowLiveOrderActions: true,
@@ -665,10 +592,8 @@ func TestPreviewPlaceKRDisabled(t *testing.T) {
 }
 
 func TestPreviewPlaceKREnabled(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
 
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place:                 true,
 		KR:                    true,
 		AllowLiveOrderActions: true,
@@ -696,13 +621,7 @@ func TestPreviewPlaceKREnabled(t *testing.T) {
 }
 
 func TestPlaceFailsWhenDangerousExecuteIsDisabledInConfig(t *testing.T) {
-	dir := t.TempDir()
-	permissionService := permissions.NewService(filepath.Join(dir, "permission.json"))
-	if _, err := permissionService.Grant(context.Background(), 5*time.Minute); err != nil {
-		t.Fatalf("Grant returned error: %v", err)
-	}
-
-	service := NewService(permissionService, config.Trading{
+	service := NewService(config.Trading{
 		Place: true,
 	}, nil)
 	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{

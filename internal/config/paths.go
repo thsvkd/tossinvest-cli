@@ -12,7 +12,6 @@ type Paths struct {
 	CacheDir       string
 	ConfigFile     string
 	SessionFile    string
-	PermissionFile string
 	LineageFile    string
 }
 
@@ -34,7 +33,6 @@ func DefaultPaths() (Paths, error) {
 		CacheDir:       filepath.Join(cacheRoot, AppName),
 		ConfigFile:     filepath.Join(configDir, "config.json"),
 		SessionFile:    filepath.Join(configDir, "session.json"),
-		PermissionFile: filepath.Join(configDir, "trading-permission.json"),
 		LineageFile:    filepath.Join(configDir, "trading-lineage.json"),
 	}, nil
 }

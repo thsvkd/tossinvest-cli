@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.21] - 2026-06-04
+
+### Changed
+- **거래 안전 모델 간소화** — 중복이던 TTL grant 레이어 제거. `allow_live_order_actions` 마스터 스위치가 동일한 "정말 실거래할 것인가" 보호를 이미 하므로, 별도 `order permissions grant/status/revoke` 명령 + `trading-permission.json` 파일 + `internal/permissions` 패키지를 들어냄. 남은 게이트(per-action 토글 + 마스터 스위치 + `--execute` + `--dangerously-skip-permissions` + confirm token)로 충분히 안전. doctor/문서에서 permission 항목 정리.
+
+### Removed
+- `tossctl order permissions` (grant/status/revoke) 명령. TTL grant 는 `allow_live_order_actions` 와 중복이라 제거 — 거래 차단 강도는 동일하게 유지.
+
 ## [0.4.20] - 2026-06-04
 
 토스 공식 Open API 에 없는 web 전용 표면(해자) 확장 + README 차별점 정리. (모아서 배포)

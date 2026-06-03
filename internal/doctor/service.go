@@ -13,7 +13,6 @@ import (
 	"github.com/junghoonkye/tossinvest-cli/internal/auth"
 	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
 	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/permissions"
 	"github.com/junghoonkye/tossinvest-cli/internal/version"
 )
 
@@ -47,7 +46,6 @@ type Report struct {
 	Arch       string                      `json:"arch"`
 	Paths      config.Paths                `json:"paths"`
 	Config     config.Status               `json:"config"`
-	Permission permissions.Status          `json:"permission"`
 	Auth       AuthReport                  `json:"auth"`
 	Checks     []Check                     `json:"checks"`
 	Diagnostics *Diagnostics               `json:"diagnostics,omitempty"`
@@ -77,10 +75,6 @@ type authStatusReader interface {
 	Status(context.Context) (auth.Status, error)
 }
 
-type permissionStatusReader interface {
-	Status(context.Context) (permissions.Status, error)
-}
-
 type sessionProber interface {
 	Probe(context.Context) []tossclient.ProbeResult
 }
@@ -90,16 +84,14 @@ type Service struct {
 	configState config.Status
 	loginConfig auth.LoginConfig
 	authService authStatusReader
-	permService permissionStatusReader
 }
 
-func NewService(paths config.Paths, configState config.Status, loginConfig auth.LoginConfig, authService authStatusReader, permService permissionStatusReader) *Service {
+func NewService(paths config.Paths, configState config.Status, loginConfig auth.LoginConfig, authService authStatusReader) *Service {
 	return &Service{
 		paths:       paths,
 		configState: configState,
 		loginConfig: loginConfig,
 		authService: authService,
-		permService: permService,
 	}
 }
 
@@ -109,23 +101,16 @@ func (s *Service) Run(ctx context.Context) (Report, error) {
 		return Report{}, err
 	}
 
-	permissionStatus, err := s.permService.Status(ctx)
-	if err != nil {
-		return Report{}, err
-	}
-
 	checks := []Check{
 		checkPath("config_dir", s.paths.ConfigDir),
 		checkPath("cache_dir", s.paths.CacheDir),
 		checkFile("config_file", s.paths.ConfigFile),
 		checkFile("session_file", s.paths.SessionFile),
-		checkFile("permission_file", s.paths.PermissionFile),
 		checkFile("lineage_file", s.paths.LineageFile),
 		checkTradingConfig(s.configState),
 		checkLiveOrderActions(s.configState),
 		checkDangerousAutomation(s.configState),
 		checkLegacyConfig(s.configState),
-		checkPermission(permissionStatus),
 		{
 			Name:    "trading_scope",
 			Status:  CheckInfo,
@@ -141,7 +126,6 @@ func (s *Service) Run(ctx context.Context) (Report, error) {
 		Arch:       runtime.GOARCH,
 		Paths:      s.paths,
 		Config:     s.configState,
-		Permission: permissionStatus,
 		Auth:       authReport,
 		Checks:     checks,
 	}, nil
@@ -198,11 +182,9 @@ func redactReport(r *Report) {
 	r.Paths.CacheDir = redact(r.Paths.CacheDir)
 	r.Paths.ConfigFile = redact(r.Paths.ConfigFile)
 	r.Paths.SessionFile = redact(r.Paths.SessionFile)
-	r.Paths.PermissionFile = redact(r.Paths.PermissionFile)
 	r.Paths.LineageFile = redact(r.Paths.LineageFile)
 
 	r.Config.ConfigFile = redact(r.Config.ConfigFile)
-	r.Permission.PermissionFile = redact(r.Permission.PermissionFile)
 
 	r.Auth.PythonBinary = redact(r.Auth.PythonBinary)
 	r.Auth.HelperDir = redact(r.Auth.HelperDir)
@@ -238,7 +220,6 @@ func (s *Service) checkFileModes() []FileModeCheck {
 	files := []string{
 		s.paths.ConfigFile,
 		s.paths.SessionFile,
-		s.paths.PermissionFile,
 		s.paths.LineageFile,
 	}
 
@@ -477,17 +458,6 @@ func checkSession(status auth.Status) Check {
 	}
 }
 
-func checkPermission(status permissions.Status) Check {
-	switch {
-	case status.Active:
-		return Check{Name: "trading_permission", Status: CheckOK, Summary: "temporary trading permission is active"}
-	case status.Expired:
-		return Check{Name: "trading_permission", Status: CheckInfo, Summary: "temporary trading permission has expired"}
-	default:
-		return Check{Name: "trading_permission", Status: CheckInfo, Summary: "no active trading permission grant"}
-	}
-}
-
 func checkTradingConfig(status config.Status) Check {
 	if !status.Exists {
 		return Check{
@@ -530,7 +500,7 @@ func checkLiveOrderActions(status config.Status) Check {
 		Name:    "live_order_actions",
 		Status:  CheckWarn,
 		Summary: "real account-changing order actions are enabled",
-		Detail:  "Live `place`, `cancel`, and `amend` can execute after the remaining permission and confirmation gates pass.",
+		Detail:  "Live `place`, `cancel`, and `amend` can execute after --execute + confirm token gates pass.",
 	}
 }
 

@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/domain"
 	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
@@ -44,7 +42,7 @@ func newOrderCmd(opts *rootOptions) *cobra.Command {
 		Use:   "order",
 		Short: "Preview, inspect, and manage trading actions",
 		Long: "Trading commands are intentionally separate from read-only commands and " +
-			"default to a local preview and permission gate before any future live mutation support.",
+			"default to a local preview + explicit execute/confirm gates before any live mutation.",
 	}
 
 	cmd.AddCommand(
@@ -53,7 +51,6 @@ func newOrderCmd(opts *rootOptions) *cobra.Command {
 		newOrderPlaceCmd(opts),
 		newOrderCancelCmd(opts),
 		newOrderAmendCmd(opts),
-		newOrderPermissionsCmd(opts),
 	)
 
 	return cmd
@@ -283,92 +280,6 @@ func newOrderAmendCmd(opts *rootOptions) *cobra.Command {
 		panic(err)
 	}
 	bindExecuteFlags(cmd, exec)
-	return cmd
-}
-
-func newOrderPermissionsCmd(opts *rootOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "permissions",
-		Short: "Manage temporary trading execution permissions",
-	}
-
-	var ttlSeconds int
-	grantCmd := &cobra.Command{
-		Use:   "grant",
-		Short: "Grant a short-lived trading permission",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			app, err := newAppContext(opts)
-			if err != nil {
-				return err
-			}
-			if ttlSeconds <= 0 {
-				return fmt.Errorf("ttl must be greater than zero seconds")
-			}
-			if err := app.tradingService.GrantEnabled(); err != nil {
-				return userFacingTradingError(app.paths, err)
-			}
-
-			status, err := app.permissionService.Grant(cmd.Context(), time.Duration(ttlSeconds)*time.Second)
-			if err != nil {
-				return userFacingTradingError(app.paths, err)
-			}
-
-			return output.WritePermissionStatus(cmd.OutOrStdout(), app.format, status)
-		},
-	}
-	grantCmd.Flags().IntVar(&ttlSeconds, "ttl", 300, "Permission TTL in seconds")
-
-	statusCmd := &cobra.Command{
-		Use:   "status",
-		Short: "Inspect the current trading permission state",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			app, err := newAppContext(opts)
-			if err != nil {
-				return err
-			}
-
-			status, err := app.permissionService.Status(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			return output.WritePermissionStatus(cmd.OutOrStdout(), app.format, status)
-		},
-	}
-
-	revokeCmd := &cobra.Command{
-		Use:   "revoke",
-		Short: "Revoke any active trading permission",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			app, err := newAppContext(opts)
-			if err != nil {
-				return err
-			}
-
-			cleared, err := app.permissionService.Revoke(cmd.Context())
-			if err != nil {
-				return err
-			}
-			if app.format == output.FormatJSON {
-				encoder := json.NewEncoder(cmd.OutOrStdout())
-				encoder.SetIndent("", "  ")
-				return encoder.Encode(map[string]any{
-					"active":          false,
-					"expired":         false,
-					"permission_file": app.paths.PermissionFile,
-					"cleared":         cleared,
-				})
-			}
-			if cleared {
-				_, err = fmt.Fprintf(cmd.OutOrStdout(), "Revoked trading permission: %s\n", app.paths.PermissionFile)
-				return err
-			}
-			_, err = fmt.Fprintf(cmd.OutOrStdout(), "No active trading permission found at: %s\n", app.paths.PermissionFile)
-			return err
-		},
-	}
-
-	cmd.AddCommand(grantCmd, statusCmd, revokeCmd)
 	return cmd
 }
 

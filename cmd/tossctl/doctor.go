@@ -34,7 +34,6 @@ can be pasted into bug reports without leaking the local username.`,
 				configStatus,
 				app.loginConfig,
 				app.authService,
-				app.permissionService,
 			)
 
 			if reportMode {

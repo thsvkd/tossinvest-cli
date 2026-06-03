@@ -7,7 +7,6 @@ import (
 
 	"github.com/junghoonkye/tossinvest-cli/internal/config"
 	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
-	"github.com/junghoonkye/tossinvest-cli/internal/permissions"
 )
 
 type Broker interface {
@@ -33,16 +32,14 @@ type ExecuteOptions struct {
 }
 
 type Service struct {
-	permissions *permissions.Service
-	policy      config.Trading
-	broker      Broker
+	policy config.Trading
+	broker Broker
 }
 
-func NewService(permissionService *permissions.Service, policy config.Trading, broker Broker) *Service {
+func NewService(policy config.Trading, broker Broker) *Service {
 	return &Service{
-		permissions: permissionService,
-		policy:      policy,
-		broker:      broker,
+		policy: policy,
+		broker: broker,
 	}
 }
 
@@ -184,17 +181,6 @@ func (s *Service) Amend(ctx context.Context, intent orderintent.AmendIntent, opt
 	return s.broker.AmendPendingOrder(ctx, intent)
 }
 
-// GrantEnabled reports whether it is meaningful for the user to run
-// `tossctl order permissions grant`. A grant only has effect if at least one
-// mutation action is allowed by config; granting a TTL when no action gate
-// is open is a UX dead-end.
-func (s *Service) GrantEnabled() error {
-	if s.policy.Place || s.policy.Cancel || s.policy.Amend {
-		return nil
-	}
-	return &DisabledActionError{Action: "grant (no mutation toggles enabled)"}
-}
-
 func (s *Service) guard(ctx context.Context, action Action, preview Preview, opts ExecuteOptions) error {
 	if err := s.requireActionEnabled(action); err != nil {
 		return err
@@ -207,9 +193,6 @@ func (s *Service) guard(ctx context.Context, action Action, preview Preview, opt
 	}
 	if !opts.DangerouslySkipPermissions {
 		return fmt.Errorf("%w; explicit danger acknowledgement is required", ErrDangerousFlagRequired)
-	}
-	if err := s.permissions.Require(ctx); err != nil {
-		return err
 	}
 	if subtle.ConstantTimeCompare([]byte(opts.Confirm), []byte(preview.ConfirmToken)) != 1 {
 		return ErrConfirmMismatch

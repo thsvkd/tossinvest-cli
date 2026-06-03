@@ -27,7 +27,7 @@
   - same-day pending `cancel`
   - `amend` wiring 존재, 추가 live 검증 필요
 
-거래는 기본적으로 꺼져 있습니다. 사용자가 `config.json`에서 기능별로 직접 열고, 그 다음에도 permission grant와 explicit flags를 통과해야만 mutation이 실행됩니다.
+거래는 기본적으로 꺼져 있습니다. 사용자가 `config.json`에서 기능별로 직접 열고, 그 다음에도 explicit flags(--execute / --dangerously-skip-permissions / --confirm)를 통과해야만 mutation이 실행됩니다.
 
 ## 설계 원칙
 
@@ -73,7 +73,7 @@ Person(agent, "Agent", "LLM 또는 스크립트")
 System_Boundary(system, "tossinvest-cli") {
   Container(goCli, "tossctl", "Go + Cobra", "메인 CLI 바이너리")
   Container(authHelper, "auth-helper", "Python + Playwright", "브라우저 로그인 보조 도구")
-  ContainerDb(localFiles, "Local State Files", "JSON files", "config.json, session.json, trading-permission.json")
+  ContainerDb(localFiles, "Local State Files", "JSON files", "config.json, session.json")
   Container(docs, "Tracked Docs + Fixtures", "Markdown + JSON", "reverse engineering, trading notes, sanitized fixtures")
 }
 
@@ -106,7 +106,6 @@ Container_Boundary(core, "Application Core") {
   Component(clientSvc, "internal/client", "HTTP client", "Calls Toss web APIs and parses responses")
   Component(tradingSvc, "internal/trading", "Trading service", "Preview, gate, mutation orchestration, reconciliation")
   Component(intentSvc, "internal/orderintent", "Intent normalization", "Canonical order inputs and confirm tokens")
-  Component(permissionSvc, "internal/permissions", "Grant service", "Short-lived local trading grant")
   Component(sessionSvc, "internal/session", "Session store", "Persists imported browser session")
   Component(outputSvc, "internal/output", "Renderers", "Table / JSON / CSV output")
 }
@@ -117,7 +116,6 @@ Rel(commands, doctorSvc, "Runs doctor")
 Rel(commands, clientSvc, "Executes read-only commands")
 Rel(commands, tradingSvc, "Executes preview/place/cancel/amend")
 Rel(tradingSvc, intentSvc, "Uses canonical inputs")
-Rel(tradingSvc, permissionSvc, "Requires grant")
 Rel(tradingSvc, clientSvc, "Runs trading prepare/create/cancel/correct")
 Rel(authSvc, sessionSvc, "Stores session")
 Rel(clientSvc, sessionSvc, "Reads session")
@@ -175,7 +173,6 @@ sequenceDiagram
     actor Caller as User / Agent
     participant CLI as tossctl
     participant Config as config.json
-    participant Grant as trading-permission.json
     participant Trading as internal/trading
     participant Client as internal/client
     participant API as Toss trading APIs
@@ -207,7 +204,6 @@ sequenceDiagram
    - **스코프 선언:** `sell`, `kr`, `fractional` (유저 자가 제한)
    - **마스터 킬스위치:** `allow_live_order_actions` (실계좌 도달 차단)
    - **자동화:** `dangerous_automation.accept_fx_consent`
-2. `order permissions grant --ttl ...`
 3. `--execute`
 4. `--dangerously-skip-permissions`
 5. `--confirm <token>`
@@ -224,7 +220,6 @@ sequenceDiagram
 |---|---|---|
 | `config.json` | 거래 기능 허용 여부 | `0o600` |
 | `session.json` | 브라우저에서 가져온 세션 (쿠키 + storage) | `0o600` |
-| `trading-permission.json` | 짧은 TTL의 거래 grant | `0o600` |
 | `trading-lineage.json` | amend/cancel 후 order ref 추적 | `0o600` |
 
 상태 디렉토리 (`~/Library/Application Support/tossctl/` 등)는 `0o700` 으로 생성되어 같은 호스트의 다른 사용자가 목록 조회 못함. 기존 v0.4.0 이전에 생성된 디렉토리는 `0o755`로 남아있을 수 있으므로 `tossctl doctor --report` 의 `file_modes` 항목에서 확인 + 필요 시 `chmod 0700` 수동 정리.
@@ -242,7 +237,6 @@ sequenceDiagram
 | `internal/client` | Toss 웹 API 호출과 응답 파싱 |
 | `internal/trading` | preview, gate, mutation orchestration |
 | `internal/orderintent` | canonical input, confirm token |
-| `internal/permissions` | trading grant 관리 |
 | `internal/session` | session.json 저장 |
 | `internal/output` | table/json/csv 렌더링 |
 | `docs/reverse-engineering` | read-only discovery 문서 |

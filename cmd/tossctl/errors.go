@@ -12,7 +12,7 @@ import (
 	"github.com/junghoonkye/tossinvest-cli/internal/auth"
 	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
 	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/permissions"
+	
 	"github.com/junghoonkye/tossinvest-cli/internal/session"
 	"github.com/junghoonkye/tossinvest-cli/internal/trading"
 )
@@ -48,9 +48,6 @@ func userFacingCommandError(err error) error {
 	if errors.Is(err, auth.ErrExtensionNotConfigured) {
 		return fmt.Errorf("internal error: ExtensionRunner is not configured")
 	}
-	if errors.Is(err, permissions.ErrNoGrant) || errors.Is(err, permissions.ErrExpiredGrant) {
-		return fmt.Errorf("no active trading permission grant; run `tossctl order permissions grant --ttl 300`")
-	}
 	if errors.Is(err, trading.ErrExecuteRequired) {
 		return fmt.Errorf("live trading is blocked by default; rerun with `--execute` after reviewing `tossctl order preview`")
 	}
@@ -61,7 +58,7 @@ func userFacingCommandError(err error) error {
 		return fmt.Errorf("confirmation token mismatch; rerun `tossctl order preview` and pass the new `--confirm` token")
 	}
 	if errors.Is(err, trading.ErrLiveMutationPending) {
-		return fmt.Errorf("permission gate passed, but live trading mutation wiring is not implemented yet")
+		return fmt.Errorf("safety gates passed, but live trading mutation wiring is not implemented yet")
 	}
 	if errors.Is(err, trading.ErrPlaceUnsupported) {
 		return fmt.Errorf("live place supports `--market us|kr --type limit` and `--market us --fractional` (market order) in KRW")
