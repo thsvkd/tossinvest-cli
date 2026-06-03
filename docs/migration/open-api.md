@@ -44,7 +44,7 @@ document 입니다. issue [#31](https://github.com/JungHoonGhae/tossinvest-cli/i
 공식 API 출시 후: **"한국 증권사를 AI 에이전트에 통일된 인터페이스로 연결하는 CLI"** —
 백엔드 plugin 으로 추상화해서 official Toss / 비공식 Toss / (장기적으로) KIS · 키움 등을
 같은 명령어로 다룸. 사용자가 토큰을 받았든 안 받았든 `tossctl portfolio positions` 의
-표면은 동일.
+표면은 동일. 추상화 설계 상세는 [multi-broker.md](./multi-broker.md).
 
 ## Phase 별 계획 (잠정)
 
