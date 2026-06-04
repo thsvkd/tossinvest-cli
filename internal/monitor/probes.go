@@ -187,6 +187,17 @@ func Probes() []Probe {
 			},
 		},
 		{
+			Name:   "quote-orderbook",
+			Method: "GET",
+			URL:    info + "/api/v3/stock-prices/A005930/quotes",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.offerPrices", "array")
+			},
+		},
+		{
 			Name:   "quote-price-limits",
 			Method: "GET",
 			URL:    info + "/api/v2/stock-prices/A005930/upper-lower",

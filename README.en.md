@@ -88,14 +88,14 @@ Waiting for approval in the Toss app on your phone...
 
 ## Support Scope
 
-> **tossctl covers what the official Open API (upcoming) will cover — plus more.**
-> Investor flows, market indices, AI signals, screener, watchlist management, transaction ledger, real-time push, fractional orders, dry-run preview, and more — **10+ features that aren't on the official roadmap are tossctl-only.**
+> **tossctl covers 100% of the official Toss Open API's read & trade surface — and goes beyond.**
+> It maps to every endpoint in the official [Open API docs](https://developers.tossinvest.com/docs) (accounts, holdings, quotes, orderbook, ticks, candles, price limits, sellable quantity, commissions, orders, …), and adds investor flows, market indices, AI signals, screener, watchlist management, transaction ledger, real-time push, fractional orders, dry-run preview, and more — **12+ features that aren't in the official API are tossctl-only.**
 
 <p align="center">
   <img src="docs/assets/api-comparison.en.svg" alt="tossctl vs official Open API (upcoming) coverage — tossctl is a superset" width="900" />
 </p>
 
-The Toss Securities official Open API is currently **rolling out in stages to pre-applicants** and is a narrow, REST-only surface. The `Official API (planned)` column below reflects expected coverage at launch; today tossctl is the only way to use every feature. The `tossctl` column is what we provide.
+The Toss Securities official Open API is currently **rolling out in stages to pre-applicants** and is a narrow, REST-only surface (public docs: <https://developers.tossinvest.com/docs>). The `Official API (planned)` column below reflects that documented surface, and the `tossctl` column is what we provide. **Every ✅ in the official column is also ✅ for tossctl — we cover 100% of the official surface.**
 
 - ✅ supported · ❌ not supported · 🔸 partial
 - **`Official API (planned)` column = staged rollout to pre-applicants. ✅/🔸/❌ is expected coverage at launch** (subject to change across rollout phases).
@@ -111,6 +111,7 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | Multi-quote / live refresh | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ |
 | Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ |
 | Trade ticks | `quote trades <symbol> --count N` | ✅ | ✅ |
+| Orderbook (10-level bid/ask) | `quote orderbook <symbol>` | ✅ | ✅ |
 | Price limits | `quote limits <symbol>` (KR) | ✅ | ✅ |
 | Trade warnings | `quote warnings <symbol>` (liquidation · alert · VI …) | ✅ | ✅ |
 | Trading hours | `market hours` (today + next session when closed) | ✅ | ✅ |
@@ -120,6 +121,8 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | **Live popularity ranking** | `market ranking --size N` | ❌ | ✅ |
 | **Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ |
 | **Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ |
+| Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ |
+| Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ |
 | Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
 | **Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ |
 | **Transaction ledger** | `transactions list --market us\|kr` (trades · transfers · dividends) | ❌ | ✅ |
@@ -323,6 +326,7 @@ tossctl orders completed --market us|kr|all
 tossctl order show <id>
 tossctl quote get <symbol>
 tossctl quote batch <symbol> [symbol...]
+tossctl quote orderbook|sellable|commission <symbol>
 tossctl quote chart <symbol> --interval 5m
 tossctl quote trades|limits|warnings|flows <symbol>
 tossctl market hours|fx|index|ranking|signals
@@ -364,11 +368,11 @@ tossctl auth login|status|extend|doctor|logout
 ### API regression watch
 
 ```bash
-tossctl monitor api           # schema-probe 15 endpoints (parallel); exit 0 pass, 1 fail
+tossctl monitor api           # schema-probe 16 endpoints (parallel); exit 0 pass, 1 fail
 tossctl monitor api --quiet   # for cron
 ```
 
-Checks the response schema of 15 read-only endpoints in parallel, using your own session on your own machine — to catch Toss server-side body-contract changes (like [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29)) early. It only returns an exit code, so you compose alert channels (Discord / Slack / ntfy / macOS / email) on the right side of `|| <command>` in your cron line. Recipes: [`AGENTS.md`](AGENTS.md), setup guide: [`docs/operations.md`](docs/operations.md).
+Checks the response schema of 16 read-only endpoints in parallel, using your own session on your own machine — to catch Toss server-side body-contract changes (like [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29)) early. It only returns an exit code, so you compose alert channels (Discord / Slack / ntfy / macOS / email) on the right side of `|| <command>` in your cron line. Recipes: [`AGENTS.md`](AGENTS.md), setup guide: [`docs/operations.md`](docs/operations.md).
 
 ## Development
 

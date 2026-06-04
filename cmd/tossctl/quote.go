@@ -235,7 +235,58 @@ func newQuoteCmd(opts *rootOptions) *cobra.Command {
 	}
 	flowsCmd.Flags().IntVar(&flowsSize, "size", 20, "number of recent days")
 
-	cmd.AddCommand(getCmd, batchCmd, chartCmd, tradesCmd, limitsCmd, warningsCmd, flowsCmd)
+	orderbookCmd := &cobra.Command{
+		Use:   "orderbook <symbol or name>",
+		Short: "Bid/ask depth ladder (호가)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			ob, err := app.client.GetOrderBook(cmd.Context(), strings.Join(args, " "))
+			if err != nil {
+				return err
+			}
+			return output.WriteOrderBook(cmd.OutOrStdout(), app.format, ob)
+		},
+	}
+
+	sellableCmd := &cobra.Command{
+		Use:   "sellable <symbol or name>",
+		Short: "Sellable quantity for a held symbol (매도가능수량)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			sq, err := app.client.GetSellableQuantity(cmd.Context(), strings.Join(args, " "))
+			if err != nil {
+				return err
+			}
+			return output.WriteSellableQuantity(cmd.OutOrStdout(), app.format, sq)
+		},
+	}
+
+	commissionCmd := &cobra.Command{
+		Use:   "commission <symbol or name>",
+		Short: "Commission and tax rate (수수료·거래세율)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			c, err := app.client.GetCommission(cmd.Context(), strings.Join(args, " "))
+			if err != nil {
+				return err
+			}
+			return output.WriteCommission(cmd.OutOrStdout(), app.format, c)
+		},
+	}
+
+	cmd.AddCommand(getCmd, batchCmd, chartCmd, tradesCmd, limitsCmd, warningsCmd, flowsCmd, orderbookCmd, sellableCmd, commissionCmd)
 
 	return cmd
 }

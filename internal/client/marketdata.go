@@ -518,3 +518,104 @@ func (c *Client) GetTradingHours(ctx context.Context) (domain.TradingHours, erro
 		FetchedAt: time.Now().UTC(),
 	}, nil
 }
+
+// GetOrderBook returns the bid/ask depth ladder (호가) for a symbol via the
+// web v3 quotes endpoint. Offer = ask (매도), Bid = buy (매수), best-first.
+func (c *Client) GetOrderBook(ctx context.Context, symbol string) (domain.OrderBook, error) {
+	productCode, err := c.resolveProductCode(ctx, symbol)
+	if err != nil {
+		return domain.OrderBook{}, err
+	}
+	info, _ := c.getStockInfo(ctx, productCode)
+
+	var envelope quoteEnvelope[struct {
+		Close        float64   `json:"close"`
+		OfferPrices  []float64 `json:"offerPrices"`
+		OfferVolumes []float64 `json:"offerVolumes"`
+		BidPrices    []float64 `json:"bidPrices"`
+		BidVolumes   []float64 `json:"bidVolumes"`
+		OfferVolume  float64   `json:"offerVolume"`
+		BidVolume    float64   `json:"bidVolume"`
+	}]
+	endpoint := fmt.Sprintf("%s/api/v3/stock-prices/%s/quotes", c.infoBaseURL, productCode)
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.OrderBook{}, err
+	}
+
+	r := envelope.Result
+	out := domain.OrderBook{
+		ProductCode: productCode,
+		Symbol:      info.Symbol,
+		Name:        info.Name,
+		Close:       r.Close,
+		TotalOffer:  r.OfferVolume,
+		TotalBid:    r.BidVolume,
+		FetchedAt:   time.Now().UTC(),
+	}
+	out.Offers = zipOrderBookLevels(r.OfferPrices, r.OfferVolumes)
+	out.Bids = zipOrderBookLevels(r.BidPrices, r.BidVolumes)
+	return out, nil
+}
+
+func zipOrderBookLevels(prices, volumes []float64) []domain.OrderBookLevel {
+	levels := make([]domain.OrderBookLevel, 0, len(prices))
+	for i, p := range prices {
+		var v float64
+		if i < len(volumes) {
+			v = volumes[i]
+		}
+		if p == 0 && v == 0 {
+			continue
+		}
+		levels = append(levels, domain.OrderBookLevel{Price: p, Volume: v})
+	}
+	return levels
+}
+
+// GetSellableQuantity returns how many shares of a held symbol can be sold now.
+func (c *Client) GetSellableQuantity(ctx context.Context, symbol string) (domain.SellableQuantity, error) {
+	productCode, err := c.resolveProductCode(ctx, symbol)
+	if err != nil {
+		return domain.SellableQuantity{}, err
+	}
+	info, _ := c.getStockInfo(ctx, productCode)
+
+	var envelope quoteEnvelope[float64]
+	endpoint := fmt.Sprintf("%s/api/v1/trading/orders/calculate/%s/orderable-quantity/sell?forceFetch=false", c.certBaseURL, productCode)
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.SellableQuantity{}, err
+	}
+	return domain.SellableQuantity{
+		ProductCode: productCode,
+		Symbol:      info.Symbol,
+		Name:        info.Name,
+		Quantity:    envelope.Result,
+		FetchedAt:   time.Now().UTC(),
+	}, nil
+}
+
+// GetCommission returns the commission and tax rate applied to a symbol's trades.
+func (c *Client) GetCommission(ctx context.Context, symbol string) (domain.Commission, error) {
+	productCode, err := c.resolveProductCode(ctx, symbol)
+	if err != nil {
+		return domain.Commission{}, err
+	}
+	info, _ := c.getStockInfo(ctx, productCode)
+
+	var envelope quoteEnvelope[struct {
+		CommissionRate float64 `json:"commissionRate"`
+		TaxRate        float64 `json:"taxRate"`
+	}]
+	endpoint := fmt.Sprintf("%s/api/v2/trading/orders/calculate/%s/cost-basis-elements", c.certBaseURL, productCode)
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.Commission{}, err
+	}
+	return domain.Commission{
+		ProductCode:    productCode,
+		Symbol:         info.Symbol,
+		Name:           info.Name,
+		CommissionRate: envelope.Result.CommissionRate,
+		TaxRate:        envelope.Result.TaxRate,
+		FetchedAt:      time.Now().UTC(),
+	}, nil
+}

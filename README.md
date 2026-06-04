@@ -122,20 +122,20 @@ Waiting for approval in the Toss app on your phone...
 
 ## 지원 범위
 
-> **tossctl 은 공식 Open API(예정)가 커버하는 범위 + 그 너머를 다룹니다.**
-> 수급·시장지수·AI 시그널·조건검색·관심종목 관리·거래내역 ledger·실시간 푸시·소수점 주문·dry-run preview 등 **10개 이상의 기능이 공식 로드맵에 없는 tossctl 고유 범위**입니다.
+> **tossctl 은 토스 공식 Open API 의 조회·거래 표면을 100% 커버하고, 그 너머까지 다룹니다.**
+> 공식 [Open API 문서](https://developers.tossinvest.com/docs)의 모든 엔드포인트(계좌·잔고·시세·호가·체결·캔들·상하한가·매도가능수량·수수료·주문 등)에 대응하며, 추가로 수급·시장지수·AI 시그널·조건검색·관심종목 관리·거래내역 ledger·실시간 푸시·소수점 주문·dry-run preview 등 **12개 이상이 공식에 없는 tossctl 고유 범위**입니다.
 
 <p align="center">
   <img src="docs/assets/api-comparison.svg" alt="tossctl vs 공식 Open API(예정) 커버리지 비교 — tossctl 이 상위집합" width="840" />
 </p>
 
 토스증권 공식 Open API 는 현재 **사전 신청자 대상으로 단계적 롤아웃** 중이며, REST only 의
-좁은 표면입니다. 아래 표의 `공식 API (예정)` 칼럼은 출시 단계에서 공식이 커버할 예상
-범위이고, 지금은 모든 기능을 tossctl 이 유일하게 제공합니다. `tossctl` 칼럼이 우리가
-제공하는 범위입니다.
+좁은 표면입니다 (공식 문서: <https://developers.tossinvest.com/docs>). 아래 표의
+`공식 API (예정)` 칼럼은 그 문서 기준 공식이 커버하는 범위이고, `tossctl` 칼럼은 우리가
+제공하는 범위입니다. **공식의 ✅ 행은 tossctl 도 전부 ✅ — 즉 공식 표면을 100% 커버합니다.**
 
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
-- **`공식 API (예정)` 칼럼 = 사전 신청자 대상 단계적 롤아웃. ✅/🔸/❌ 는 출시 단계 예상 커버리지** (롤아웃 단계에 따라 변동 가능).
+- **`공식 API (예정)` 칼럼 = 공개 문서 기준 예상 커버리지** (사전 신청자 단계적 롤아웃 — 변동 가능).
 - **`공식 API (예정)` 가 ❌ 인 행 = tossctl 고유 범위.**
 
 ### 조회 (읽기 전용) · US·KR 공통
@@ -148,6 +148,7 @@ Waiting for approval in the Toss app on your phone...
 | 멀티 시세 / 실시간 갱신 | `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | ❌ | ✅ |
 | 캔들 차트 | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1분·일봉만)* | ✅ |
 | 체결 내역 (틱) | `quote trades <symbol> --count N` | ✅ | ✅ |
+| 호가 (bid/ask 10단계) | `quote orderbook <symbol>` (매도·매수 잔량) | ✅ | ✅ |
 | 상/하한가 | `quote limits <symbol>` (KR) | ✅ | ✅ |
 | 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등) | ✅ | ✅ |
 | 장 운영 시간 | `market hours` (오늘 + 휴장 시 다음 영업일) | ✅ | ✅ |
@@ -157,6 +158,8 @@ Waiting for approval in the Toss app on your phone...
 | **실시간 인기 순위** | `market ranking --size N` | ❌ | ✅ |
 | **토스 AI 시그널** | `market signals` (종목별 AI 시그널·키워드·등락) | ❌ | ✅ |
 | **조건 검색 (스크리너)** | `market screener [id]` (프리셋) · `--filter '<json>'` (커스텀 조건) `--nation kr\|us` | ❌ | ✅ |
+| 매도가능수량 | `quote sellable <symbol>` (보유 종목 매도가능 주수) | ✅ | ✅ |
+| 수수료 / 거래세율 | `quote commission <symbol>` (수수료율·거래세율) | ✅ | ✅ |
 | 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
 | **관심 종목 조회·관리** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` (폴더 CRUD + 종목 추가/제거) | ❌ | ✅ |
 | **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ❌ | ✅ |
@@ -375,6 +378,7 @@ tossctl orders completed --market us|kr|all
 tossctl order show <id>
 tossctl quote get <symbol>
 tossctl quote batch <symbol> [symbol...]
+tossctl quote orderbook|sellable|commission <symbol>
 tossctl watchlist list
 tossctl export positions --market us|kr|all
 tossctl export orders --market us|kr|all
@@ -417,11 +421,11 @@ tossctl auth logout
 ### API 회귀 감시
 
 ```bash
-tossctl monitor api           # 15개 endpoint schema probe (병렬); exit 0 통과, 1 실패
+tossctl monitor api           # 16개 endpoint schema probe (병렬); exit 0 통과, 1 실패
 tossctl monitor api --quiet   # cron 용
 ```
 
-본인 머신에서 본인 세션으로 15개 read-only endpoint 응답 schema 를 병렬 점검합니다. [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29) 같은 토스 서버측 body 계약 변경을 조기 감지할 목적. exit code 만 반환하므로 알림 채널 (Discord / Slack / ntfy / macOS / 이메일) 은 cron 라인의 `|| <command>` 우항에서 사용자가 합성합니다. 합성 recipe: [`AGENTS.md`](AGENTS.md). 설정 가이드: [`docs/operations.md`](docs/operations.md).
+본인 머신에서 본인 세션으로 16개 read-only endpoint 응답 schema 를 병렬 점검합니다. [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29) 같은 토스 서버측 body 계약 변경을 조기 감지할 목적. exit code 만 반환하므로 알림 채널 (Discord / Slack / ntfy / macOS / 이메일) 은 cron 라인의 `|| <command>` 우항에서 사용자가 합성합니다. 합성 recipe: [`AGENTS.md`](AGENTS.md). 설정 가이드: [`docs/operations.md`](docs/operations.md).
 
 ## 주문 ref rollover
 

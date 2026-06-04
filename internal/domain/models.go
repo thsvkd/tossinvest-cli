@@ -94,7 +94,7 @@ type Trade struct {
 	Price            float64 `json:"price"`
 	Base             float64 `json:"base,omitempty"`
 	Volume           float64 `json:"volume"`
-	TradeType        string  `json:"trade_type,omitempty"`        // BUY / SELL
+	TradeType        string  `json:"trade_type,omitempty"` // BUY / SELL
 	CumulativeVolume float64 `json:"cumulative_volume,omitempty"`
 }
 
@@ -119,11 +119,11 @@ type PriceLimits struct {
 // StockWarning is a buy-caution badge (매수 유의사항). The web feed's badge
 // shape is dynamic, so non-core fields are preserved as raw JSON.
 type StockWarning struct {
-	Type    string          `json:"type,omitempty"`
-	Title   string          `json:"title,omitempty"`
-	Text    string          `json:"text,omitempty"`
-	Level   string          `json:"level,omitempty"`
-	Raw     json.RawMessage `json:"raw,omitempty"`
+	Type  string          `json:"type,omitempty"`
+	Title string          `json:"title,omitempty"`
+	Text  string          `json:"text,omitempty"`
+	Level string          `json:"level,omitempty"`
+	Raw   json.RawMessage `json:"raw,omitempty"`
 }
 
 type StockWarnings struct {
@@ -198,10 +198,10 @@ type AISignals struct {
 // TradingFlow is one day's investor-type net flow (수급 — 개인·외국인·기관 순매수).
 // KRX 전용 · 공식 API 에 없는 web 전용 표면.
 type TradingFlow struct {
-	Date            string  `json:"date"`
-	NetIndividuals  float64 `json:"net_individuals"`  // 개인 순매수 (주)
-	NetForeigner    float64 `json:"net_foreigner"`    // 외국인 순매수
-	NetInstitution  float64 `json:"net_institution"`  // 기관 순매수
+	Date           string  `json:"date"`
+	NetIndividuals float64 `json:"net_individuals"` // 개인 순매수 (주)
+	NetForeigner   float64 `json:"net_foreigner"`   // 외국인 순매수
+	NetInstitution float64 `json:"net_institution"` // 기관 순매수
 }
 
 type TradingFlows struct {
@@ -362,30 +362,69 @@ type Chart struct {
 }
 
 type Quote struct {
-	ProductCode    string    `json:"product_code,omitempty"`
+	ProductCode     string    `json:"product_code,omitempty"`
+	Symbol          string    `json:"symbol"`
+	Name            string    `json:"name,omitempty"`
+	MarketCode      string    `json:"market_code,omitempty"`
+	Market          string    `json:"market,omitempty"`
+	Currency        string    `json:"currency,omitempty"`
+	ReferencePrice  float64   `json:"reference_price,omitempty"`
+	Last            float64   `json:"last,omitempty"`
+	Change          float64   `json:"change,omitempty"`
+	ChangeRate      float64   `json:"change_rate,omitempty"`
+	Volume          float64   `json:"volume,omitempty"`
+	Open            float64   `json:"open,omitempty"`
+	High            float64   `json:"high,omitempty"`
+	Low             float64   `json:"low,omitempty"`
+	High52w         float64   `json:"high_52w,omitempty"`
+	Low52w          float64   `json:"low_52w,omitempty"`
+	MarketCap       float64   `json:"market_cap,omitempty"`
+	TradingValue    float64   `json:"trading_value,omitempty"`    // 거래대금
+	TradingStrength float64   `json:"trading_strength,omitempty"` // 체결강도 (%)
+	PrevVolume      float64   `json:"prev_volume,omitempty"`
+	UpperLimit      float64   `json:"upper_limit,omitempty"`
+	LowerLimit      float64   `json:"lower_limit,omitempty"`
+	Status          string    `json:"status,omitempty"`
+	BadgeCount      int       `json:"badge_count,omitempty"`
+	NoticeCount     int       `json:"notice_count,omitempty"`
+	FetchedAt       time.Time `json:"fetched_at"`
+}
+
+// OrderBookLevel is a single price level (호가) with its resting volume.
+type OrderBookLevel struct {
+	Price  float64 `json:"price"`
+	Volume float64 `json:"volume"`
+}
+
+// OrderBook is the bid/ask depth ladder (호가) for a symbol. Offers are ask
+// (매도) levels, Bids are bid (매수) levels, ordered best-first.
+type OrderBook struct {
+	ProductCode string           `json:"product_code"`
+	Symbol      string           `json:"symbol"`
+	Name        string           `json:"name"`
+	Close       float64          `json:"close"`
+	Offers      []OrderBookLevel `json:"offers"`
+	Bids        []OrderBookLevel `json:"bids"`
+	TotalOffer  float64          `json:"total_offer_volume"`
+	TotalBid    float64          `json:"total_bid_volume"`
+	FetchedAt   time.Time        `json:"fetched_at"`
+}
+
+// SellableQuantity is how many shares of a held symbol can be sold now.
+type SellableQuantity struct {
+	ProductCode string    `json:"product_code"`
+	Symbol      string    `json:"symbol"`
+	Name        string    `json:"name"`
+	Quantity    float64   `json:"sellable_quantity"`
+	FetchedAt   time.Time `json:"fetched_at"`
+}
+
+// Commission is the commission/tax rate schedule applied to a symbol's trades.
+type Commission struct {
+	ProductCode    string    `json:"product_code"`
 	Symbol         string    `json:"symbol"`
-	Name           string    `json:"name,omitempty"`
-	MarketCode     string    `json:"market_code,omitempty"`
-	Market         string    `json:"market,omitempty"`
-	Currency       string    `json:"currency,omitempty"`
-	ReferencePrice float64   `json:"reference_price,omitempty"`
-	Last           float64   `json:"last,omitempty"`
-	Change         float64   `json:"change,omitempty"`
-	ChangeRate     float64   `json:"change_rate,omitempty"`
-	Volume         float64   `json:"volume,omitempty"`
-	Open           float64   `json:"open,omitempty"`
-	High           float64   `json:"high,omitempty"`
-	Low            float64   `json:"low,omitempty"`
-	High52w        float64   `json:"high_52w,omitempty"`
-	Low52w         float64   `json:"low_52w,omitempty"`
-	MarketCap      float64   `json:"market_cap,omitempty"`
-	TradingValue   float64   `json:"trading_value,omitempty"`   // 거래대금
-	TradingStrength float64  `json:"trading_strength,omitempty"` // 체결강도 (%)
-	PrevVolume     float64   `json:"prev_volume,omitempty"`
-	UpperLimit     float64   `json:"upper_limit,omitempty"`
-	LowerLimit     float64   `json:"lower_limit,omitempty"`
-	Status         string    `json:"status,omitempty"`
-	BadgeCount     int       `json:"badge_count,omitempty"`
-	NoticeCount    int       `json:"notice_count,omitempty"`
+	Name           string    `json:"name"`
+	CommissionRate float64   `json:"commission_rate"`
+	TaxRate        float64   `json:"tax_rate"`
 	FetchedAt      time.Time `json:"fetched_at"`
 }

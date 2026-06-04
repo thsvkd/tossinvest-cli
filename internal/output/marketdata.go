@@ -444,3 +444,127 @@ func sessionTime(s string) string {
 	}
 	return s
 }
+
+// WriteOrderBook renders the bid/ask depth ladder (호가). Offers (매도) are
+// printed high-to-low above the spread, bids (매수) below, matching how a
+// Korean orderbook ladder reads top-to-bottom.
+func WriteOrderBook(w io.Writer, format Format, ob domain.OrderBook) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(ob)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"side", "level", "price", "volume"}); err != nil {
+			return err
+		}
+		for i, lv := range ob.Offers {
+			if err := cw.Write([]string{"offer", fmt.Sprintf("%d", i+1), formatFloat(lv.Price), formatFloat(lv.Volume)}); err != nil {
+				return err
+			}
+		}
+		for i, lv := range ob.Bids {
+			if err := cw.Write([]string{"bid", fmt.Sprintf("%d", i+1), formatFloat(lv.Price), formatFloat(lv.Volume)}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		name := ob.Name
+		if name == "" {
+			name = ob.Symbol
+		}
+		if _, err := fmt.Fprintf(w, "%s (%s) · 호가\n", name, ob.ProductCode); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintf(w, "%-12s %12s  매도(offer)\n", "잔량", "호가"); err != nil {
+			return err
+		}
+		// Offers high-to-low (worst ask at top, best ask just above spread).
+		for i := len(ob.Offers) - 1; i >= 0; i-- {
+			lv := ob.Offers[i]
+			if _, err := fmt.Fprintf(w, "%12s  %12s\n", formatFloat(lv.Volume), formatKRW(lv.Price)); err != nil {
+				return err
+			}
+		}
+		if _, err := fmt.Fprintf(w, "%s\n", "──────────────────────────"); err != nil {
+			return err
+		}
+		// Bids best-first (highest bid just below spread).
+		for _, lv := range ob.Bids {
+			if _, err := fmt.Fprintf(w, "%12s  %12s  매수(bid)\n", formatKRW(lv.Price), formatFloat(lv.Volume)); err != nil {
+				return err
+			}
+		}
+		_, err := fmt.Fprintf(w, "\n총 매도잔량: %s · 총 매수잔량: %s\n", formatFloat(ob.TotalOffer), formatFloat(ob.TotalBid))
+		return err
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteSellableQuantity renders how many shares can be sold now.
+func WriteSellableQuantity(w io.Writer, format Format, sq domain.SellableQuantity) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sq)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"product_code", "symbol", "sellable_quantity"}); err != nil {
+			return err
+		}
+		if err := cw.Write([]string{sq.ProductCode, sq.Symbol, formatFloat(sq.Quantity)}); err != nil {
+			return err
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		name := sq.Name
+		if name == "" {
+			name = sq.Symbol
+		}
+		_, err := fmt.Fprintf(w, "%s (%s)\n매도가능수량: %s주\n", name, sq.ProductCode, formatFloat(sq.Quantity))
+		return err
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteCommission renders the commission and tax rate for a symbol.
+func WriteCommission(w io.Writer, format Format, c domain.Commission) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(c)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"product_code", "symbol", "commission_rate", "tax_rate"}); err != nil {
+			return err
+		}
+		if err := cw.Write([]string{c.ProductCode, c.Symbol, formatFloat(c.CommissionRate), formatFloat(c.TaxRate)}); err != nil {
+			return err
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		name := c.Name
+		if name == "" {
+			name = c.Symbol
+		}
+		_, err := fmt.Fprintf(w, "%s (%s)\n수수료율: %s\n세금(거래세)율: %s\n",
+			name, c.ProductCode, formatPercent(c.CommissionRate), formatPercent(c.TaxRate))
+		return err
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// formatPercent renders a fractional rate (0.002) as a percent string (0.2%).
+func formatPercent(rate float64) string {
+	return formatFloat(rate*100) + "%"
+}

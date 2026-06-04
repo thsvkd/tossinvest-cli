@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-06-04
+
+토스 공식 Open API 의 조회·거래 표면을 **100% 커버** — 누락이던 호가·매도가능수량·수수료 3개 엔드포인트 추가.
+
+### Added
+- **`quote orderbook <symbol>`** — 호가 (bid/ask 10단계 잔량). web `v3/stock-prices/{code}/quotes` 리버싱. table/json/csv.
+- **`quote sellable <symbol>`** — 매도가능수량 (보유 종목). web `v1/trading/orders/calculate/{code}/orderable-quantity/sell`.
+- **`quote commission <symbol>`** — 수수료율·거래세율. web `v2/trading/orders/calculate/{code}/cost-basis-elements`.
+- 위 3개는 공식 Open API 의 `/orderbook`·`/sellable-quantity`·`/commissions` 에 대응 — 이로써 **공식 문서(developers.tossinvest.com)의 전 엔드포인트를 tossctl 이 100% 커버**.
+- `monitor api` 에 `quote-orderbook` probe 추가 (16개).
+
+### Changed
+- README/비교 다이어그램(한·영) 을 "공식 API 100% 커버 + 12개 고유" 로 재편, 공식 Open API 문서 링크 명시.
+
+### Internal
+- `internal/client/marketdata.go` 에 `GetOrderBook`/`GetSellableQuantity`/`GetCommission` + domain 모델 + output formatter + 계약 잠금 httptest 추가.
+
 ## [0.5.2] - 2026-06-04
 
 불필요한 마찰·비대칭 게이트 정리 + 성능(병렬화) 묶음.
