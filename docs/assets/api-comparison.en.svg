@@ -4,6 +4,7 @@
       .title { font-size: 30px; font-weight: 800; fill: #191F28; }
       .subtitle { font-size: 16px; font-weight: 600; fill: #4E5968; }
       .legend { font-size: 12.5px; font-weight: 600; fill: #8B95A1; }
+      .legend-hl { font-size: 14px; font-weight: 800; fill: #3182F6; }
       .pill-strong { font-size: 15px; font-weight: 700; }
       .pill-muted { font-size: 14px; font-weight: 700; fill: #6B7684; }
       .note-muted { font-size: 11.5px; font-weight: 600; fill: #98A2B3; }
@@ -38,7 +39,8 @@
   <text x="76" y="422" class="check">✓</text><text x="94" y="422" class="item-muted">Order lookup</text>
   <text x="76" y="456" class="check">✓</text><text x="94" y="456" class="item-muted">Limit buy / sell</text>
   <text x="76" y="490" class="check">✓</text><text x="94" y="490" class="item-muted">Cancel / amend</text>
-  <text x="70" y="532" class="legend">↑ expected at launch — tossctl already supports it all</text>
+  <text x="70" y="522" class="legend">↑ expected at launch (per public docs)</text>
+  <text x="70" y="544" class="legend-hl">tossctl already supports it all ✓</text>
 
   <!-- tossctl-only: large, vivid (dominant) -->
   <rect x="412" y="152" width="628" height="402" rx="12" fill="#D6E6FF" stroke="#3182F6" stroke-width="2"/>
