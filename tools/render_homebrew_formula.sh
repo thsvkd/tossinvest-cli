@@ -9,6 +9,8 @@ fi
 : "${VERSION:?VERSION is required}"
 : "${ARM_SHA:?ARM_SHA is required}"
 : "${X86_SHA:?X86_SHA is required}"
+: "${LINUX_ARM_SHA:?LINUX_ARM_SHA is required}"
+: "${LINUX_X86_SHA:?LINUX_X86_SHA is required}"
 : "${REPO:?REPO is required}"
 : "${TAG:?TAG is required}"
 
@@ -31,6 +33,16 @@ class Tossctl < Formula
     else
       url "https://github.com/${REPO}/releases/download/${TAG}/tossctl-darwin-amd64.tar.gz"
       sha256 "${X86_SHA}"
+    end
+  end
+
+  on_linux do
+    if Hardware::CPU.arm?
+      url "https://github.com/${REPO}/releases/download/${TAG}/tossctl-linux-arm64.tar.gz"
+      sha256 "${LINUX_ARM_SHA}"
+    else
+      url "https://github.com/${REPO}/releases/download/${TAG}/tossctl-linux-amd64.tar.gz"
+      sha256 "${LINUX_X86_SHA}"
     end
   end
 

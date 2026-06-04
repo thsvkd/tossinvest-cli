@@ -163,9 +163,13 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           ARM_SHA=$(awk '{print $1}' dist/tossctl-darwin-arm64.tar.gz.sha256)
           X86_SHA=$(awk '{print $1}' dist/tossctl-darwin-amd64.tar.gz.sha256)
+          LINUX_ARM_SHA=$(awk '{print $1}' dist/tossctl-linux-arm64.tar.gz.sha256)
+          LINUX_X86_SHA=$(awk '{print $1}' dist/tossctl-linux-amd64.tar.gz.sha256)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "arm_sha=$ARM_SHA" >> "$GITHUB_OUTPUT"
           echo "x86_sha=$X86_SHA" >> "$GITHUB_OUTPUT"
+          echo "linux_arm_sha=$LINUX_ARM_SHA" >> "$GITHUB_OUTPUT"
+          echo "linux_x86_sha=$LINUX_X86_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Checkout Homebrew tap
         uses: actions/checkout@v5
@@ -184,6 +188,8 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           ARM_SHA: ${{ steps.meta.outputs.arm_sha }}
           X86_SHA: ${{ steps.meta.outputs.x86_sha }}
+          LINUX_ARM_SHA: ${{ steps.meta.outputs.linux_arm_sha }}
+          LINUX_X86_SHA: ${{ steps.meta.outputs.linux_x86_sha }}
           REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
