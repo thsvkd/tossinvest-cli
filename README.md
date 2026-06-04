@@ -117,11 +117,12 @@ Waiting for approval in the Toss app on your phone...
 유일하게 제공합니다. `tossctl` 칼럼이 우리가 제공하는 범위입니다.
 
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
-- **공식 API 가 ❌ 인 행 = tossctl 고유 범위.**
+- **`공식 API (예정)` 칼럼 = 미출시. ✅/🔸/❌ 는 출시 시 예상 커버리지** (사전 신청 단계라 변동 가능). 지금은 모든 기능을 tossctl 이 유일하게 제공.
+- **`공식 API (예정)` 가 ❌ 인 행 = tossctl 고유 범위.**
 
 ### 조회 (읽기 전용) · US·KR 공통
 
-| 기능 | 커맨드 | 공식 API | tossctl |
+| 기능 | 커맨드 | 공식 API (예정) | tossctl |
 |------|--------|:--:|:--:|
 | 계좌 목록 / 요약 | `account list`, `account summary` | ✅ | ✅ |
 | 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | ✅ | ✅ |
@@ -150,7 +151,7 @@ Waiting for approval in the Toss app on your phone...
 공식 API 도 주문 생성·정정·취소를 제공하지만, **소수점 주문·통화 모드·dry-run
 preview·config 기반 안전 게이트** 등 tossctl 의 거래 UX/안전장치는 우리 고유입니다.
 
-| 기능 | 커맨드 | 필요 config | 공식 API | tossctl |
+| 기능 | 커맨드 | 필요 config | 공식 API (예정) | tossctl |
 |------|--------|-------------|:--:|:--:|
 | 지정가 매수 (US/KR) | `order place --side buy --price <value>` | `place` | ✅ | ✅ |
 | 지정가 매도 (US/KR) | `order place --side sell --price <value>` | `place` + `sell` | ✅ | ✅ |
