@@ -1,60 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="620" viewBox="0 0 920 620" font-family="'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR','Segoe UI',sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="636" viewBox="0 0 940 636" font-family="'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR','Segoe UI',sans-serif">
   <defs>
     <style>
       .title { font-size: 30px; font-weight: 800; fill: #191F28; }
-      .subtitle { font-size: 17px; font-weight: 600; fill: #4E5968; }
-      .pill-text { font-size: 16px; font-weight: 700; }
-      .item { font-size: 16px; fill: #333D4B; }
+      .subtitle { font-size: 16px; font-weight: 600; fill: #4E5968; }
+      .legend { font-size: 12.5px; font-weight: 600; fill: #8B95A1; }
+      .pill-strong { font-size: 15px; font-weight: 700; }
+      .pill-muted { font-size: 14px; font-weight: 700; fill: #6B7684; }
+      .note-muted { font-size: 11.5px; font-weight: 600; fill: #98A2B3; }
+      .item-muted { font-size: 14px; fill: #8B95A1; }
       .item-strong { font-size: 16px; font-weight: 600; fill: #191F28; }
       .foot { font-size: 13px; fill: #8B95A1; }
-      .mark-off { font-size: 16px; fill: #B0B8C1; font-weight: 700; }
-      .mark-only { font-size: 16px; fill: #3182F6; font-weight: 800; }
+      .check { font-size: 14px; fill: #B0B8C1; font-weight: 800; }
+      .plus { font-size: 16px; fill: #3182F6; font-weight: 800; }
     </style>
   </defs>
 
-  <rect width="920" height="620" fill="#FFFFFF"/>
+  <rect width="940" height="636" fill="#FFFFFF"/>
 
-  <!-- Title -->
   <text x="32" y="42" class="title">조회 · 거래 표면 비교</text>
-  <text x="32" y="66" class="subtitle">tossctl &#8839; 공식 Open API (예정) &#160;—&#160; 공식이 다룰 범위 + 그 너머까지</text>
+  <text x="32" y="66" class="subtitle">tossctl = 공식 Open API가 줄 것 <tspan font-weight="800" fill="#191F28">전부</tspan> ＋ 공식엔 없는 기능까지 — 상위호환</text>
 
   <!-- Outer tossctl box -->
-  <rect x="24" y="84" width="872" height="476" rx="16" fill="#EAF2FF" stroke="#3182F6" stroke-width="2.5"/>
-  <rect x="44" y="98" width="118" height="32" rx="16" fill="#3182F6"/>
-  <text x="103" y="120" text-anchor="middle" class="pill-text" fill="#FFFFFF">tossctl</text>
+  <rect x="24" y="86" width="892" height="486" rx="16" fill="#EAF2FF" stroke="#3182F6" stroke-width="2.5"/>
+  <rect x="44" y="100" width="262" height="32" rx="16" fill="#3182F6"/>
+  <text x="58" y="122" class="pill-strong" fill="#FFFFFF">✓ tossctl — 아래 전부 즉시 지원</text>
 
-  <!-- Official API sub-box (subset) -->
-  <rect x="52" y="150" width="392" height="392" rx="12" fill="#FFFFFF" stroke="#AEBAC9" stroke-width="1.5" stroke-dasharray="6 5"/>
-  <rect x="72" y="166" width="232" height="30" rx="15" fill="#E5E8EB"/>
-  <text x="188" y="187" text-anchor="middle" class="pill-text" fill="#4E5968">공식 Open API (예정)</text>
+  <!-- Official API: small, muted (limited surface) -->
+  <rect x="52" y="152" width="288" height="402" rx="12" fill="#F2F4F6" stroke="#C4CBD4" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <rect x="70" y="166" width="150" height="28" rx="14" fill="#E1E4E8"/>
+  <text x="145" y="185" text-anchor="middle" class="pill-muted">공식 Open API</text>
+  <text x="70" y="214" class="note-muted">사전 신청자 대상 단계적 롤아웃 · REST only</text>
 
-  <text x="80" y="236" class="mark-off">•</text><text x="98" y="236" class="item">계좌 목록 · 요약</text>
-  <text x="80" y="272" class="mark-off">•</text><text x="98" y="272" class="item">포트폴리오 (US: USD 병기)</text>
-  <text x="80" y="308" class="mark-off">•</text><text x="98" y="308" class="item">시세 · 체결 틱(tick)</text>
-  <text x="80" y="344" class="mark-off">•</text><text x="98" y="344" class="item">상 · 하한가 · 매수 유의사항</text>
-  <text x="80" y="380" class="mark-off">•</text><text x="98" y="380" class="item">장 운영 시간 · 환율</text>
-  <text x="80" y="416" class="mark-off">•</text><text x="98" y="416" class="item">주문 조회</text>
-  <text x="80" y="452" class="mark-off">•</text><text x="98" y="452" class="item">지정가 매수 · 매도</text>
-  <text x="80" y="488" class="mark-off">•</text><text x="98" y="488" class="item">주문 취소 · 정정</text>
+  <text x="76" y="252" class="check">✓</text><text x="94" y="252" class="item-muted">계좌 목록 · 요약</text>
+  <text x="76" y="286" class="check">✓</text><text x="94" y="286" class="item-muted">포트폴리오</text>
+  <text x="76" y="320" class="check">✓</text><text x="94" y="320" class="item-muted">시세 · 체결 틱</text>
+  <text x="76" y="354" class="check">✓</text><text x="94" y="354" class="item-muted">상·하한가 · 유의사항</text>
+  <text x="76" y="388" class="check">✓</text><text x="94" y="388" class="item-muted">장 운영 시간 · 환율</text>
+  <text x="76" y="422" class="check">✓</text><text x="94" y="422" class="item-muted">주문 조회</text>
+  <text x="76" y="456" class="check">✓</text><text x="94" y="456" class="item-muted">지정가 매수 · 매도</text>
+  <text x="76" y="490" class="check">✓</text><text x="94" y="490" class="item-muted">주문 취소 · 정정</text>
+  <text x="70" y="532" class="legend">↑ 출시 시 예상 범위 — tossctl 은 이미 전부 지원</text>
 
-  <!-- tossctl-only panel -->
-  <rect x="468" y="150" width="404" height="392" rx="12" fill="#D6E6FF" stroke="#3182F6" stroke-width="1.5"/>
-  <rect x="488" y="166" width="266" height="30" rx="15" fill="#3182F6"/>
-  <text x="621" y="187" text-anchor="middle" class="pill-text" fill="#FFFFFF">tossctl 고유 (공식 API에 없음)</text>
+  <!-- tossctl-only: large, vivid (dominant) -->
+  <rect x="360" y="152" width="556" height="402" rx="12" fill="#D6E6FF" stroke="#3182F6" stroke-width="2"/>
+  <rect x="380" y="166" width="300" height="30" rx="15" fill="#3182F6"/>
+  <text x="530" y="187" text-anchor="middle" class="pill-strong" fill="#FFFFFF">＋ tossctl 단독 — 공식 API엔 없음</text>
 
-  <text x="496" y="231" class="mark-only">+</text><text x="516" y="231" class="item-strong">수급 (개인 · 외국인 · 기관 순매수)</text>
-  <text x="496" y="261" class="mark-only">+</text><text x="516" y="261" class="item-strong">시장 지수 (코스피 · 나스닥 · VIX …)</text>
-  <text x="496" y="291" class="mark-only">+</text><text x="516" y="291" class="item-strong">토스 AI 시그널</text>
-  <text x="496" y="321" class="mark-only">+</text><text x="516" y="321" class="item-strong">조건 검색 (스크리너)</text>
-  <text x="496" y="351" class="mark-only">+</text><text x="516" y="351" class="item-strong">관심종목 관리 (폴더 CRUD)</text>
-  <text x="496" y="381" class="mark-only">+</text><text x="516" y="381" class="item-strong">거래내역 ledger · 현금 overview</text>
-  <text x="496" y="411" class="mark-only">+</text><text x="516" y="411" class="item-strong">멀티 시세 · 실시간 갱신</text>
-  <text x="496" y="441" class="mark-only">+</text><text x="516" y="441" class="item-strong">실시간 푸시 (SSE 스트림)</text>
-  <text x="496" y="471" class="mark-only">+</text><text x="516" y="471" class="item-strong">소수점 주문 (금액 기반)</text>
-  <text x="496" y="501" class="mark-only">+</text><text x="516" y="501" class="item-strong">dry-run preview · 안전 게이트</text>
-  <text x="496" y="531" class="mark-only">+</text><text x="516" y="531" class="item-strong">CSV 내보내기</text>
+  <text x="390" y="233" class="plus">＋</text><text x="412" y="233" class="item-strong">수급 (개인 · 외국인 · 기관 순매수)</text>
+  <text x="390" y="263" class="plus">＋</text><text x="412" y="263" class="item-strong">시장 지수 (코스피 · 나스닥 · VIX …)</text>
+  <text x="390" y="293" class="plus">＋</text><text x="412" y="293" class="item-strong">토스 AI 시그널</text>
+  <text x="390" y="323" class="plus">＋</text><text x="412" y="323" class="item-strong">조건 검색 (스크리너)</text>
+  <text x="390" y="353" class="plus">＋</text><text x="412" y="353" class="item-strong">관심종목 관리 (폴더 CRUD)</text>
+  <text x="390" y="383" class="plus">＋</text><text x="412" y="383" class="item-strong">거래내역 ledger · 현금 overview</text>
+  <text x="390" y="413" class="plus">＋</text><text x="412" y="413" class="item-strong">멀티 시세 · 실시간 갱신</text>
+  <text x="390" y="443" class="plus">＋</text><text x="412" y="443" class="item-strong">실시간 푸시 (SSE 스트림)</text>
+  <text x="390" y="473" class="plus">＋</text><text x="412" y="473" class="item-strong">소수점 주문 (금액 기반)</text>
+  <text x="390" y="503" class="plus">＋</text><text x="412" y="503" class="item-strong">dry-run preview · 안전 게이트</text>
+  <text x="390" y="533" class="plus">＋</text><text x="412" y="533" class="item-strong">CSV 내보내기</text>
 
-  <!-- Footer -->
-  <text x="32" y="588" class="foot">공식 Open API 는 사전 신청 단계(미출시) — 표기는 출시 시 예상 커버리지로 변동될 수 있습니다.</text>
-  <text x="32" y="608" class="foot">지금은 위 모든 기능을 tossctl 이 유일하게 제공합니다.</text>
+  <text x="32" y="600" class="foot">공식 Open API 는 사전 신청자 대상으로 단계적 롤아웃 중 — 범위는 출시 단계에 따라 변동될 수 있습니다.</text>
+  <text x="32" y="620" class="foot">지금은 양쪽 모든 기능을 tossctl 이 유일하게 제공합니다.</text>
 </svg>

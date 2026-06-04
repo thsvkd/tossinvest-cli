@@ -95,10 +95,10 @@ Waiting for approval in the Toss app on your phone...
   <img src="docs/assets/api-comparison.en.svg" alt="tossctl vs official Open API (upcoming) coverage — tossctl is a superset" width="900" />
 </p>
 
-The Toss Securities official Open API is currently in **pre-application stage** (not yet released). The `Official API (planned)` column below reflects expected coverage at launch; today tossctl is the only way to use every feature. The `tossctl` column is what we provide.
+The Toss Securities official Open API is currently **rolling out in stages to pre-applicants** and is a narrow, REST-only surface. The `Official API (planned)` column below reflects expected coverage at launch; today tossctl is the only way to use every feature. The `tossctl` column is what we provide.
 
 - ✅ supported · ❌ not supported · 🔸 partial
-- **`Official API (planned)` column = not released. ✅/🔸/❌ is expected coverage at launch** (pre-application stage, subject to change).
+- **`Official API (planned)` column = staged rollout to pre-applicants. ✅/🔸/❌ is expected coverage at launch** (subject to change across rollout phases).
 - **Rows where `Official API (planned)` is ❌ = tossctl-only.**
 
 ### Read-only · US & KR
