@@ -16,7 +16,6 @@ func TestWriteConfigStatusJSON(t *testing.T) {
 		Trading: config.Trading{
 			Place: true,
 			Sell:  true,
-			KR:    false,
 		},
 	}
 	var buf bytes.Buffer
@@ -36,7 +35,6 @@ func TestWriteConfigStatusTable(t *testing.T) {
 		Trading: config.Trading{
 			Place: true,
 			Sell:  false,
-			KR:    true,
 		},
 	}
 	var buf bytes.Buffer
@@ -44,8 +42,8 @@ func TestWriteConfigStatusTable(t *testing.T) {
 		t.Fatalf("WriteConfigStatus Table error: %v", err)
 	}
 	output := buf.String()
-	if !strings.Contains(output, "Trading KR: true") {
-		t.Fatalf("expected Trading KR: true in table output, got %s", output)
+	if !strings.Contains(output, "Trading Place: true") {
+		t.Fatalf("expected Trading Place: true in table output, got %s", output)
 	}
 	if !strings.Contains(output, "Trading Sell: false") {
 		t.Fatalf("expected Trading Sell: false, got %s", output)
@@ -67,7 +65,7 @@ func TestWriteConfigStatusCSV(t *testing.T) {
 	if len(lines) != 2 {
 		t.Fatalf("expected 2 CSV lines, got %d", len(lines))
 	}
-	if !strings.Contains(lines[0], "kr") {
-		t.Fatalf("expected kr column in CSV header, got %s", lines[0])
+	if !strings.Contains(lines[0], "allow_live_order_actions") {
+		t.Fatalf("expected allow_live_order_actions column in CSV header, got %s", lines[0])
 	}
 }

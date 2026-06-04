@@ -450,44 +450,13 @@ func TestPlaceIntentSupportedAcceptsKR(t *testing.T) {
 	}
 }
 
-func TestKRPlaceFailsWhenKRDisabledInConfig(t *testing.T) {
+func TestKRPlaceCallsBrokerWithoutMarketGate(t *testing.T) {
+	// KR trading no longer requires a dedicated config toggle — the asymmetric
+	// trading.kr gate was removed. place + allow_live_order_actions is enough,
+	// same as US.
 	broker := &brokerStub{}
 	service := NewService(config.Trading{
 		Place:                 true,
-		KR:                    false,
-		AllowLiveOrderActions: true,
-	}, broker)
-	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
-		Symbol:       "290080",
-		Market:       "kr",
-		Side:         "buy",
-		OrderType:    "limit",
-		Quantity:     1,
-		Price:        8000,
-		CurrencyMode: "KRW",
-	})
-	if err != nil {
-		t.Fatalf("NormalizePlace returned error: %v", err)
-	}
-
-	_, err = service.Place(context.Background(), intent, ExecuteOptions{
-		Execute: true,
-		Confirm: service.PreviewPlace(intent).ConfirmToken,
-	})
-	var disabled *DisabledActionError
-	if !errors.As(err, &disabled) || disabled.Action != "kr" {
-		t.Fatalf("expected kr action to be disabled, got %v", err)
-	}
-	if broker.placeCalled {
-		t.Fatal("broker should not have been called when kr is disabled")
-	}
-}
-
-func TestKRPlaceCallsBrokerWhenKREnabled(t *testing.T) {
-	broker := &brokerStub{}
-	service := NewService(config.Trading{
-		Place:                 true,
-		KR:                    true,
 		AllowLiveOrderActions: true,
 	}, broker)
 	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
@@ -519,77 +488,37 @@ func TestKRPlaceCallsBrokerWhenKREnabled(t *testing.T) {
 }
 
 func TestPlacePolicyChecksBeforeGuard(t *testing.T) {
-	// NO grant — guard() would fail with ErrExecuteRequired etc.
-	// But policy check should catch it first.
-
+	// A scope policy (here: sell disabled) must be checked BEFORE the execution
+	// guard — calling Place without --execute on a disabled-scope order should
+	// surface DisabledActionError, not ErrExecuteRequired.
 	service := NewService(config.Trading{
 		Place:                 true,
-		KR:                    false,
+		Sell:                  false,
 		AllowLiveOrderActions: true,
 	}, nil)
 	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
-		Symbol:       "290080",
-		Market:       "kr",
-		Side:         "buy",
+		Symbol:       "TSLL",
+		Market:       "us",
+		Side:         "sell",
 		OrderType:    "limit",
 		Quantity:     1,
-		Price:        8000,
+		Price:        500,
 		CurrencyMode: "KRW",
 	})
 	if err != nil {
 		t.Fatalf("NormalizePlace returned error: %v", err)
 	}
 
-	// Without --execute, guard would return ErrExecuteRequired.
-	// But kr policy should be checked BEFORE guard, so we get DisabledActionError.
 	_, err = service.Place(context.Background(), intent, ExecuteOptions{})
 	var disabled *DisabledActionError
-	if !errors.As(err, &disabled) || disabled.Action != "kr" {
-		t.Fatalf("expected kr disabled error BEFORE guard, got %v", err)
+	if !errors.As(err, &disabled) || disabled.Action != "sell" {
+		t.Fatalf("expected sell disabled error BEFORE guard, got %v", err)
 	}
 }
 
-func TestPreviewPlaceKRDisabled(t *testing.T) {
-
+func TestPreviewPlaceKRReadyWithoutMarketGate(t *testing.T) {
 	service := NewService(config.Trading{
 		Place:                 true,
-		KR:                    false,
-		AllowLiveOrderActions: true,
-	}, nil)
-	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
-		Symbol:       "290080",
-		Market:       "kr",
-		Side:         "buy",
-		OrderType:    "limit",
-		Quantity:     1,
-		Price:        8000,
-		CurrencyMode: "KRW",
-	})
-	if err != nil {
-		t.Fatalf("NormalizePlace returned error: %v", err)
-	}
-
-	preview := service.PreviewPlace(intent)
-	if preview.MutationReady {
-		t.Fatal("expected MutationReady to be false when kr is disabled")
-	}
-	found := false
-	for _, w := range preview.Warnings {
-		if w == "Config currently disables `order place --market kr`." {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Fatalf("expected kr-disabled warning in preview, got %v", preview.Warnings)
-	}
-}
-
-func TestPreviewPlaceKREnabled(t *testing.T) {
-
-	service := NewService(config.Trading{
-		Place:                 true,
-		KR:                    true,
 		AllowLiveOrderActions: true,
 	}, nil)
 	intent, err := orderintent.NormalizePlace(orderintent.PlaceInput{
@@ -610,7 +539,7 @@ func TestPreviewPlaceKREnabled(t *testing.T) {
 		t.Fatal("expected LiveReady to be true for kr")
 	}
 	if !preview.MutationReady {
-		t.Fatal("expected MutationReady to be true when kr is enabled")
+		t.Fatal("expected MutationReady to be true for kr with place + allow_live")
 	}
 }
 

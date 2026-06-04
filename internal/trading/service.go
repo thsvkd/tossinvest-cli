@@ -52,9 +52,6 @@ func (s *Service) PreviewPlace(intent orderintent.PlaceIntent) Preview {
 	if !s.policy.Place {
 		warnings = append(warnings, "Config currently disables `order place`.")
 	}
-	if intent.Market == "kr" && !s.policy.KR {
-		warnings = append(warnings, "Config currently disables `order place --market kr`.")
-	}
 	if intent.Side == "sell" && !s.policy.Sell {
 		warnings = append(warnings, "Config currently disables `order place --side sell`.")
 	}
@@ -65,9 +62,6 @@ func (s *Service) PreviewPlace(intent orderintent.PlaceIntent) Preview {
 		warnings = append(warnings, "Config currently disables live order actions.")
 	}
 	mutationReady := liveReady && s.policy.Place && s.policy.AllowLiveOrderActions
-	if intent.Market == "kr" {
-		mutationReady = mutationReady && s.policy.KR
-	}
 	if intent.Side == "sell" {
 		mutationReady = mutationReady && s.policy.Sell
 	}
@@ -130,23 +124,19 @@ func (s *Service) Place(ctx context.Context, intent orderintent.PlaceIntent, opt
 	if !placeIntentSupported(intent) {
 		return MutationResult{}, ErrPlaceUnsupported
 	}
-	// 2. market policy
-	if intent.Market == "kr" && !s.policy.KR {
-		return MutationResult{}, &DisabledActionError{Action: "kr"}
-	}
-	// 3. side policy
+	// 2. side policy
 	if intent.Side == "sell" && !s.policy.Sell {
 		return MutationResult{}, &DisabledActionError{Action: "sell"}
 	}
-	// 4. fractional policy
+	// 3. fractional policy
 	if intent.Fractional && !s.policy.Fractional {
 		return MutationResult{}, &DisabledActionError{Action: "fractional"}
 	}
-	// 5. execution guard (--execute, permissions, confirm)
+	// 4. execution guard (--execute, confirm token, allow_live)
 	if err := s.guard(ctx, ActionPlace, s.PreviewPlace(intent), opts); err != nil {
 		return MutationResult{}, err
 	}
-	// 6. broker call
+	// 5. broker call
 	if s.broker == nil {
 		return MutationResult{}, ErrLiveMutationPending
 	}

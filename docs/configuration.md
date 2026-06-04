@@ -23,11 +23,10 @@ tossctl config init
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/JungHoonGhae/tossinvest-cli/main/schemas/config.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "trading": {
     "place": false,
     "sell": false,
-    "kr": false,
     "fractional": false,
     "cancel": false,
     "amend": false,
@@ -50,8 +49,9 @@ tossctl config init
 
 **스코프 선언 (유저 자가 제한)**
 - `trading.sell` — `tossctl order place --side sell` 허용 여부. `trading.place`도 함께 켜야 합니다. 끄면 매수만 가능
-- `trading.kr` — `tossctl order place --market kr` 허용 여부. `trading.place`도 함께 켜야 합니다. 끄면 US only
 - `trading.fractional` — `tossctl order place --fractional --amount <KRW>` 허용 여부. US 시장가 주문으로만 지원. `trading.place`도 함께 켜야 합니다
+
+> 시장(US/KR)은 게이트가 아닙니다. `v0.5.2`에서 비대칭이던 `trading.kr` 토글을 제거했습니다 — KR 주문이 US 주문보다 위험하지 않으므로 시장은 대칭 취급하며, `trading.place` + `allow_live_order_actions` 가 양쪽을 동일하게 게이트합니다. KR 6자리 종목코드는 `--market kr` 없이도 자동 인식됩니다.
 
 **마스터 / 자동화**
 - `trading.allow_live_order_actions` — 실계좌에 도달하는 주문 액션(`place`, `cancel`, `amend`) 자체를 허용. **마스터 킬스위치**로 위 경로 게이트가 켜져 있어도 이 값이 false면 broker에 닿지 않음
@@ -89,7 +89,7 @@ tossctl이 저장하는 모든 상태 파일과 디렉토리는 소유자 전용
 
 기존 `schema_version: 1` 파일과 `trading.allow_dangerous_execute`는 계속 읽을 수 있습니다.
 
-`v0.4.3`에서 제거된 필드(`trading.grant`, `trading.dangerous_automation.complete_trade_auth`, `trading.dangerous_automation.accept_product_ack`)는 설정에 남아있어도 무시됩니다. 해당 필드들은 실제로 어떤 동작도 제어하지 않던 죽은 토글이었습니다. legacy 필드(또는 구버전 스키마)가 남아 있으면 일반 명령 실행 시 stderr 경고 1줄(24h backoff)로 안내되고, `config status`/`doctor`의 `legacy_config` 체크에서도 감지해 알려줍니다.
+`v0.4.3`에서 제거된 필드(`trading.grant`, `trading.dangerous_automation.complete_trade_auth`, `trading.dangerous_automation.accept_product_ack`)와 `v0.5.2`에서 제거된 `trading.kr`(비대칭 시장 게이트)는 설정에 남아있어도 무시됩니다. legacy 필드(또는 구버전 스키마)가 남아 있으면 일반 명령 실행 시 stderr 경고 1줄(24h backoff)로 안내되고, `config status`/`doctor`의 `legacy_config` 체크에서도 감지해 알려줍니다.
 
 다만 `config show`와 `doctor`는 새 이름 기준으로 해석해서 보여주고, legacy key를 변환해서 읽고 있으면 그 사실을 따로 알려줍니다.
 

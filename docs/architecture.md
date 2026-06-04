@@ -21,7 +21,7 @@
 - 실시간 푸시: `push listen` — 토스 SSE 채널(`sse-message.tossinvest.com`) 구독으로 주문/가격/보유종목 변경 알림을 JSONL 스트림으로 출력 (이벤트 분류는 [`docs/reverse-engineering/push-events.md`](reverse-engineering/push-events.md))
 - 거래 베타
   - `US/KR buy/sell limit` + `US fractional (market)`
-  - sell: `trading.sell=true`, KR: `trading.kr=true`, fractional: `trading.fractional=true`
+  - sell: `trading.sell=true`, fractional: `trading.fractional=true` (US/KR 은 대칭 — `place` 만 필요)
   - `KRW`
   - `place`
   - same-day pending `cancel`
@@ -200,7 +200,7 @@ sequenceDiagram
 
 1. `config.json`
    - **경로 게이트:** `place`, `cancel`, `amend` (broker API 분기별 허용)
-   - **스코프 선언:** `sell`, `kr`, `fractional` (유저 자가 제한)
+   - **스코프 선언:** `sell`, `fractional` (유저 자가 제한; 시장 US/KR 은 게이트 아님)
    - **마스터 킬스위치:** `allow_live_order_actions` (실계좌 도달 차단)
    - **자동화:** `dangerous_automation.accept_fx_consent`
 2. `--execute`

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	SchemaVersion    = 2
+	SchemaVersion    = 3
 	DefaultSchemaURL = "https://raw.githubusercontent.com/JungHoonGhae/tossinvest-cli/main/schemas/config.schema.json"
 )
 
@@ -20,7 +20,6 @@ type DangerousAutomation struct {
 type Trading struct {
 	Place                 bool                `json:"place"`
 	Sell                  bool                `json:"sell"`
-	KR                    bool                `json:"kr"`
 	Fractional            bool                `json:"fractional"`
 	Cancel                bool                `json:"cancel"`
 	Amend                 bool                `json:"amend"`
@@ -35,9 +34,6 @@ func (t Trading) EnabledActions() []string {
 	}
 	if t.Sell {
 		enabled = append(enabled, "sell")
-	}
-	if t.KR {
-		enabled = append(enabled, "kr")
 	}
 	if t.Fractional {
 		enabled = append(enabled, "fractional")
@@ -106,7 +102,7 @@ type rawTrading struct {
 	Grant                 *bool                   `json:"grant"`
 	Place                 bool                    `json:"place"`
 	Sell                  bool                    `json:"sell"`
-	KR                    bool                    `json:"kr"`
+	KR                    *bool                   `json:"kr"`
 	Fractional            bool                    `json:"fractional"`
 	Cancel                bool                    `json:"cancel"`
 	Amend                 bool                    `json:"amend"`
@@ -216,7 +212,6 @@ func (s *Service) load() (File, bool, legacyMetadata, error) {
 
 	cfg.Trading.Place = raw.Trading.Place
 	cfg.Trading.Sell = raw.Trading.Sell
-	cfg.Trading.KR = raw.Trading.KR
 	cfg.Trading.Fractional = raw.Trading.Fractional
 	cfg.Trading.Cancel = raw.Trading.Cancel
 	cfg.Trading.Amend = raw.Trading.Amend
@@ -227,6 +222,14 @@ func (s *Service) load() (File, bool, legacyMetadata, error) {
 	// load, and surface it in LegacyFields so the doctor can flag it.
 	if raw.Trading.Grant != nil {
 		meta.LegacyFields = append(meta.LegacyFields, "trading.grant")
+	}
+
+	// trading.kr was removed in v0.5.2 — it was an asymmetric market-scope gate
+	// (KR required opt-in while US was always allowed), which is not a risk axis:
+	// a KR order is no riskier than a US one. Markets are now treated symmetrically
+	// (place + allow_live_order_actions gate both). Parsed only to flag as legacy.
+	if raw.Trading.KR != nil {
+		meta.LegacyFields = append(meta.LegacyFields, "trading.kr")
 	}
 
 	switch {

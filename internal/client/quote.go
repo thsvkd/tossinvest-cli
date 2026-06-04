@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/domain"
@@ -74,19 +75,41 @@ func (c *Client) GetQuote(ctx context.Context, symbol string) (domain.Quote, err
 		return domain.Quote{}, err
 	}
 
-	info, err := c.getStockInfo(ctx, productCode)
-	if err != nil {
-		return domain.Quote{}, err
-	}
+	// The four per-product lookups below all depend only on productCode and are
+	// independent of each other, so we fan them out concurrently — turning four
+	// sequential round-trips into roughly one. info/price errors are fatal;
+	// detail (badges/notices) and the v3 details enrichment are non-fatal.
+	var (
+		info     stockInfoResult
+		infoErr  error
+		price    stockPriceResult
+		priceErr error
+		detail   *stockDetailCommonResult
+		details  *stockPriceDetailResult
+		wg       sync.WaitGroup
+	)
+	wg.Add(4)
+	go func() { defer wg.Done(); info, infoErr = c.getStockInfo(ctx, productCode) }()
+	go func() { defer wg.Done(); price, priceErr = c.getStockPrice(ctx, productCode) }()
+	go func() {
+		defer wg.Done()
+		if d, err := c.getStockDetailCommon(ctx, productCode); err == nil {
+			detail = d
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if d, err := c.getStockPriceDetails(ctx, productCode); err == nil {
+			details = d
+		}
+	}()
+	wg.Wait()
 
-	price, err := c.getStockPrice(ctx, productCode)
-	if err != nil {
-		return domain.Quote{}, err
+	if infoErr != nil {
+		return domain.Quote{}, infoErr
 	}
-
-	detail, err := c.getStockDetailCommon(ctx, productCode)
-	if err != nil {
-		detail = nil
+	if priceErr != nil {
+		return domain.Quote{}, priceErr
 	}
 
 	quote := domain.Quote{
@@ -114,7 +137,7 @@ func (c *Client) GetQuote(ctx context.Context, symbol string) (domain.Quote, err
 	}
 
 	// Enrich with richer v3 details (non-fatal — base quote stands on its own).
-	if d, err := c.getStockPriceDetails(ctx, productCode); err == nil && d != nil {
+	if d := details; d != nil {
 		quote.Open = d.Open
 		quote.High = d.High
 		quote.Low = d.Low

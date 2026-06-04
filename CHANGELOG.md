@@ -2,14 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.5.2] - 2026-06-04
+
+불필요한 마찰·비대칭 게이트 정리 + 성능(병렬화) 묶음.
 
 ### Changed
+- **`trading.kr` config 게이트 제거 (schema_version 2→3)** — 비대칭이던 시장 게이트 삭제. KR 주문은 US 주문보다 위험하지 않으므로 시장을 **대칭 취급**: `trading.place` + `allow_live_order_actions` 가 US/KR 양쪽을 동일하게 게이트. (기존엔 KR만 별도 opt-in 필요 — 한국 증권사 CLI에서 거꾸로였음) 기존 config 의 `kr` 필드는 `grant` 처럼 무시되며 legacy 로 감지·경고. 거래 차단 강도 불변(`place`/`sell`/`fractional` + 마스터 + `--execute` + `--confirm`).
 - **`monitor api` probe 병렬 실행** — 15개 probe 를 순차(최악 ~N×10s)에서 bounded 병렬(동시 8개)로 전환. daily-monitor cron wall-clock 대폭 단축. 결과는 probe 순서 그대로 반환.
 - **`quote batch` 멀티 종목 병렬 fetch** — 종목별 순차 호출(각 다중 HTTP)에서 bounded 병렬(동시 6개)로 전환, 입력 순서 보존. `--live` 갱신 모드 응답성 개선. fail-fast 동작 유지.
+- **`quote get` enrichment 병렬화** — productCode 해석 후 info/price/detail/v3-details 4개 호출을 순차에서 동시 실행(~4 RTT→1). info/price 에러는 fatal, detail/v3 는 non-fatal 유지.
 
 ### Fixed (UX)
 - **KR 종목코드 시장 자동 판별** — `order place/preview` 에서 6자리 한국 종목코드(예: `005930`)를 넣으면 `--market kr` 를 안 줘도 자동으로 KR 시장으로 라우팅. (기존엔 에러로 거부) KR 코드는 US 티커와 겹칠 수 없어 안전. 거래 게이트(`--execute` + `--confirm <token>` + config)는 그대로.
+
+### Migration
+- 기존 `config.json` 에 `trading.kr` 이 있어도 자동 무시됩니다. 일반 명령 실행 시 stderr 경고 1줄로 안내되고 `config status`/`doctor` `legacy_config` 에서 감지됩니다. 제거하려면 해당 줄을 지우고 `schema_version` 을 3 으로 올리면 됩니다 (`config init` 후 재설정도 가능).
 
 ## [0.5.1] - 2026-06-04
 

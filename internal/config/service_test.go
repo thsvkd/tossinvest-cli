@@ -176,36 +176,10 @@ func TestEnabledActionsExcludesSellWhenFalse(t *testing.T) {
 	}
 }
 
-func TestLoadDefaultsKRToFalseWhenFieldMissing(t *testing.T) {
-	configPath := filepath.Join(t.TempDir(), "config.json")
-	data := []byte(`{
-  "schema_version": 2,
-  "trading": {
-    "place": true,
-    "sell": true,
-    "cancel": false,
-    "amend": false,
-    "allow_live_order_actions": true,
-    "dangerous_automation": {
-      "accept_fx_consent": false
-    }
-  }
-}`)
-	if err := os.WriteFile(configPath, data, 0o600); err != nil {
-		t.Fatalf("WriteFile returned error: %v", err)
-	}
-
-	service := NewService(configPath)
-	cfg, err := service.Load(context.Background())
-	if err != nil {
-		t.Fatalf("Load returned error: %v", err)
-	}
-	if cfg.Trading.KR {
-		t.Fatal("expected KR to default to false when field is missing from config")
-	}
-}
-
-func TestLoadParsesKRTrue(t *testing.T) {
+func TestLoadFlagsKRAsLegacyField(t *testing.T) {
+	// trading.kr was removed in v0.5.2 — a config that still carries it must
+	// load fine (the value is ignored) and surface "trading.kr" as a legacy
+	// field so the doctor / startup warning can flag it.
 	configPath := filepath.Join(t.TempDir(), "config.json")
 	data := []byte(`{
   "schema_version": 2,
@@ -226,27 +200,19 @@ func TestLoadParsesKRTrue(t *testing.T) {
 	}
 
 	service := NewService(configPath)
-	cfg, err := service.Load(context.Background())
+	status, err := service.Status(context.Background())
 	if err != nil {
-		t.Fatalf("Load returned error: %v", err)
+		t.Fatalf("Status returned error: %v", err)
 	}
-	if !cfg.Trading.KR {
-		t.Fatal("expected KR to be true")
-	}
-}
-
-func TestEnabledActionsIncludesKR(t *testing.T) {
-	trading := Trading{Place: true, KR: true}
-	enabled := trading.EnabledActions()
 	found := false
-	for _, action := range enabled {
-		if action == "kr" {
+	for _, f := range status.LegacyFields {
+		if f == "trading.kr" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Fatalf("expected EnabledActions to include 'kr', got %v", enabled)
+		t.Fatalf("expected trading.kr in LegacyFields, got %v", status.LegacyFields)
 	}
 }
 

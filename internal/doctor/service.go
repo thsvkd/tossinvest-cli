@@ -40,15 +40,15 @@ type AuthReport struct {
 }
 
 type Report struct {
-	Version    version.Info                `json:"version"`
-	GoVersion  string                      `json:"go_version"`
-	OS         string                      `json:"os"`
-	Arch       string                      `json:"arch"`
-	Paths      config.Paths                `json:"paths"`
-	Config     config.Status               `json:"config"`
-	Auth       AuthReport                  `json:"auth"`
-	Checks     []Check                     `json:"checks"`
-	Diagnostics *Diagnostics               `json:"diagnostics,omitempty"`
+	Version     version.Info  `json:"version"`
+	GoVersion   string        `json:"go_version"`
+	OS          string        `json:"os"`
+	Arch        string        `json:"arch"`
+	Paths       config.Paths  `json:"paths"`
+	Config      config.Status `json:"config"`
+	Auth        AuthReport    `json:"auth"`
+	Checks      []Check       `json:"checks"`
+	Diagnostics *Diagnostics  `json:"diagnostics,omitempty"`
 }
 
 // Diagnostics captures extra signals that are only useful for bug reports /
@@ -56,10 +56,10 @@ type Report struct {
 // default Run() so that a plain `tossctl doctor` stays fast and does not hit
 // the network.
 type Diagnostics struct {
-	Probes        []tossclient.ProbeResult `json:"probes,omitempty"`
-	ProbeSkipped  string                   `json:"probe_skipped,omitempty"`
-	FileModes     []FileModeCheck          `json:"file_modes"`
-	OrphanFiles   []string                 `json:"orphan_files"`
+	Probes       []tossclient.ProbeResult `json:"probes,omitempty"`
+	ProbeSkipped string                   `json:"probe_skipped,omitempty"`
+	FileModes    []FileModeCheck          `json:"file_modes"`
+	OrphanFiles  []string                 `json:"orphan_files"`
 }
 
 type FileModeCheck struct {
@@ -115,19 +115,19 @@ func (s *Service) Run(ctx context.Context) (Report, error) {
 			Name:    "trading_scope",
 			Status:  CheckInfo,
 			Summary: "trading support is intentionally narrow and still beta",
-			Detail:  "Currently validated for US/KR buy/sell limit + US fractional (market) orders in KRW, plus same-day pending cancel. Sell requires `trading.sell=true`, KR requires `trading.kr=true`, fractional requires `trading.fractional=true`. Amend still needs more live verification.",
+			Detail:  "Currently validated for US/KR buy/sell limit + US fractional (market) orders in KRW, plus same-day pending cancel. US and KR are treated symmetrically (only `trading.place` is needed). Sell requires `trading.sell=true`, fractional requires `trading.fractional=true`. Amend still needs more live verification.",
 		},
 	}
 
 	return Report{
-		Version:    version.Current(),
-		GoVersion:  runtime.Version(),
-		OS:         runtime.GOOS,
-		Arch:       runtime.GOARCH,
-		Paths:      s.paths,
-		Config:     s.configState,
-		Auth:       authReport,
-		Checks:     checks,
+		Version:   version.Current(),
+		GoVersion: runtime.Version(),
+		OS:        runtime.GOOS,
+		Arch:      runtime.GOARCH,
+		Paths:     s.paths,
+		Config:    s.configState,
+		Auth:      authReport,
+		Checks:    checks,
 	}, nil
 }
 
