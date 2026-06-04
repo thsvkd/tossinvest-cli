@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="620" viewBox="0 0 1060 620" font-family="'Pretendard','Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <style>
+      .title { font-size: 30px; font-weight: 800; fill: #191F28; }
+      .subtitle { font-size: 17px; font-weight: 600; fill: #4E5968; }
+      .pill-text { font-size: 16px; font-weight: 700; }
+      .item { font-size: 15px; fill: #333D4B; }
+      .item-strong { font-size: 15px; font-weight: 600; fill: #191F28; }
+      .foot { font-size: 13px; fill: #8B95A1; }
+      .mark-off { font-size: 15px; fill: #B0B8C1; font-weight: 700; }
+      .mark-only { font-size: 15px; fill: #3182F6; font-weight: 800; }
+    </style>
+  </defs>
+
+  <rect width="1060" height="620" fill="#FFFFFF"/>
+
+  <text x="32" y="42" class="title">Read &amp; trade coverage</text>
+  <text x="32" y="66" class="subtitle">tossctl &#8839; the official Open API (upcoming) &#160;—&#160; everything it will cover, and beyond</text>
+
+  <rect x="24" y="84" width="1012" height="476" rx="16" fill="#EAF2FF" stroke="#3182F6" stroke-width="2.5"/>
+  <rect x="44" y="98" width="118" height="32" rx="16" fill="#3182F6"/>
+  <text x="103" y="120" text-anchor="middle" class="pill-text" fill="#FFFFFF">tossctl</text>
+
+  <rect x="52" y="150" width="430" height="392" rx="12" fill="#FFFFFF" stroke="#AEBAC9" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <rect x="72" y="166" width="272" height="30" rx="15" fill="#E5E8EB"/>
+  <text x="208" y="187" text-anchor="middle" class="pill-text" fill="#4E5968">Official Open API (upcoming)</text>
+
+  <text x="80" y="236" class="mark-off">•</text><text x="100" y="236" class="item">Accounts &amp; summary</text>
+  <text x="80" y="272" class="mark-off">•</text><text x="100" y="272" class="item">Portfolio (USD for US holdings)</text>
+  <text x="80" y="308" class="mark-off">•</text><text x="100" y="308" class="item">Quotes &amp; trade ticks</text>
+  <text x="80" y="344" class="mark-off">•</text><text x="100" y="344" class="item">Price limits &amp; trade warnings</text>
+  <text x="80" y="380" class="mark-off">•</text><text x="100" y="380" class="item">Trading hours &amp; FX rates</text>
+  <text x="80" y="416" class="mark-off">•</text><text x="100" y="416" class="item">Order lookup</text>
+  <text x="80" y="452" class="mark-off">•</text><text x="100" y="452" class="item">Limit buy / sell</text>
+  <text x="80" y="488" class="mark-off">•</text><text x="100" y="488" class="item">Cancel / amend</text>
+
+  <rect x="506" y="150" width="506" height="392" rx="12" fill="#D6E6FF" stroke="#3182F6" stroke-width="1.5"/>
+  <rect x="526" y="166" width="360" height="30" rx="15" fill="#3182F6"/>
+  <text x="706" y="187" text-anchor="middle" class="pill-text" fill="#FFFFFF">tossctl-only (not in official API)</text>
+
+  <text x="534" y="231" class="mark-only">+</text><text x="554" y="231" class="item-strong">Investor flows (retail / foreign / institutional)</text>
+  <text x="534" y="261" class="mark-only">+</text><text x="554" y="261" class="item-strong">Market indices (KOSPI, Nasdaq, VIX, …)</text>
+  <text x="534" y="291" class="mark-only">+</text><text x="554" y="291" class="item-strong">Toss AI signals</text>
+  <text x="534" y="321" class="mark-only">+</text><text x="554" y="321" class="item-strong">Stock screener (preset &amp; custom)</text>
+  <text x="534" y="351" class="mark-only">+</text><text x="554" y="351" class="item-strong">Watchlist management (folder CRUD)</text>
+  <text x="534" y="381" class="mark-only">+</text><text x="554" y="381" class="item-strong">Transaction ledger &amp; cash overview</text>
+  <text x="534" y="411" class="mark-only">+</text><text x="554" y="411" class="item-strong">Multi-quote &amp; live refresh</text>
+  <text x="534" y="441" class="mark-only">+</text><text x="554" y="441" class="item-strong">Real-time push (SSE stream)</text>
+  <text x="534" y="471" class="mark-only">+</text><text x="554" y="471" class="item-strong">Fractional orders (amount-based)</text>
+  <text x="534" y="501" class="mark-only">+</text><text x="554" y="501" class="item-strong">Dry-run preview &amp; safety gates</text>
+  <text x="534" y="531" class="mark-only">+</text><text x="554" y="531" class="item-strong">CSV export</text>
+
+  <text x="32" y="588" class="foot">The official Open API is in pre-application stage (not yet released) — its column shows expected coverage at launch and may change.</text>
+  <text x="32" y="608" class="foot">Today, tossctl is the only way to use every feature above.</text>
+</svg>

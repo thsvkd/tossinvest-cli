@@ -1,3 +1,5 @@
+<p align="right"><strong>한국어</strong> · <a href="README.en.md">English</a></p>
+
 <div align="center">
   <h1>tossinvest-cli</h1>
   <p><strong>AI 에이전트를 토스증권에 연결하는 비공식 CLI — 공식 Open API(예정)보다 넓은 조회·거래 표면.</strong></p>
@@ -122,6 +124,10 @@ Waiting for approval in the Toss app on your phone...
 
 > **tossctl 은 공식 Open API(예정)가 커버하는 범위 + 그 너머를 다룹니다.**
 > 수급·시장지수·AI 시그널·조건검색·관심종목 관리·거래내역 ledger·실시간 푸시·소수점 주문·dry-run preview 등 **10개 이상의 기능이 공식 로드맵에 없는 tossctl 고유 범위**입니다.
+
+<p align="center">
+  <img src="docs/assets/api-comparison.svg" alt="tossctl vs 공식 Open API(예정) 커버리지 비교 — tossctl 이 상위집합" width="840" />
+</p>
 
 토스증권 공식 Open API 는 현재 **사전 신청 단계**(미출시)입니다. 아래 표의
 `공식 API (예정)` 칼럼은 출시 시 공식이 커버할 예상 범위이며, 지금은 모든 기능을
@@ -410,11 +416,11 @@ tossctl auth logout
 ### API 회귀 감시
 
 ```bash
-tossctl monitor api           # 6개 endpoint schema probe; exit 0 통과, 1 실패
+tossctl monitor api           # 15개 endpoint schema probe (병렬); exit 0 통과, 1 실패
 tossctl monitor api --quiet   # cron 용
 ```
 
-본인 머신에서 본인 세션으로 6개 read-only endpoint 응답 schema 를 점검합니다. [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29) 같은 토스 서버측 body 계약 변경을 조기 감지할 목적. exit code 만 반환하므로 알림 채널 (Discord / Slack / ntfy / macOS / 이메일) 은 cron 라인의 `|| <command>` 우항에서 사용자가 합성합니다. 합성 recipe: [`AGENTS.md`](AGENTS.md). 설정 가이드: [`docs/operations.md`](docs/operations.md).
+본인 머신에서 본인 세션으로 15개 read-only endpoint 응답 schema 를 병렬 점검합니다. [#29](https://github.com/JungHoonGhae/tossinvest-cli/issues/29) 같은 토스 서버측 body 계약 변경을 조기 감지할 목적. exit code 만 반환하므로 알림 채널 (Discord / Slack / ntfy / macOS / 이메일) 은 cron 라인의 `|| <command>` 우항에서 사용자가 합성합니다. 합성 recipe: [`AGENTS.md`](AGENTS.md). 설정 가이드: [`docs/operations.md`](docs/operations.md).
 
 ## 주문 ref rollover
 
