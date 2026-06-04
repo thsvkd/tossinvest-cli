@@ -1,7 +1,8 @@
 <div align="center">
   <h1>tossinvest-cli</h1>
-  <p><strong>AI 에이전트를 토스증권에 연결하는 비공식 CLI.</strong></p>
+  <p><strong>AI 에이전트를 토스증권에 연결하는 비공식 CLI — 공식 Open API(예정)보다 넓은 조회·거래 표면.</strong></p>
   <p>Claude Code · Codex · Cursor · OpenClaw · bash · HTTP — 어떤 도구든 동일한 명령 표면(<code>tossctl</code>)으로 토스증권 계좌·시세·거래를 다룰 수 있습니다. 사람이 직접 터미널에서 쓸 수도 있습니다.</p>
+  <p><sub>수급 · 시장지수 · 토스 AI 시그널 · 조건검색(스크리너) · 관심종목 관리 · 거래내역 ledger · 실시간 푸시 · 소수점 주문 · dry-run preview — <strong>공식 Open API(예정) 로드맵에 없는 영역까지</strong> 커버합니다. <a href="#지원-범위">전체 비교표 ↓</a></sub></p>
 </div>
 
 <p align="center">
@@ -112,9 +113,12 @@ Waiting for approval in the Toss app on your phone...
 
 ## 지원 범위
 
+> **tossctl 은 공식 Open API(예정)가 커버하는 범위 + 그 너머를 다룹니다.**
+> 수급·시장지수·AI 시그널·조건검색·관심종목 관리·거래내역 ledger·실시간 푸시·소수점 주문·dry-run preview 등 **10개 이상의 기능이 공식 로드맵에 없는 tossctl 고유 범위**입니다.
+
 토스증권 공식 Open API 는 현재 **사전 신청 단계**(미출시)입니다. 아래 표의
-`공식 API` 칼럼은 출시 시 공식이 커버할 범위이며, 지금은 모든 기능을 tossctl 이
-유일하게 제공합니다. `tossctl` 칼럼이 우리가 제공하는 범위입니다.
+`공식 API (예정)` 칼럼은 출시 시 공식이 커버할 예상 범위이며, 지금은 모든 기능을
+tossctl 이 유일하게 제공합니다. `tossctl` 칼럼이 우리가 제공하는 범위입니다.
 
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
 - **`공식 API (예정)` 칼럼 = 미출시. ✅/🔸/❌ 는 출시 시 예상 커버리지** (사전 신청 단계라 변동 가능). 지금은 모든 기능을 tossctl 이 유일하게 제공.
