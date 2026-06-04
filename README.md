@@ -3,7 +3,14 @@
   <p><strong>AI 에이전트를 토스증권에 연결하는 비공식 CLI — 공식 Open API(예정)보다 넓은 조회·거래 표면.</strong></p>
   <p>Claude Code · Codex · Cursor · OpenClaw · bash · HTTP — 어떤 도구든 동일한 명령 표면(<code>tossctl</code>)으로 토스증권 계좌·시세·거래를 다룰 수 있습니다. 사람이 직접 터미널에서 쓸 수도 있습니다.</p>
   <p><sub>수급 · 시장지수 · 토스 AI 시그널 · 조건검색(스크리너) · 관심종목 관리 · 거래내역 ledger · 실시간 푸시 · 소수점 주문 · dry-run preview — <strong>공식 Open API(예정) 로드맵에 없는 영역까지</strong> 커버합니다. <a href="#지원-범위">전체 비교표 ↓</a></sub></p>
+  <p><sub><em>An unofficial Toss Securities CLI for AI agents — broader read &amp; trade coverage than the (upcoming) official Open API.</em></sub></p>
 </div>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/commands-47%20across%2015%20groups-blue" alt="47 commands" />
+  <img src="https://img.shields.io/badge/beyond%20official%20API-12%2B%20features-success" alt="12+ features beyond official API" />
+  <img src="https://img.shields.io/badge/output-table%20%7C%20JSON%20%7C%20CSV%20%7C%20SSE-informational" alt="output formats" />
+</p>
 
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
