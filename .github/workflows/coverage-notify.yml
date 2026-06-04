@@ -1,0 +1,36 @@
+name: Coverage Notify
+
+# Lightweight Discord relay for the remote coverage-watch routine.
+# The routine runs in Anthropic cloud (which can't reach discord.com), so it
+# triggers this workflow via `gh workflow run coverage-notify.yml -f message=...`
+# and GitHub's runner — which can reach Discord — posts the result.
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Message to post to Discord"
+        required: true
+        type: string
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          MESSAGE: ${{ inputs.message }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::error::DISCORD_WEBHOOK secret 미설정"
+            exit 1
+          fi
+          MSG=$(printf '%s' "$MESSAGE" | head -c 1900)
+          PAYLOAD=$(printf '%s' "$MSG" | jq -Rs '{content: .}')
+          HTTP=$(curl -sS -o /tmp/resp -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' \
+            --data "$PAYLOAD" "$WEBHOOK")
+          echo "Discord status: $HTTP"
+          cat /tmp/resp || true
+          [ "$HTTP" = "204" ] || exit 1
