@@ -46,8 +46,10 @@ func TestNormalizeCancelRequiresSymbol(t *testing.T) {
 	}
 }
 
-func TestNormalizePlaceKRSymbolWithUSMarketErrors(t *testing.T) {
-	_, err := NormalizePlace(PlaceInput{
+func TestNormalizePlaceKRSymbolWithDefaultMarketAutoRoutesToKR(t *testing.T) {
+	// A 6-digit Korean code under the default "us" market is auto-routed to kr
+	// rather than rejected — a KR code is never a valid US ticker.
+	intent, err := NormalizePlace(PlaceInput{
 		Symbol:       "005930",
 		Market:       "us",
 		Side:         "buy",
@@ -56,8 +58,27 @@ func TestNormalizePlaceKRSymbolWithUSMarketErrors(t *testing.T) {
 		Price:        200000,
 		CurrencyMode: "KRW",
 	})
+	if err != nil {
+		t.Fatalf("expected KR symbol to auto-route, got error: %v", err)
+	}
+	if intent.Market != "kr" {
+		t.Fatalf("expected auto-routed market kr, got %q", intent.Market)
+	}
+}
+
+func TestNormalizePlaceFractionalKRSymbolStillRejected(t *testing.T) {
+	// Auto-routing a KR code to kr must not silently enable fractional (US-only).
+	_, err := NormalizePlace(PlaceInput{
+		Symbol:       "005930",
+		Market:       "us",
+		Side:         "buy",
+		OrderType:    "market",
+		Amount:       10000,
+		CurrencyMode: "KRW",
+		Fractional:   true,
+	})
 	if err == nil {
-		t.Fatal("expected error for KR symbol with us market")
+		t.Fatal("expected fractional KR order to be rejected after auto-route")
 	}
 }
 

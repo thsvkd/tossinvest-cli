@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
@@ -276,12 +277,32 @@ func Probes() []Probe {
 	}
 }
 
-// Run executes all probes sequentially using the session for auth.
+// maxConcurrentProbes bounds how many probes hit Toss at once. The probes are
+// independent read-only GETs/POSTs, so running them concurrently turns a
+// worst-case ~N×10s sequential wall-clock into roughly one 10s window, which
+// matters most for the daily-monitor cron. Kept modest to stay polite to the
+// upstream and avoid tripping rate limits.
+const maxConcurrentProbes = 8
+
+// Run executes all probes concurrently (bounded by maxConcurrentProbes) using
+// the session for auth. Results are returned in probe order regardless of
+// completion order, so output stays stable.
 func Run(ctx context.Context, sess *session.Session) []Result {
-	results := make([]Result, 0, len(Probes()))
-	for _, p := range Probes() {
-		results = append(results, runOne(ctx, sess, p))
+	probes := Probes()
+	results := make([]Result, len(probes))
+
+	sem := make(chan struct{}, maxConcurrentProbes)
+	var wg sync.WaitGroup
+	for i, p := range probes {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(i int, p Probe) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			results[i] = runOne(ctx, sess, p)
+		}(i, p)
 	}
+	wg.Wait()
 	return results
 }
 

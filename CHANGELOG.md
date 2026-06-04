@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- **`monitor api` probe 병렬 실행** — 15개 probe 를 순차(최악 ~N×10s)에서 bounded 병렬(동시 8개)로 전환. daily-monitor cron wall-clock 대폭 단축. 결과는 probe 순서 그대로 반환.
+- **`quote batch` 멀티 종목 병렬 fetch** — 종목별 순차 호출(각 다중 HTTP)에서 bounded 병렬(동시 6개)로 전환, 입력 순서 보존. `--live` 갱신 모드 응답성 개선. fail-fast 동작 유지.
+
+### Fixed (UX)
+- **KR 종목코드 시장 자동 판별** — `order place/preview` 에서 6자리 한국 종목코드(예: `005930`)를 넣으면 `--market kr` 를 안 줘도 자동으로 KR 시장으로 라우팅. (기존엔 에러로 거부) KR 코드는 US 티커와 겹칠 수 없어 안전. 거래 게이트(`--execute` + `--confirm <token>` + config)는 그대로.
+
 ## [0.5.1] - 2026-06-04
 
 0.5.0 직후 같은 날 진행한 후속 정리 모음 — 안전 모델 용어/잉여 게이트 정리 + config 경고 + 문서 일치화.

@@ -79,8 +79,13 @@ func NormalizePlace(input PlaceInput) (PlaceIntent, error) {
 		Fractional:   fractional,
 	}
 
+	// A Korean stock code (6 digits, optionally A-prefixed) is never a valid US
+	// ticker, so when the symbol clearly looks Korean we route it to the KR
+	// market automatically instead of rejecting. The default --market is "us",
+	// and forcing users to also pass --market kr for an obviously-Korean code
+	// was pure friction. An explicit non-us market is left untouched.
 	if intent.Market == "us" && looksLikeKRSymbol(intent.Symbol) {
-		return PlaceIntent{}, fmt.Errorf("symbol %q looks like a Korean stock code; use --market kr", input.Symbol)
+		intent.Market = "kr"
 	}
 	if intent.Fractional && intent.Market != "us" {
 		return PlaceIntent{}, fmt.Errorf("fractional orders are only supported for US stocks")

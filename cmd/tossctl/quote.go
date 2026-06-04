@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -59,13 +60,9 @@ func newQuoteCmd(opts *rootOptions) *cobra.Command {
 			symbols := parseBatchSymbols(args)
 
 			fetchAndRender := func(ctx context.Context, w io.Writer) error {
-				var quotes []domain.Quote
-				for _, symbol := range symbols {
-					quote, err := app.client.GetQuote(ctx, symbol)
-					if err != nil {
-						return err
-					}
-					quotes = append(quotes, quote)
+				quotes, err := fetchQuotesConcurrently(ctx, app.client, symbols)
+				if err != nil {
+					return err
 				}
 
 				if !batchChart {
@@ -254,4 +251,42 @@ func parseBatchSymbols(args []string) []string {
 		}
 	}
 	return symbols
+}
+
+type quoteFetcher interface {
+	GetQuote(ctx context.Context, symbol string) (domain.Quote, error)
+}
+
+// maxConcurrentQuotes bounds how many symbols are fetched at once in batch mode.
+// Each GetQuote fans out into several Toss HTTP calls, so a sequential loop over
+// many symbols is slow — especially under `--live` where it re-runs on a timer.
+// Modest fan-out keeps it polite to the upstream.
+const maxConcurrentQuotes = 6
+
+// fetchQuotesConcurrently fetches every symbol in parallel (bounded) and returns
+// the quotes in the original symbol order. It is fail-fast: if any symbol
+// errors, the first error by symbol order is returned (wrapped with the symbol).
+func fetchQuotesConcurrently(ctx context.Context, c quoteFetcher, symbols []string) ([]domain.Quote, error) {
+	quotes := make([]domain.Quote, len(symbols))
+	errs := make([]error, len(symbols))
+
+	sem := make(chan struct{}, maxConcurrentQuotes)
+	var wg sync.WaitGroup
+	for i, symbol := range symbols {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(i int, symbol string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			quotes[i], errs[i] = c.GetQuote(ctx, symbol)
+		}(i, symbol)
+	}
+	wg.Wait()
+
+	for i, err := range errs {
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", symbols[i], err)
+		}
+	}
+	return quotes, nil
 }
