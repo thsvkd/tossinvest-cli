@@ -20,7 +20,7 @@ Preferred: GitHub **private vulnerability reporting** —
 repo **Security** tab → **Report a vulnerability**
 (<https://github.com/JungHoonGhae/tossinvest-cli/security/advisories/new>).
 
-Alternative: email **lucas.ghae@gmail.com** with `[tossinvest-cli security]` in
+Alternative: email **lucas.ghae@remodule.dev** with `[tossinvest-cli security]` in
 the subject.
 
 Please include: affected version/commit, environment (OS, install method),
@@ -65,7 +65,7 @@ Out of scope:
 
 - 권장: 레포 **Security** 탭 → **Report a vulnerability**
   (<https://github.com/JungHoonGhae/tossinvest-cli/security/advisories/new>)
-- 또는: **lucas.ghae@gmail.com** 으로 메일 (제목에 `[tossinvest-cli security]`)
+- 또는: **lucas.ghae@remodule.dev** 으로 메일 (제목에 `[tossinvest-cli security]`)
 
 영향 버전/커밋, 환경(OS·설치 방법), 재현 절차, 영향 범위를 포함해 주세요. 며칠 내
 확인을 목표로 하며, 자원봉사로 운영되는 프로젝트라 버그 바운티는 없습니다.
