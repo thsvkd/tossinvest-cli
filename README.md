@@ -145,7 +145,6 @@ Waiting for approval in the Toss app on your phone...
 | 계좌 목록 / 요약 | `account list`, `account summary` | ✅ | ✅ |
 | 포트폴리오 | `portfolio positions`, `portfolio allocation` (US: USD 병기) | ✅ | ✅ |
 | 시세 | `quote get <symbol>` (OHLC·52주 고저·시총·거래대금·체결강도) | 🔸 *(체결강도·52주 등 제외)* | ✅ |
-| 멀티 시세 / 실시간 갱신 | `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | ❌ | ✅ |
 | 캔들 차트 | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1분·일봉만)* | ✅ |
 | 체결 내역 (틱) | `quote trades <symbol> --count N` | ✅ | ✅ |
 | 호가 (bid/ask 10단계) | `quote orderbook <symbol>` (매도·매수 잔량) | ✅ | ✅ |
@@ -153,14 +152,15 @@ Waiting for approval in the Toss app on your phone...
 | 매수 유의사항 | `quote warnings <symbol>` (정리매매·투자경고·VI 등) | ✅ | ✅ |
 | 장 운영 시간 | `market hours` (오늘 + 휴장 시 다음 영업일) | ✅ | ✅ |
 | 환율 | `market fx` (달러 환율·달러 인덱스) | ✅ | ✅ |
+| 매도가능수량 | `quote sellable <symbol>` (보유 종목 매도가능 주수) | ✅ | ✅ |
+| 수수료 / 거래세율 | `quote commission <symbol>` (수수료율·거래세율) | ✅ | ✅ |
+| 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
+| **멀티 시세 / 실시간 갱신** | `quote batch <sym>[,sym,...]` (`--chart`·`--live`) | ❌ | ✅ |
 | **수급 (투자자별 순매수)** | `quote flows <symbol>` (개인·외국인·기관, KR) | ❌ | ✅ |
 | **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ❌ | ✅ |
 | **실시간 인기 순위** | `market ranking --size N` | ❌ | ✅ |
 | **토스 AI 시그널** | `market signals` (종목별 AI 시그널·키워드·등락) | ❌ | ✅ |
 | **조건 검색 (스크리너)** | `market screener [id]` (프리셋) · `--filter '<json>'` (커스텀 조건) `--nation kr\|us` | ❌ | ✅ |
-| 매도가능수량 | `quote sellable <symbol>` (보유 종목 매도가능 주수) | ✅ | ✅ |
-| 수수료 / 거래세율 | `quote commission <symbol>` (수수료율·거래세율) | ✅ | ✅ |
-| 미체결 / 체결 / 단건 주문 | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
 | **관심 종목 조회·관리** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` (폴더 CRUD + 종목 추가/제거) | ❌ | ✅ |
 | **거래내역 ledger** | `transactions list --market us\|kr` (매매·입출금·배당·입출고) | ❌ | ✅ |
 | **현금 overview** | `transactions overview --market us\|kr` (주문가능·출금가능·예정입금) | ❌ | ✅ |
@@ -177,9 +177,9 @@ preview·config 기반 안전 게이트** 등 tossctl 의 거래 UX/안전장치
 | 지정가 매수 (US/KR) | `order place --side buy --price <value>` | `place` | ✅ | ✅ |
 | 지정가 매도 (US/KR) | `order place --side sell --price <value>` | `place` + `sell` | ✅ | ✅ |
 | 국내주식 거래 | `order place --market kr` (6자리 코드는 자동 인식) | `place` | ✅ | ✅ |
-| **소수점 매수 (US, 금액 기반)** | `order place --fractional --amount <value>` (기본 KRW; `--currency-mode USD`) | `place` + `fractional` | ❌ | ✅ |
 | 주문 취소 | `order cancel --order-id <id>` | `cancel` | ✅ | ✅ |
 | 주문 정정 | `order amend --order-id <id>` | `amend` | ✅ | ✅ |
+| **소수점 매수 (US, 금액 기반)** | `order place --fractional --amount <value>` (기본 KRW; `--currency-mode USD`) | `place` + `fractional` | ❌ | ✅ |
 | **주문 dry-run / preview** | `order preview` (실제 전송 없이 검증) | — | ❌ | ✅ |
 
 모든 거래는 `allow_live_order_actions=true`도 필요합니다. 소수점 주문은 시장가(market order)로 자동 전환되며, 금액 기반입니다 (`--currency-mode KRW` 기본 또는 `USD`).

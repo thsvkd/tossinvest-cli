@@ -108,7 +108,6 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | Accounts / summary | `account list`, `account summary` | ✅ | ✅ |
 | Portfolio | `portfolio positions`, `portfolio allocation` (USD for US) | ✅ | ✅ |
 | Quote | `quote get <symbol>` (OHLC · 52w · market cap · trading value · strength) | 🔸 *(no strength/52w etc.)* | ✅ |
-| Multi-quote / live refresh | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ |
 | Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ |
 | Trade ticks | `quote trades <symbol> --count N` | ✅ | ✅ |
 | Orderbook (10-level bid/ask) | `quote orderbook <symbol>` | ✅ | ✅ |
@@ -116,14 +115,15 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | Trade warnings | `quote warnings <symbol>` (liquidation · alert · VI …) | ✅ | ✅ |
 | Trading hours | `market hours` (today + next session when closed) | ✅ | ✅ |
 | FX | `market fx` (USD rate · dollar index) | ✅ | ✅ |
+| Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ |
+| Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ |
+| Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
+| **Multi-quote / live refresh** | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ |
 | **Investor flows** | `quote flows <symbol>` (retail · foreign · inst., KR) | ❌ | ✅ |
 | **Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ |
 | **Live popularity ranking** | `market ranking --size N` | ❌ | ✅ |
 | **Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ |
 | **Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ |
-| Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ |
-| Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ |
-| Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
 | **Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ |
 | **Transaction ledger** | `transactions list --market us\|kr` (trades · transfers · dividends) | ❌ | ✅ |
 | **Cash overview** | `transactions overview --market us\|kr` (orderable · withdrawable · incoming) | ❌ | ✅ |
@@ -139,9 +139,9 @@ The official API also offers order create/amend/cancel, but tossctl's trading UX
 | Limit buy (US/KR) | `order place --side buy --price <value>` | `place` | ✅ | ✅ |
 | Limit sell (US/KR) | `order place --side sell --price <value>` | `place` + `sell` | ✅ | ✅ |
 | Korean stock trading | `order place --market kr` (6-digit codes auto-detected) | `place` | ✅ | ✅ |
-| **Fractional buy (US, amount-based)** | `order place --fractional --amount <value>` (KRW default; `--currency-mode USD`) | `place` + `fractional` | ❌ | ✅ |
 | Cancel | `order cancel --order-id <id>` | `cancel` | ✅ | ✅ |
 | Amend | `order amend --order-id <id>` | `amend` | ✅ | ✅ |
+| **Fractional buy (US, amount-based)** | `order place --fractional --amount <value>` (KRW default; `--currency-mode USD`) | `place` + `fractional` | ❌ | ✅ |
 | **Dry-run / preview** | `order preview` (validate without sending) | — | ❌ | ✅ |
 
 All trades also require `allow_live_order_actions=true`. Fractional orders auto-convert to market orders and are amount-based (`--currency-mode KRW` default or `USD`).
