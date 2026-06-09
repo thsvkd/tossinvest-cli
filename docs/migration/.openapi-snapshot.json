@@ -8,5 +8,6 @@
   "docs_status": "200",
   "llms_txt_status": "200",
   "updated_at": "2026-06-03",
-  "note": "2026-06-02 공식 문서 + OpenAPI spec 공개 확인 (제보: skyisle, issue #31). 이전 corp.tossinvest.com 페이지 chunk 추적은 spec version 추적으로 대체."
+  "last_checked_at": "2026-06-09",
+  "note": "updated_at = spec 가 마지막으로 바뀐 날, last_checked_at = daily-monitor 가 마지막으로 점검한 날(변화 없어도 매일 갱신). 2026-06-02 공식 문서 + OpenAPI spec 공개 확인 (제보: skyisle, issue #31). 이전 corp.tossinvest.com 페이지 chunk 추적은 spec version 추적으로 대체."
 }

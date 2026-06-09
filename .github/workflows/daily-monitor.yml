@@ -63,6 +63,8 @@ jobs:
           BASE_VERSION=$(jq -r '.spec_version // ""' "$SNAP" 2>/dev/null || echo "")
           BASE_PATHS_SHA=$(jq -r '.spec_paths_sha256 // ""' "$SNAP" 2>/dev/null || echo "")
           BASE_PATH_COUNT=$(jq -r '.spec_path_count // 0' "$SNAP" 2>/dev/null || echo 0)
+          BASE_LAST_CHECKED=$(jq -r '.last_checked_at // ""' "$SNAP" 2>/dev/null || echo "")
+          TODAY=$(date -u +%Y-%m-%d)
 
           REASONS=()
           CHANGED=false
@@ -80,19 +82,31 @@ jobs:
             REASONS+=("⚠️ spec fetch 실패 (일시 장애 가능)")
           fi
 
+          # snapshot 을 다시 커밋해야 하는지 플래그. 변경 시 전체 갱신,
+          # 변화 없으면 heartbeat 로 last_checked_at 만 하루 1번 갱신.
+          SNAP_DIRTY=false
           if $CHANGED && [ -n "$VERSION" ]; then
             jq -n --arg url "$SPEC_URL" --arg ver "$VERSION" --argjson pc "$PATH_COUNT" \
               --arg psha "$PATHS_SHA" --arg docs "$DOCS_CODE" --arg llms "$LLMS_CODE" \
-              --arg ts "$(date -u +%Y-%m-%d)" \
-              '{phase:"spec-public",spec_url:$url,spec_version:$ver,spec_path_count:$pc,spec_paths_sha256:$psha,docs_url:"https://developers.tossinvest.com/docs",docs_status:$docs,llms_txt_status:$llms,updated_at:$ts}' \
+              --arg ts "$TODAY" --arg lc "$TODAY" \
+              '{phase:"spec-public",spec_url:$url,spec_version:$ver,spec_path_count:$pc,spec_paths_sha256:$psha,docs_url:"https://developers.tossinvest.com/docs",docs_status:$docs,llms_txt_status:$llms,updated_at:$ts,last_checked_at:$lc}' \
               > "$SNAP"
             printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
-          elif [ ${#REASONS[@]} -gt 0 ]; then
-            printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
+            SNAP_DIRTY=true
           else
-            echo "⚪️ 변화 없음 (spec \`${VERSION}\`, ${PATH_COUNT} endpoints)" > /tmp/toss_reasons.txt
+            # 변화 없음(또는 일시 fetch 실패) — heartbeat: 날짜가 바뀐 첫 실행에만 last_checked_at 갱신
+            if [ -n "$VERSION" ] && [ -f "$SNAP" ] && [ "$BASE_LAST_CHECKED" != "$TODAY" ]; then
+              jq --arg t "$TODAY" '.last_checked_at=$t' "$SNAP" > "${SNAP}.tmp" && mv "${SNAP}.tmp" "$SNAP"
+              SNAP_DIRTY=true
+            fi
+            if [ ${#REASONS[@]} -gt 0 ]; then
+              printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
+            else
+              echo "⚪️ 변화 없음 (spec \`${VERSION}\`, ${PATH_COUNT} endpoints, 확인 ${TODAY})" > /tmp/toss_reasons.txt
+            fi
           fi
           echo "$CHANGED" > /tmp/toss_changed
+          echo "$SNAP_DIRTY" > /tmp/snap_dirty
 
       - name: Compose message
         run: |
@@ -163,16 +177,22 @@ jobs:
           cat /tmp/resp || true
           [ "$HTTP" = "204" ] || exit 1
 
-      - name: Commit snapshot if changed
+      - name: Commit snapshot (change or daily heartbeat)
         if: hashFiles('docs/migration/.openapi-snapshot.json') != ''
         run: |
-          if [ "$(cat /tmp/toss_changed 2>/dev/null)" != "true" ]; then
-            echo "변화 없음 — commit skip"
+          if [ "$(cat /tmp/snap_dirty 2>/dev/null)" != "true" ]; then
+            echo "갱신할 내용 없음 — commit skip"
             exit 0
+          fi
+          # 변경이면 spec 갱신 메시지, 아니면 heartbeat (CI 미트리거)
+          if [ "$(cat /tmp/toss_changed 2>/dev/null)" = "true" ]; then
+            MSG="docs(migration): openapi-snapshot 자동 갱신"
+          else
+            MSG="chore(monitor): openapi-snapshot last_checked 갱신 [skip ci]"
           fi
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add docs/migration/.openapi-snapshot.json
           git diff --cached --quiet && { echo "이미 최신"; exit 0; }
-          git commit -m "docs(migration): openapi-snapshot 자동 갱신"
+          git commit -m "$MSG"
           git push origin HEAD:main
