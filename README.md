@@ -15,6 +15,11 @@
 </p>
 
 <p align="center">
+  <a href="docs/migration/.openapi-snapshot.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Fmigration%2F.openapi-snapshot.json&query=%24.spec_version&label=verified%20vs%20official%20Open%20API&prefix=v&color=3182F6" alt="verified official API version" /></a>
+  <a href="docs/migration/.openapi-snapshot.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Fmigration%2F.openapi-snapshot.json&query=%24.last_checked_at&label=spec%20checked&color=informational" alt="spec last checked" /></a>
+</p>
+
+<p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#지원-범위"><strong>지원 범위</strong></a> ·
   <a href="#명령-표면"><strong>명령 표면</strong></a> ·
@@ -137,7 +142,7 @@ Waiting for approval in the Toss app on your phone...
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
 - **`공식 API (예정)` 칼럼 = 공개 문서 기준 예상 커버리지** (사전 신청자 단계적 롤아웃 — 변동 가능).
 - **`공식 API (예정)` 가 ❌ 인 행 = tossctl 고유 범위.**
-- 공식 spec 전체 사본을 매일 자동 추적해 [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json) 에 미러링합니다. 현재 버전·마지막 점검일은 [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json) 에서 확인할 수 있고, 변경 시 자동 감지·알림됩니다.
+- **검증 기준 버전**: 아래 표·다이어그램의 `공식 API` 칼럼은 **상단 배지에 표시된 공식 Open API 버전** 기준으로 검증된 결과입니다 (그 버전·마지막 점검일은 [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json) 에 기록). 전체 spec 사본을 매일 [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json) 에 미러링하며, 토스가 spec 을 올리면 자동 감지·알림되어 갱신됩니다.
 
 ### 조회 (읽기 전용) · US·KR 공통
 

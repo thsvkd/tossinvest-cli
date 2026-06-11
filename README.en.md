@@ -14,6 +14,11 @@
 </p>
 
 <p align="center">
+  <a href="docs/migration/.openapi-snapshot.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Fmigration%2F.openapi-snapshot.json&query=%24.spec_version&label=verified%20vs%20official%20Open%20API&prefix=v&color=3182F6" alt="verified official API version" /></a>
+  <a href="docs/migration/.openapi-snapshot.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Fmigration%2F.openapi-snapshot.json&query=%24.last_checked_at&label=spec%20checked&color=informational" alt="spec last checked" /></a>
+</p>
+
+<p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#support-scope"><strong>Support Scope</strong></a> ·
   <a href="#command-surface"><strong>Command Surface</strong></a> ·
@@ -100,7 +105,7 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 - ✅ supported · ❌ not supported · 🔸 partial
 - **`Official API (planned)` column = staged rollout to pre-applicants. ✅/🔸/❌ is expected coverage at launch** (subject to change across rollout phases).
 - **Rows where `Official API (planned)` is ❌ = tossctl-only.**
-- The full official spec is tracked daily and mirrored to [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json). Current version & last-checked date live in [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json); changes are auto-detected and alerted.
+- **Verified version**: the `Official API` column in the tables/diagram below reflects verification against the **official Open API version shown in the badge above** (that version & last-checked date are recorded in [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json)). The full spec is mirrored daily to [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json); any change is auto-detected, alerted, and updated.
 
 ### Read-only · US & KR
 
