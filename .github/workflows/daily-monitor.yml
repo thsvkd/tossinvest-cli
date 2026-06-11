@@ -43,17 +43,22 @@ jobs:
       - name: 토스 Open API 페이지 모니터
         id: toss
         run: |
-          # 공식 OpenAPI spec 직접 추적 (spec version + endpoint 목록 hash 가 강한 신호)
+          # 공식 OpenAPI spec 직접 추적. version + endpoint 목록 hash + 전체 내용 hash.
+          # 전체 spec 을 레포에 저장해 내부(파라미터·스키마·응답) 변경도 git diff 로 보이게 한다.
           SPEC_URL="https://openapi.tossinvest.com/openapi-docs/latest/openapi.json"
+          SPEC_FILE=docs/migration/openapi.latest.json
           SPEC=$(curl -sS --max-time 15 "$SPEC_URL" || true)
           if [ -n "$SPEC" ] && printf '%s' "$SPEC" | jq -e . >/dev/null 2>&1; then
-            VERSION=$(printf '%s' "$SPEC" | jq -r '.info.version // ""')
-            PATH_COUNT=$(printf '%s' "$SPEC" | jq '.paths | keys | length')
-            PATHS_SHA=$(printf '%s' "$SPEC" | jq -S '.paths | keys' | shasum -a 256 | cut -d' ' -f1)
+            printf '%s' "$SPEC" | jq -S . > /tmp/spec_norm.json
+            VERSION=$(jq -r '.info.version // ""' /tmp/spec_norm.json)
+            PATH_COUNT=$(jq '.paths | keys | length' /tmp/spec_norm.json)
+            PATHS_SHA=$(jq -S '.paths | keys' /tmp/spec_norm.json | shasum -a 256 | cut -d' ' -f1)
+            FULL_SHA=$(shasum -a 256 /tmp/spec_norm.json | cut -d' ' -f1)
           else
             VERSION=""
             PATH_COUNT=0
             PATHS_SHA=""
+            FULL_SHA=""
           fi
 
           DOCS_CODE=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 https://developers.tossinvest.com/docs 2>/dev/null || echo ERR)
@@ -63,6 +68,7 @@ jobs:
           BASE_VERSION=$(jq -r '.spec_version // ""' "$SNAP" 2>/dev/null || echo "")
           BASE_PATHS_SHA=$(jq -r '.spec_paths_sha256 // ""' "$SNAP" 2>/dev/null || echo "")
           BASE_PATH_COUNT=$(jq -r '.spec_path_count // 0' "$SNAP" 2>/dev/null || echo 0)
+          BASE_FULL_SHA=$(jq -r '.spec_full_sha256 // ""' "$SNAP" 2>/dev/null || echo "")
           BASE_LAST_CHECKED=$(jq -r '.last_checked_at // ""' "$SNAP" 2>/dev/null || echo "")
           TODAY=$(date -u +%Y-%m-%d)
 
@@ -77,6 +83,13 @@ jobs:
             REASONS+=("🚨 endpoint 목록 변경 (${BASE_PATH_COUNT} → ${PATH_COUNT}개)")
             CHANGED=true
           fi
+          # 전체 내용 변경 (경로/버전 동일해도 내부 파라미터·스키마 변경 감지)
+          if [ -n "$FULL_SHA" ] && [ "$FULL_SHA" != "$BASE_FULL_SHA" ]; then
+            if [ "$VERSION" = "$BASE_VERSION" ]; then
+              REASONS+=("🔧 spec 내부 변경 (경로·버전 동일, 내용 변경 — openapi.latest.json diff 확인)")
+            fi
+            CHANGED=true
+          fi
           # spec fetch 실패는 일시 장애일 수 있어 변경으로 안 봄 (경고만)
           if [ -z "$VERSION" ]; then
             REASONS+=("⚠️ spec fetch 실패 (일시 장애 가능)")
@@ -86,10 +99,11 @@ jobs:
           # 변화 없으면 heartbeat 로 last_checked_at 만 하루 1번 갱신.
           SNAP_DIRTY=false
           if $CHANGED && [ -n "$VERSION" ]; then
-            jq -n --arg url "$SPEC_URL" --arg ver "$VERSION" --argjson pc "$PATH_COUNT" \
-              --arg psha "$PATHS_SHA" --arg docs "$DOCS_CODE" --arg llms "$LLMS_CODE" \
+            cp /tmp/spec_norm.json "$SPEC_FILE"
+            jq -n --arg url "$SPEC_URL" --arg sf "$SPEC_FILE" --arg ver "$VERSION" --argjson pc "$PATH_COUNT" \
+              --arg psha "$PATHS_SHA" --arg fsha "$FULL_SHA" --arg docs "$DOCS_CODE" --arg llms "$LLMS_CODE" \
               --arg ts "$TODAY" --arg lc "$TODAY" \
-              '{phase:"spec-public",spec_url:$url,spec_version:$ver,spec_path_count:$pc,spec_paths_sha256:$psha,docs_url:"https://developers.tossinvest.com/docs",docs_status:$docs,llms_txt_status:$llms,updated_at:$ts,last_checked_at:$lc}' \
+              '{phase:"spec-public",spec_url:$url,spec_file:$sf,spec_version:$ver,spec_path_count:$pc,spec_paths_sha256:$psha,spec_full_sha256:$fsha,docs_url:"https://developers.tossinvest.com/docs",docs_status:$docs,llms_txt_status:$llms,updated_at:$ts,last_checked_at:$lc}' \
               > "$SNAP"
             printf '%s\n' "${REASONS[@]}" > /tmp/toss_reasons.txt
             SNAP_DIRTY=true
@@ -192,7 +206,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add docs/migration/.openapi-snapshot.json
+          git add docs/migration/.openapi-snapshot.json docs/migration/openapi.latest.json
           git diff --cached --quiet && { echo "이미 최신"; exit 0; }
           git commit -m "$MSG"
           git push origin HEAD:main
