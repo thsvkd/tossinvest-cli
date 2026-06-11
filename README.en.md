@@ -100,6 +100,7 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 - ✅ supported · ❌ not supported · 🔸 partial
 - **`Official API (planned)` column = staged rollout to pre-applicants. ✅/🔸/❌ is expected coverage at launch** (subject to change across rollout phases).
 - **Rows where `Official API (planned)` is ❌ = tossctl-only.**
+- The full official spec is tracked daily and mirrored to [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json). Current version & last-checked date live in [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json); changes are auto-detected and alerted.
 
 ### Read-only · US & KR
 

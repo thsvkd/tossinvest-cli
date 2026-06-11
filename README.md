@@ -137,6 +137,7 @@ Waiting for approval in the Toss app on your phone...
 - ✅ 지원 · ❌ 미지원 · 🔸 부분 지원
 - **`공식 API (예정)` 칼럼 = 공개 문서 기준 예상 커버리지** (사전 신청자 단계적 롤아웃 — 변동 가능).
 - **`공식 API (예정)` 가 ❌ 인 행 = tossctl 고유 범위.**
+- 공식 spec 전체 사본을 매일 자동 추적해 [`docs/migration/openapi.latest.json`](docs/migration/openapi.latest.json) 에 미러링합니다. 현재 버전·마지막 점검일은 [`.openapi-snapshot.json`](docs/migration/.openapi-snapshot.json) 에서 확인할 수 있고, 변경 시 자동 감지·알림됩니다.
 
 ### 조회 (읽기 전용) · US·KR 공통
 
