@@ -107,8 +107,6 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 |------|--------|:--:|:--:|
 | Accounts / summary | `account list`, `account summary` | ✅ | ✅ |
 | Portfolio | `portfolio positions`, `portfolio allocation` (USD for US) | ✅ | ✅ |
-| Quote | `quote get <symbol>` (OHLC · 52w · market cap · trading value · strength) | 🔸 *(no strength/52w etc.)* | ✅ |
-| Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ |
 | Trade ticks | `quote trades <symbol> --count N` | ✅ | ✅ |
 | Orderbook (10-level bid/ask) | `quote orderbook <symbol>` | ✅ | ✅ |
 | Price limits | `quote limits <symbol>` (KR) | ✅ | ✅ |
@@ -118,6 +116,8 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ |
 | Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ |
 | Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
+| Quote | `quote get <symbol>` (OHLC · 52w · market cap · trading value · strength) | 🔸 *(no strength/52w etc.)* | ✅ |
+| Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ |
 | **Multi-quote / live refresh** | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ |
 | **Investor flows** | `quote flows <symbol>` (retail · foreign · inst., KR) | ❌ | ✅ |
 | **Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ |
