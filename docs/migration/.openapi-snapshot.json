@@ -1,13 +1,12 @@
 {
   "phase": "spec-public",
   "spec_url": "https://openapi.tossinvest.com/openapi-docs/latest/openapi.json",
-  "spec_version": "1.0.3",
+  "spec_version": "1.1.1",
   "spec_path_count": 20,
   "spec_paths_sha256": "aa3227e9050b2bd624cbe6ff686c78bb15dd7df0e2aec543cf94a88e8f5c2dd8",
   "docs_url": "https://developers.tossinvest.com/docs",
   "docs_status": "200",
   "llms_txt_status": "200",
-  "updated_at": "2026-06-03",
-  "last_checked_at": "2026-06-11",
-  "note": "updated_at = spec 가 마지막으로 바뀐 날, last_checked_at = daily-monitor 가 마지막으로 점검한 날(변화 없어도 매일 갱신). 2026-06-02 공식 문서 + OpenAPI spec 공개 확인 (제보: skyisle, issue #31). 이전 corp.tossinvest.com 페이지 chunk 추적은 spec version 추적으로 대체."
+  "updated_at": "2026-06-11",
+  "last_checked_at": "2026-06-11"
 }
