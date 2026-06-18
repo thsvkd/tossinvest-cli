@@ -97,22 +97,28 @@ function Install-Tossctl {
             Copy-Item $srcHelper $dstHelper -Recurse -Force
         }
 
-        # ── PATH (exact-segment, null-safe) ───────────────────────────────────
-        $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
-        if ([string]::IsNullOrEmpty($userPath)) {
-            $newPath = $INSTALL_DIR
-        } else {
-            $segments = $userPath -split ';' | Where-Object { $_ -ne '' }
-            if ($segments -notcontains $INSTALL_DIR) {
-                $newPath = ($segments + $INSTALL_DIR) -join ';'
-            } else {
-                $newPath = $userPath
-            }
+        # ── PATH (exact-segment, null-safe, REG_EXPAND_SZ-preserving) ─────────
+        # Read the RAW (unexpanded) user PATH from the registry. [Environment]::
+        # GetEnvironmentVariable expands %VAR% and SetEnvironmentVariable rewrites
+        # the value as REG_SZ — that downgrade bakes in / breaks other entries
+        # like `%JAVA_HOME%\bin`. We read with DoNotExpandEnvironmentNames and
+        # write back as ExpandString (REG_EXPAND_SZ) to leave them intact.
+        $envKey  = "HKCU:\Environment"
+        $rawPath = (Get-Item $envKey).GetValue(
+            "Path", "", [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+        $segments = @()
+        if (-not [string]::IsNullOrEmpty($rawPath)) {
+            $segments = $rawPath -split ';' | Where-Object { $_ -ne '' }
         }
-        if ($newPath -ne $userPath) {
-            [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
-            $env:PATH = "$env:PATH;$INSTALL_DIR"
+        if ($segments -notcontains $INSTALL_DIR) {
+            $newRaw = (($segments + $INSTALL_DIR) -join ';')
+            Set-ItemProperty -Path $envKey -Name "Path" -Value $newRaw -Type ExpandString
             Write-Ok "Added $INSTALL_DIR to PATH (user scope)."
+        }
+        # Make the new dir usable in the current session too (whether or not it
+        # was already persisted), so `tossctl` works without reopening a shell.
+        if (($env:PATH -split ';') -notcontains $INSTALL_DIR) {
+            $env:PATH = "$env:PATH;$INSTALL_DIR"
         }
 
         # ── Google Chrome check ───────────────────────────────────────────────
