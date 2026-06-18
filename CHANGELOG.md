@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-06-18
+
+Windows 설치 지원 추가 (PR #34, @thsvkd).
+
+### Added
+- **Windows PowerShell 인스톨러** `install.ps1` — `irm .../install.ps1 | iex` 한 줄 설치. 최신 릴리즈 다운로드 + SHA256 검증 + `%LOCALAPPDATA%\tossctl` 설치 + User PATH 등록 + Chrome/Python 점검 + playwright 설치. TLS1.2 강제, WOW64 arch 감지(ARM64 안내).
+- Windows Python 해석 — `resolveDefaultPythonBin`/`defaultPythonCandidates` 가 Windows 에서 `python`/`python.exe`/`py`(런처)/`Scripts\python.exe` 를 인식.
+- README(한·영) Windows 설치 안내.
+
+### Fixed
+- **install.ps1 User PATH 보존** — `[Environment]::SetEnvironmentVariable(User)` 가 PATH 를 REG_SZ 로 다운그레이드해 `%JAVA_HOME%\bin` 같은 기존 항목을 손상시키는 문제 수정. 레지스트리에서 unexpanded 로 읽어 `REG_EXPAND_SZ`(ExpandString) 로 기록하고, 이미 등록돼 있어도 현재 세션 PATH 를 갱신.
+
 ## [0.6.0] - 2026-06-04
 
 토스 공식 Open API 의 조회·거래 표면을 **100% 커버** — 누락이던 호가·매도가능수량·수수료 3개 엔드포인트 추가.
