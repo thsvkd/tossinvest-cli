@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -240,7 +241,14 @@ func TestDefaultLoginConfigHonorsExplicitPythonOverride(t *testing.T) {
 
 func TestDefaultLoginConfigPrefersUvToolPython(t *testing.T) {
 	toolDir := t.TempDir()
-	pythonPath := filepath.Join(toolDir, "tossctl-auth-helper", "bin", "python")
+	// On Windows exec.LookPath only treats files with a PATHEXT extension as
+	// runnable, and uv installs the interpreter under Scripts\python.exe rather
+	// than bin/python, so mirror that layout to match resolveDefaultPythonBin.
+	rel := filepath.Join("tossctl-auth-helper", "bin", "python")
+	if runtime.GOOS == "windows" {
+		rel = filepath.Join("tossctl-auth-helper", "Scripts", "python.exe")
+	}
+	pythonPath := filepath.Join(toolDir, rel)
 	if err := os.MkdirAll(filepath.Dir(pythonPath), 0o755); err != nil {
 		t.Fatalf("mkdir: %v", err)
 	}
@@ -265,8 +273,13 @@ func TestDefaultLoginConfigFallsBackToPython3(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 
 	cfg := DefaultLoginConfig(t.TempDir())
-	if cfg.PythonBin != "python3" {
-		t.Fatalf("expected python3 fallback, got %q", cfg.PythonBin)
+
+	want := "python3"
+	if runtime.GOOS == "windows" {
+		want = "python"
+	}
+	if cfg.PythonBin != want {
+		t.Fatalf("expected %q fallback, got %q", want, cfg.PythonBin)
 	}
 }
 
