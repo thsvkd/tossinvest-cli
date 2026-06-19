@@ -59,7 +59,7 @@ jobs:
           fi
           go build \
             -trimpath \
-            -ldflags "-X github.com/JungHoonGhae/tossinvest-cli/internal/version.Version=${VERSION} -X github.com/JungHoonGhae/tossinvest-cli/internal/version.Commit=${COMMIT} -X github.com/JungHoonGhae/tossinvest-cli/internal/version.Date=${DATE}" \
+            -ldflags "-X github.com/${{ github.repository }}/internal/version.Version=${VERSION} -X github.com/${{ github.repository }}/internal/version.Commit=${COMMIT} -X github.com/${{ github.repository }}/internal/version.Date=${DATE}" \
             -o "dist/${{ matrix.asset }}/${BINARY}" \
             ./cmd/tossctl
 
@@ -174,7 +174,7 @@ jobs:
       - name: Checkout Homebrew tap
         uses: actions/checkout@v5
         with:
-          repository: JungHoonGhae/homebrew-tossinvest-cli
+          repository: ${{ github.repository_owner }}/homebrew-tossinvest-cli
           token: ${{ steps.doppler.outputs.HOMEBREW_TAP_TOKEN }}
           path: tap
 

@@ -6,11 +6,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/JungHoonGhae/tossinvest-cli/internal/version"
 )
 
 const (
-	SchemaVersion    = 3
-	DefaultSchemaURL = "https://raw.githubusercontent.com/JungHoonGhae/tossinvest-cli/main/schemas/config.schema.json"
+	SchemaVersion = 3
+	// DefaultSchemaURL is derived from version.Repo (single source of truth).
+	DefaultSchemaURL = "https://raw.githubusercontent.com/" + version.Repo + "/main/schemas/config.schema.json"
 )
 
 type DangerousAutomation struct {

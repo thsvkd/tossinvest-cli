@@ -17,10 +17,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/JungHoonGhae/tossinvest-cli/internal/version"
 )
 
 const (
-	defaultRepoSlug = "JungHoonGhae/tossinvest-cli"
+	defaultRepoSlug = version.Repo
 	defaultInterval = 24 * time.Hour
 	fetchTimeout    = 3 * time.Second
 )

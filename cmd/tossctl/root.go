@@ -259,9 +259,10 @@ func writeUpdateNoticeIfNeeded(ctx context.Context, stderr io.Writer, opts *root
 	configFile, _ := configFilePath(opts)
 	fmt.Fprintf(
 		stderr,
-		"\n✨ tossctl %s available (current %s) — `brew upgrade tossctl-cli` or https://github.com/JungHoonGhae/tossinvest-cli/releases/latest\n   Disable: set update_check.enabled=false in %s\n",
+		"\n✨ tossctl %s available (current %s) — `brew upgrade tossctl-cli` or %s\n   Disable: set update_check.enabled=false in %s\n",
 		latest,
 		version.Version,
+		version.ReleasesLatestURL,
 		configFile,
 	)
 	checker.MarkUpdateNotified()
