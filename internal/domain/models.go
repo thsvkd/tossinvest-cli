@@ -428,3 +428,43 @@ type Commission struct {
 	TaxRate        float64   `json:"tax_rate"`
 	FetchedAt      time.Time `json:"fetched_at"`
 }
+
+// InvestorRankedStock is a top net-buy stock for an investor type.
+type InvestorRankedStock struct {
+	Rank         int     `json:"rank"`
+	ProductCode  string  `json:"product_code"`
+	Name         string  `json:"name"`
+	NetBuyAmount float64 `json:"net_buy_amount"`
+	Base         float64 `json:"base"`
+	Close        float64 `json:"close"`
+}
+
+// InvestorRanking is one investor type's net-buy ranking (외국인/개인/기관).
+type InvestorRanking struct {
+	InvestorType string                `json:"investor_type"`
+	BasedAt      string                `json:"based_at"`
+	Stocks       []InvestorRankedStock `json:"stocks"`
+}
+
+// InvestorRankings is the market-wide net-buy ranking by investor type.
+type InvestorRankings struct {
+	Rankings  []InvestorRanking `json:"rankings"`
+	FetchedAt time.Time         `json:"fetched_at"`
+}
+
+// EarningCall is a single upcoming earnings-call event.
+type EarningCall struct {
+	EventID     int64  `json:"event_id"`
+	Title       string `json:"title"`
+	Status      string `json:"status"`
+	LiveAt      string `json:"live_at"`
+	CompanyCode string `json:"company_code"`
+	CompanyName string `json:"company_name"`
+	Category    string `json:"category,omitempty"`
+}
+
+// EarningCalls is the upcoming earnings-call calendar.
+type EarningCalls struct {
+	Events    []EarningCall `json:"events"`
+	FetchedAt time.Time     `json:"fetched_at"`
+}

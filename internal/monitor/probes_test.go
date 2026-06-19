@@ -19,6 +19,8 @@ func TestProbesRegistryStableNames(t *testing.T) {
 		"market-trading-hours":     true,
 		"market-index":             true,
 		"stock-ranking":            true,
+		"investor-rankings":        true,
+		"earning-call":             true,
 		"trading-flows":            true,
 		"ai-signals":               true,
 		"screener-presets":         true,

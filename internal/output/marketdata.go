@@ -568,3 +568,83 @@ func WriteCommission(w io.Writer, format Format, c domain.Commission) error {
 func formatPercent(rate float64) string {
 	return formatFloat(rate*100) + "%"
 }
+
+// WriteInvestorRankings renders per-investor-type net-buy rankings.
+func WriteInvestorRankings(w io.Writer, format Format, ir domain.InvestorRankings) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(ir)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"investor_type", "rank", "product_code", "name", "net_buy_amount", "close"}); err != nil {
+			return err
+		}
+		for _, r := range ir.Rankings {
+			for _, s := range r.Stocks {
+				if err := cw.Write([]string{r.InvestorType, fmt.Sprintf("%d", s.Rank), s.ProductCode, s.Name, formatFloat(s.NetBuyAmount), formatFloat(s.Close)}); err != nil {
+					return err
+				}
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		for _, r := range ir.Rankings {
+			if _, err := fmt.Fprintf(w, "\n[%s] 순매수 상위\n순위  종목                    순매수\n", r.InvestorType); err != nil {
+				return err
+			}
+			for _, s := range r.Stocks {
+				if _, err := fmt.Fprintf(w, "%2d   %-18s  %s\n", s.Rank, s.Name, formatKRW(s.NetBuyAmount)); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteEarningCalls renders the upcoming earnings-call calendar.
+func WriteEarningCalls(w io.Writer, format Format, ec domain.EarningCalls) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(ec)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"live_at", "company_name", "company_code", "title", "status", "category"}); err != nil {
+			return err
+		}
+		for _, e := range ec.Events {
+			if err := cw.Write([]string{e.LiveAt, e.CompanyName, e.CompanyCode, e.Title, e.Status, e.Category}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		if len(ec.Events) == 0 {
+			_, err := fmt.Fprintln(w, "예정된 어닝콜이 없습니다")
+			return err
+		}
+		if _, err := fmt.Fprintf(w, "예정 어닝콜\n일시               기업            구분\n"); err != nil {
+			return err
+		}
+		for _, e := range ec.Events {
+			when := e.LiveAt
+			if len(when) >= 16 {
+				when = when[:16] // YYYY-MM-DDTHH:MM
+			}
+			if _, err := fmt.Fprintf(w, "%-17s  %-14s  %s\n", when, e.CompanyName, e.Category); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}

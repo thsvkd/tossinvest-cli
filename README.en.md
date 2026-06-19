@@ -139,6 +139,8 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | **Investor flows** | `quote flows <symbol>` (retail · foreign · inst., KR) | ❌ | ✅ |
 | **Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ |
 | **Live popularity ranking** | `market ranking --size N` | ❌ | ✅ |
+| **Net-buy ranking by investor** | `market investors` (foreign · institution · retail top net-buy) | ❌ | ✅ |
+| **Earnings calendar** | `market earnings` (upcoming earnings calls) | ❌ | ✅ |
 | **Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ |
 | **Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ |
 | **Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ |
@@ -164,6 +166,39 @@ The official API also offers order create/amend/cancel, but tossctl's trading UX
 All trades also require `allow_live_order_actions=true`. Fractional orders auto-convert to market orders and are amount-based (`--currency-mode KRW` default or `USD`).
 
 US limit prices choose interpretation via `--currency-mode`: `KRW` (default, converted to USD at the server rate) or `USD` (sent as-is). e.g. `order place --symbol MRVL --side buy --qty 1 --price 158.01 --currency-mode USD`.
+
+### Why tossctl — the official API is a fraction of Toss
+
+The official Open API offers only **basic REST read/order** (~20 endpoints). Toss's
+own web app (WTS) actually uses **~430 meaningful read/trade endpoints** — that's
+after excluding noise like onboarding, KYC, terms, promotions, and telemetry.
+
+> **The official Open API covers only ~4% of that surface.** tossctl works across the
+> rest, already ships features the official API lacks (investor flows, market indices,
+> AI signals, screener, by-investor net-buy, earnings calendar, real-time push,
+> fractional orders, dry-run preview, …), and **keeps implementing the remaining surface.**
+
+Why tossctl wins long-term:
+
+- **Breadth** — the official API opens a narrow surface slowly; tossctl tracks the whole web surface (catalog below) and is always wider.
+- **Speed** — when Toss ships a new web feature, the weekly monitor flags the new endpoint and we implement it without waiting for an official release.
+- **Superset** — whatever the official API covers, tossctl [already covers 100%](#support-scope).
+
+#### WTS web API catalog (continuously tracked)
+
+Every `/api/*` endpoint is extracted from the web bundles and classified as
+**implemented / next candidate / intentionally excluded**; additions, changes, and
+removals are caught by a weekly monitor. (Badge counts use the **meaningful surface,
+excluding noise**, and auto-update from the catalog.)
+
+<p align="center">
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.meaningful&label=WTS%20meaningful%20surface&suffix=%20endpoints&color=3182F6" alt="WTS meaningful surface" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.implemented&label=implemented&color=success" alt="implemented" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.candidate_next&label=next%20candidates&color=orange" alt="next candidates" /></a>
+  <img src="https://img.shields.io/badge/official%20Open%20API-~4%25%20of%20surface-lightgrey" alt="official API coverage of WTS surface" />
+</p>
+
+- Full catalog: [`docs/reverse-engineering/wts-endpoints.json`](docs/reverse-engineering/wts-endpoints.json).
 
 ### Safety Model
 
@@ -350,7 +385,7 @@ tossctl quote batch <symbol> [symbol...]
 tossctl quote orderbook|sellable|commission <symbol>
 tossctl quote chart <symbol> --interval 5m
 tossctl quote trades|limits|warnings|flows <symbol>
-tossctl market hours|fx|index|ranking|signals
+tossctl market hours|fx|index|ranking|signals|investors|earnings
 tossctl market screener [id] --nation kr|us
 tossctl watchlist list|groups
 tossctl transactions list|overview --market us|kr

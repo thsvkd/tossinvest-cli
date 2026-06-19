@@ -93,6 +93,40 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 		},
 	}
 
+	var investorsSize int
+	investorsCmd := &cobra.Command{
+		Use:   "investors",
+		Short: "Net-buy ranking by investor type (외국인·기관·개인 순매수 상위)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			ir, err := app.client.GetInvestorRankings(cmd.Context(), investorsSize)
+			if err != nil {
+				return err
+			}
+			return output.WriteInvestorRankings(cmd.OutOrStdout(), app.format, ir)
+		},
+	}
+	investorsCmd.Flags().IntVar(&investorsSize, "size", 10, "top stocks per investor type")
+
+	earningsCmd := &cobra.Command{
+		Use:   "earnings",
+		Short: "Upcoming earnings-call calendar (어닝콜 일정)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			ec, err := app.client.GetEarningCalls(cmd.Context())
+			if err != nil {
+				return err
+			}
+			return output.WriteEarningCalls(cmd.OutOrStdout(), app.format, ec)
+		},
+	}
+
 	var (
 		screenerNation string
 		screenerSize   int
@@ -139,6 +173,6 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	screenerCmd.Flags().IntVar(&screenerSize, "size", 30, "max stocks to return")
 	screenerCmd.Flags().StringVar(&screenerFilter, "filter", "", "custom raw filter JSON array (preset 대신)")
 
-	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, screenerCmd)
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, investorsCmd, earningsCmd, screenerCmd)
 	return cmd
 }

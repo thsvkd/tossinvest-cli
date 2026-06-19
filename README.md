@@ -175,6 +175,8 @@ Waiting for approval in the Toss app on your phone...
 | **수급 (투자자별 순매수)** | `quote flows <symbol>` (개인·외국인·기관, KR) | ❌ | ✅ |
 | **시장 지수** | `market index` (코스피·코스닥·나스닥·S&P500·VIX 등) | ❌ | ✅ |
 | **실시간 인기 순위** | `market ranking --size N` | ❌ | ✅ |
+| **투자자별 순매수 상위** | `market investors` (외국인·기관·개인 순매수 상위) | ❌ | ✅ |
+| **실적(어닝콜) 일정** | `market earnings` (다가오는 어닝콜) | ❌ | ✅ |
 | **토스 AI 시그널** | `market signals` (종목별 AI 시그널·키워드·등락) | ❌ | ✅ |
 | **조건 검색 (스크리너)** | `market screener [id]` (프리셋) · `--filter '<json>'` (커스텀 조건) `--nation kr\|us` | ❌ | ✅ |
 | **관심 종목 조회·관리** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` (폴더 CRUD + 종목 추가/제거) | ❌ | ✅ |
@@ -202,14 +204,31 @@ preview·config 기반 안전 게이트** 등 tossctl 의 거래 UX/안전장치
 
 US 지정가는 `--currency-mode`로 가격 해석을 선택합니다: `KRW` (기본, 서버 환율로 USD 변환) 또는 `USD` (입력을 USD 가격 그대로 전송). 예: `order place --symbol MRVL --side buy --qty 1 --price 158.01 --currency-mode USD`.
 
-### WTS 웹 API 전체 추적
+### 왜 tossctl 인가 — 공식 API 는 토스 기능의 일부일 뿐
 
-공식 Open API 와 별개로, **토스 웹앱(WTS)의 전체 API 표면을 자동 추출·분류해 지속 추적**합니다. 웹 번들에서 모든 `/api/*` 엔드포인트를 뽑아 **구현됨 / 다음 추가 후보 / 의도적 제외**로 나누고, 새 기능이 출시되며 엔드포인트가 추가·변경·삭제되면 주간 모니터가 감지합니다.
+공식 Open API 는 **REST 조회·주문의 기본만** 제공합니다 (약 20개 엔드포인트). 반면
+토스 웹앱(WTS)이 실제로 쓰는 **의미있는 조회·거래 기능은 ~430개** — 온보딩·KYC·약관·
+프로모션·텔레메트리 같은 무의미한 엔드포인트는 뺀 숫자입니다.
+
+> **공식 Open API 는 그중 약 4%만 커버합니다.** tossctl 은 나머지 표면 위에서 동작하며,
+> 공식에 없는 기능(수급·시장지수·AI 시그널·스크리너·투자자별 순매수·어닝콜·실시간 푸시·
+> 소수점 주문·dry-run preview 등)을 이미 제공하고, **남은 의미있는 표면을 계속 구현해 나갑니다.**
+
+장기적으로 tossctl 이 더 나은 이유:
+
+- **범위** — 공식은 좁은 표면을 단계적으로 천천히 엽니다. tossctl 은 웹 전체 표면(아래 카탈로그)을 추적해 골라 구현하므로 항상 더 넓습니다.
+- **속도** — 토스가 웹에 새 기능을 내면 주간 모니터가 신규 엔드포인트로 잡고, 공식 API 출시를 기다리지 않고 먼저 구현합니다.
+- **상위호환** — 공식이 커버하는 범위는 [이미 100% 지원](#지원-범위)합니다 (공식이 따라와도 우리가 앞섭니다).
+
+#### WTS 웹 API 카탈로그 (지속 추적)
+
+웹 번들에서 모든 `/api/*` 엔드포인트를 추출해 **구현됨 / 다음 추가 후보 / 의도적 제외**로 분류하고, 추가·변경·삭제를 주간 모니터가 감지합니다. (배지 숫자는 **무의미한 엔드포인트를 제외한 의미있는 표면** 기준이며 카탈로그에서 자동 갱신)
 
 <p align="center">
-  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.total&label=WTS%20API%20surface&suffix=%20endpoints&color=3182F6" alt="WTS API surface" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.meaningful&label=WTS%20meaningful%20surface&suffix=%20endpoints&color=3182F6" alt="WTS meaningful surface" /></a>
   <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.implemented&label=implemented&color=success" alt="implemented" /></a>
   <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.candidate_next&label=next%20candidates&color=orange" alt="next candidates" /></a>
+  <img src="https://img.shields.io/badge/official%20Open%20API-~4%25%20of%20surface-lightgrey" alt="official API coverage of WTS surface" />
 </p>
 
 - **분류** (전체 카탈로그: [`docs/reverse-engineering/wts-endpoints.json`](docs/reverse-engineering/wts-endpoints.json)):

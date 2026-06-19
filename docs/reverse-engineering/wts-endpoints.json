@@ -4,10 +4,11 @@
   "chunk_count": 26,
   "total": 927,
   "counts": {
-    "implemented": 59,
-    "candidate": 371,
+    "implemented": 61,
+    "candidate": 369,
     "excluded": 497,
-    "candidate_next": 21
+    "candidate_next": 19,
+    "meaningful": 430
   },
   "overrides": {},
   "endpoints": {
@@ -922,9 +923,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/dashboard/wts/overview/rankings/by-investors": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "투자자별 랭킹(수급 discovery)",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/dashboard/wts/overview/signals": {
@@ -976,9 +975,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/earning-call/upcoming": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "실적발표(어닝콜) 일정",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/earning-call/user-based": {

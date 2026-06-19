@@ -60,6 +60,8 @@ IMPLEMENTED = [
     r"^/api/v1/session/expired-at",
     r"^/api/v1/wts-login-extend/",
     r"^/api/v2/reasoning-contents/interest",
+    r"^/api/v1/dashboard/wts/overview/rankings/by-investors$",  # market investors
+    r"^/api/v1/earning-call/upcoming$",                          # market earnings
 ]
 
 # recommended: candidates worth implementing next (data/discovery features that
@@ -177,6 +179,10 @@ def main():
         endpoints[p] = entry
         counts[status] = counts.get(status, 0) + 1
     counts["candidate_next"] = next_count
+    # meaningful = real read/trade surface, excluding onboarding/KYC/promo/
+    # telemetry noise. This is the honest denominator for "official API covers
+    # only a fraction of WTS" — not the raw total.
+    counts["meaningful"] = counts["implemented"] + counts["candidate"]
 
     added = sorted(paths - prev_eps)
     removed = sorted(prev_eps - paths)

@@ -242,6 +242,28 @@ func Probes() []Probe {
 			},
 		},
 		{
+			Name:   "investor-rankings",
+			Method: "GET",
+			URL:    info + "/api/v1/dashboard/wts/overview/rankings/by-investors",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.rankings", "object")
+			},
+		},
+		{
+			Name:   "earning-call",
+			Method: "GET",
+			URL:    info + "/api/v1/earning-call/upcoming",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result", "array")
+			},
+		},
+		{
 			Name:   "trading-flows",
 			Method: "GET",
 			URL:    info + "/api/v1/stock-infos/trade/trend/trading-trend?productCode=A005930&size=1",

@@ -619,3 +619,83 @@ func (c *Client) GetCommission(ctx context.Context, symbol string) (domain.Commi
 		FetchedAt:      time.Now().UTC(),
 	}, nil
 }
+
+// GetInvestorRankings returns top net-buy stocks per investor type
+// (외국인·개인·기관) — market-wide flow discovery.
+func (c *Client) GetInvestorRankings(ctx context.Context, size int) (domain.InvestorRankings, error) {
+	if size <= 0 {
+		size = 10
+	}
+	var envelope quoteEnvelope[struct {
+		Rankings map[string]struct {
+			Type    string `json:"type"`
+			BasedAt string `json:"basedAt"`
+			Buy     []struct {
+				StockCode string  `json:"stockCode"`
+				Name      string  `json:"name"`
+				Amount    float64 `json:"amount"`
+				Base      float64 `json:"base"`
+				Close     float64 `json:"close"`
+			} `json:"buyStocks"`
+		} `json:"rankings"`
+	}]
+	endpoint := c.infoBaseURL + "/api/v1/dashboard/wts/overview/rankings/by-investors"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.InvestorRankings{}, err
+	}
+
+	out := domain.InvestorRankings{FetchedAt: time.Now().UTC()}
+	// Stable order: foreigner, institution, individual.
+	for _, key := range []string{"foreigner", "institution", "individual"} {
+		r, ok := envelope.Result.Rankings[key]
+		if !ok {
+			continue
+		}
+		ir := domain.InvestorRanking{InvestorType: r.Type, BasedAt: r.BasedAt}
+		for i, s := range r.Buy {
+			if i >= size {
+				break
+			}
+			ir.Stocks = append(ir.Stocks, domain.InvestorRankedStock{
+				Rank:         i + 1,
+				ProductCode:  s.StockCode,
+				Name:         s.Name,
+				NetBuyAmount: s.Amount,
+				Base:         s.Base,
+				Close:        s.Close,
+			})
+		}
+		out.Rankings = append(out.Rankings, ir)
+	}
+	return out, nil
+}
+
+// GetEarningCalls returns the upcoming earnings-call (어닝콜) calendar.
+func (c *Client) GetEarningCalls(ctx context.Context) (domain.EarningCalls, error) {
+	var envelope quoteEnvelope[[]struct {
+		EventID     int64  `json:"eventId"`
+		Title       string `json:"eventTitle"`
+		Status      string `json:"status"`
+		LiveAt      string `json:"liveAt"`
+		CompanyCode string `json:"companyCode"`
+		CompanyName string `json:"companyName"`
+		Sub         string `json:"subContentText"`
+	}]
+	endpoint := c.infoBaseURL + "/api/v1/earning-call/upcoming"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.EarningCalls{}, err
+	}
+	out := domain.EarningCalls{FetchedAt: time.Now().UTC()}
+	for _, e := range envelope.Result {
+		out.Events = append(out.Events, domain.EarningCall{
+			EventID:     e.EventID,
+			Title:       e.Title,
+			Status:      e.Status,
+			LiveAt:      e.LiveAt,
+			CompanyCode: e.CompanyCode,
+			CompanyName: e.CompanyName,
+			Category:    e.Sub,
+		})
+	}
+	return out, nil
+}

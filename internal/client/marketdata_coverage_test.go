@@ -108,3 +108,45 @@ func TestGetCommission(t *testing.T) {
 		t.Fatalf("rate mismatch: %+v", c)
 	}
 }
+
+func TestGetInvestorRankings(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "/rankings/by-investors") {
+			w.Write([]byte(`{"result":{"rankings":{"foreigner":{"type":"외국인","basedAt":"2026-06-19T06:00:00Z","buyStocks":[{"stockCode":"A000660","name":"SK하이닉스","amount":4.8e11,"base":2685000,"close":2789000},{"stockCode":"A005930","name":"삼성전자","amount":1.0e11,"base":360000,"close":362000}]},"institution":{"type":"기관","basedAt":"x","buyStocks":[{"stockCode":"A000660","name":"SK하이닉스","amount":4.1e10,"base":1,"close":2}]},"individual":{"type":"개인","basedAt":"x","buyStocks":[]}}}}`))
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer srv.Close()
+	ir, err := testClientFor(srv).GetInvestorRankings(context.Background(), 1)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	if len(ir.Rankings) != 3 {
+		t.Fatalf("expected 3 investor types, got %d", len(ir.Rankings))
+	}
+	if ir.Rankings[0].InvestorType != "외국인" || len(ir.Rankings[0].Stocks) != 1 {
+		t.Fatalf("order/size mismatch: %+v", ir.Rankings[0])
+	}
+	if ir.Rankings[0].Stocks[0].Name != "SK하이닉스" || ir.Rankings[0].Stocks[0].Rank != 1 {
+		t.Fatalf("stock mismatch: %+v", ir.Rankings[0].Stocks[0])
+	}
+}
+
+func TestGetEarningCalls(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "/earning-call/upcoming") {
+			w.Write([]byte(`{"result":[{"eventId":1,"eventTitle":"26년 6월 어닝콜","status":"UPCOMING","liveAt":"2026-06-23T23:00:00+09:00","companyCode":"X","companyName":"카니발","subContentText":"주요기업"}]}`))
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer srv.Close()
+	ec, err := testClientFor(srv).GetEarningCalls(context.Background())
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	if len(ec.Events) != 1 || ec.Events[0].CompanyName != "카니발" || ec.Events[0].Category != "주요기업" {
+		t.Fatalf("earning-call mismatch: %+v", ec.Events)
+	}
+}

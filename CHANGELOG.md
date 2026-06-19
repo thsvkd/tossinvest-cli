@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-06-19
+
+WTS "다음 추가 후보" 배치 1 구현 + 공식 API 대비 우위 어필.
+
+### Added
+- **`market investors`** — 투자자별(외국인·기관·개인) 순매수 상위 종목. web `v1/dashboard/wts/overview/rankings/by-investors`. 공식 API 에 없음.
+- **`market earnings`** — 다가오는 어닝콜(실적발표) 일정. web `v1/earning-call/upcoming`. 공식 API 에 없음.
+- `monitor api` probe 2개 추가 (investor-rankings, earning-call) → 18개.
+- WTS 카탈로그에 `meaningful` 카운트(= 전체 − 의도적 제외) 추가 — 무의미한 엔드포인트를 뺀 정직한 비교 기준.
+
+### Changed
+- README(한·영) "왜 tossctl 인가" 섹션 — 공식 Open API 가 WTS 의미있는 표면(~430)의 **약 4%만** 커버함을 수치로 명시하고, 범위·속도·상위호환 측면의 장기 우위를 정리. WTS 배지를 raw total → meaningful 기준으로 교체.
+- WTS 카탈로그: `by-investors`/`earning-call/upcoming` 을 implemented 로 재분류 (구현 61, 다음 후보 19).
+
+### Internal
+- `GetInvestorRankings`/`GetEarningCalls` + 도메인 모델 + output formatter + 계약 잠금 httptest.
+
 ## [0.7.0] - 2026-06-18
 
 Windows 설치 지원 추가 (PR #34, @thsvkd).
