@@ -1,9 +1,27 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
+
+	"github.com/junghoonkye/tossinvest-cli/internal/domain"
 	"github.com/junghoonkye/tossinvest-cli/internal/output"
 	"github.com/spf13/cobra"
 )
+
+// findSector returns the sub-sectors of the sector with the given id, searching
+// the full tree. The returned slice is the matched sector's children.
+func findSector(items []domain.Sector, id int) ([]domain.Sector, bool) {
+	for _, s := range items {
+		if s.ID == id {
+			return s.SubSectors, true
+		}
+		if sub, found := findSector(s.SubSectors, id); found {
+			return sub, true
+		}
+	}
+	return nil, false
+}
 
 func newMarketCmd(opts *rootOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -133,6 +151,34 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	}
 	earningsCmd.Flags().BoolVar(&earningsMajor, "major", false, "주요 기업 어닝콜만 (큐레이션)")
 
+	sectorsCmd := &cobra.Command{
+		Use:   "sectors [id]",
+		Short: "Industry (TICS) fluctuations (업종별 등락). 인자 없으면 대분류, id 주면 하위 업종. 공식 API 에 없음",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			sectors, err := app.client.GetSectors(cmd.Context())
+			if err != nil {
+				return err
+			}
+			if len(args) == 1 {
+				id, perr := strconv.Atoi(args[0])
+				if perr != nil {
+					return fmt.Errorf("invalid sector id %q", args[0])
+				}
+				sub, found := findSector(sectors.Items, id)
+				if !found {
+					return fmt.Errorf("sector id %d not found (run `market sectors` to list)", id)
+				}
+				sectors.Items = sub
+			}
+			return output.WriteSectors(cmd.OutOrStdout(), app.format, sectors)
+		},
+	}
+
 	briefingCmd := &cobra.Command{
 		Use:   "briefing",
 		Short: "Personalized AI news briefing (개인화 뉴스 브리핑). 공식 API 에 없음",
@@ -195,6 +241,6 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	screenerCmd.Flags().IntVar(&screenerSize, "size", 30, "max stocks to return")
 	screenerCmd.Flags().StringVar(&screenerFilter, "filter", "", "custom raw filter JSON array (preset 대신)")
 
-	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, investorsCmd, earningsCmd, briefingCmd, screenerCmd)
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, investorsCmd, earningsCmd, briefingCmd, sectorsCmd, screenerCmd)
 	return cmd
 }

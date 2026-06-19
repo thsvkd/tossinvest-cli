@@ -768,6 +768,49 @@ func WriteCommunityRanking(w io.Writer, format Format, r domain.CommunityRanking
 	}
 }
 
+// WriteSectors renders an industry (TICS) list with fluctuation rates.
+func WriteSectors(w io.Writer, format Format, sectors domain.Sectors) error {
+	list := sectors.Items
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sectors)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"id", "title", "company_count", "one_day_rate", "one_month_rate", "one_year_rate"}); err != nil {
+			return err
+		}
+		for _, s := range list {
+			if err := cw.Write([]string{
+				fmt.Sprintf("%d", s.ID), s.Title, fmt.Sprintf("%d", s.CompanyCount),
+				formatFloat(s.OneDayRate), formatFloat(s.OneMonthRate), formatFloat(s.OneYearRate),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		if len(list) == 0 {
+			_, err := fmt.Fprintln(w, "업종 데이터가 없습니다")
+			return err
+		}
+		if _, err := fmt.Fprintf(w, "업종            종목수    1일      1개월     1년\n"); err != nil {
+			return err
+		}
+		for _, s := range list {
+			if _, err := fmt.Fprintf(w, "%-14s  %5d  %7.2f%%  %7.2f%%  %7.2f%%\n",
+				s.Title, s.CompanyCount, s.OneDayRate, s.OneMonthRate, s.OneYearRate); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
 // WriteNewsBriefing renders the personalized AI news briefing.
 func WriteNewsBriefing(w io.Writer, format Format, b domain.NewsBriefing) error {
 	switch format {

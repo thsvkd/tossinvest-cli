@@ -4,8 +4,8 @@
   "chunk_count": 26,
   "total": 927,
   "counts": {
-    "implemented": 68,
-    "candidate": 362,
+    "implemented": 69,
+    "candidate": 361,
     "excluded": 497,
     "candidate_next": 12,
     "meaningful": 430
@@ -2677,7 +2677,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/tics/all": {
-      "status": "candidate",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/time": {

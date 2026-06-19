@@ -141,6 +141,28 @@ func TestGetEarningCallHome(t *testing.T) {
 	}
 }
 
+func TestGetSectors(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.URL.Path, "/api/v1/tics/all") {
+			http.NotFound(w, r)
+			return
+		}
+		w.Write([]byte(`{"result":{"ticsItems":[{"id":1,"title":"운송","companyCount":420,"fluctuations":{"oneDayRate":-0.4,"oneMonthRate":2.2,"threeMonthsRate":10.6,"oneYearRate":52},"subItems":[{"id":3,"title":"항공사","companyCount":39,"fluctuations":{"oneDayRate":1,"oneMonthRate":14.8,"threeMonthsRate":17,"oneYearRate":31},"subItems":null}]}]}}`))
+	}))
+	defer srv.Close()
+
+	s, err := testClientFor(srv).GetSectors(context.Background())
+	if err != nil {
+		t.Fatalf("GetSectors error: %v", err)
+	}
+	if len(s.Items) != 1 || s.Items[0].Title != "운송" || s.Items[0].OneYearRate != 52 {
+		t.Fatalf("unexpected sectors: %+v", s.Items)
+	}
+	if len(s.Items[0].SubSectors) != 1 || s.Items[0].SubSectors[0].Title != "항공사" || s.Items[0].SubSectors[0].OneMonthRate != 14.8 {
+		t.Errorf("unexpected sub-sectors: %+v", s.Items[0].SubSectors)
+	}
+}
+
 func TestGetNewsBriefing(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.URL.Path, "/ai-signals/personalized") {

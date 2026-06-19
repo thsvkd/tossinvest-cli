@@ -670,6 +670,52 @@ func (c *Client) GetInvestorRankings(ctx context.Context, size int) (domain.Inve
 	return out, nil
 }
 
+type ticsItemRaw struct {
+	ID           int    `json:"id"`
+	Title        string `json:"title"`
+	CompanyCount int    `json:"companyCount"`
+	Fluctuations struct {
+		OneDayRate     float64 `json:"oneDayRate"`
+		OneMonthRate   float64 `json:"oneMonthRate"`
+		ThreeMonthRate float64 `json:"threeMonthsRate"`
+		OneYearRate    float64 `json:"oneYearRate"`
+	} `json:"fluctuations"`
+	SubItems []ticsItemRaw `json:"subItems"`
+}
+
+func ticsToSector(t ticsItemRaw) domain.Sector {
+	s := domain.Sector{
+		ID:             t.ID,
+		Title:          t.Title,
+		CompanyCount:   t.CompanyCount,
+		OneDayRate:     t.Fluctuations.OneDayRate,
+		OneMonthRate:   t.Fluctuations.OneMonthRate,
+		ThreeMonthRate: t.Fluctuations.ThreeMonthRate,
+		OneYearRate:    t.Fluctuations.OneYearRate,
+	}
+	for _, sub := range t.SubItems {
+		s.SubSectors = append(s.SubSectors, ticsToSector(sub))
+	}
+	return s
+}
+
+// GetSectors returns the industry (TICS) tree with fluctuation rates
+// (업종별 등락 — 1일·1개월·3개월·1년). 공식 API 에 없는 web 전용 기능.
+func (c *Client) GetSectors(ctx context.Context) (domain.Sectors, error) {
+	var envelope quoteEnvelope[struct {
+		TicsItems []ticsItemRaw `json:"ticsItems"`
+	}]
+	endpoint := c.infoBaseURL + "/api/v1/tics/all"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.Sectors{}, err
+	}
+	out := domain.Sectors{FetchedAt: time.Now().UTC()}
+	for _, t := range envelope.Result.TicsItems {
+		out.Items = append(out.Items, ticsToSector(t))
+	}
+	return out, nil
+}
+
 // GetEarningCallHome returns the curated major-company earnings-call lineup
 // (어닝콜 홈 — 주요 기업). 공식 API 에 없는 web 전용 기능.
 func (c *Client) GetEarningCallHome(ctx context.Context) (domain.EarningCalls, error) {

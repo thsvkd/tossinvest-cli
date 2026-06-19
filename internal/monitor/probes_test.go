@@ -24,6 +24,7 @@ func TestProbesRegistryStableNames(t *testing.T) {
 		"earning-call-home":        true,
 		"community-rankings":       true,
 		"news-briefing":            true,
+		"sectors-tics":             true,
 		"trading-flows":            true,
 		"ai-signals":               true,
 		"screener-presets":         true,

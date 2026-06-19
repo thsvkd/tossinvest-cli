@@ -558,3 +558,21 @@ type NewsBriefing struct {
 	Items     []BriefingItem `json:"items"`
 	FetchedAt time.Time      `json:"fetched_at"`
 }
+
+// Sector is one industry (TICS) with its fluctuation rates and sub-industries.
+type Sector struct {
+	ID             int      `json:"id"`
+	Title          string   `json:"title"`
+	CompanyCount   int      `json:"company_count"`
+	OneDayRate     float64  `json:"one_day_rate"`
+	OneMonthRate   float64  `json:"one_month_rate"`
+	ThreeMonthRate float64  `json:"three_month_rate"`
+	OneYearRate    float64  `json:"one_year_rate"`
+	SubSectors     []Sector `json:"sub_sectors,omitempty"`
+}
+
+// Sectors is the industry (TICS) tree with fluctuation rates.
+type Sectors struct {
+	Items     []Sector  `json:"items"`
+	FetchedAt time.Time `json:"fetched_at"`
+}
