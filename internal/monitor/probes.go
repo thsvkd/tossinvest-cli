@@ -264,6 +264,39 @@ func Probes() []Probe {
 			},
 		},
 		{
+			Name:   "earning-call-home",
+			Method: "GET",
+			URL:    info + "/api/v1/earning-call/home",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.majorCompanies", "object")
+			},
+		},
+		{
+			Name:   "community-rankings",
+			Method: "GET",
+			URL:    info + "/api/v1/community/top-rankings/INFLUENCER",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.items", "array")
+			},
+		},
+		{
+			Name:   "news-briefing",
+			Method: "GET",
+			URL:    info + "/api/v1/dashboard/wts/overview/ai-signals/personalized",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.items", "array")
+			},
+		},
+		{
 			Name:   "trading-flows",
 			Method: "GET",
 			URL:    info + "/api/v1/stock-infos/trade/trend/trading-trend?productCode=A005930&size=1",

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/junghoonkye/tossinvest-cli/internal/domain"
 )
@@ -641,6 +642,170 @@ func WriteEarningCalls(w io.Writer, format Format, ec domain.EarningCalls) error
 			}
 			if _, err := fmt.Fprintf(w, "%-17s  %-14s  %s\n", when, e.CompanyName, e.Category); err != nil {
 				return err
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// divAmt renders a dual-currency dividend amount (e.g. "1,234,567원  $1,234.56").
+func divAmt(a domain.DividendAmount) string {
+	s := formatKRW(a.KRW) + "원"
+	if a.USD != 0 {
+		s += fmt.Sprintf("  $%s", formatFloat(a.USD))
+	}
+	return s
+}
+
+// WriteDividends renders an annual dividend report.
+func WriteDividends(w io.Writer, format Format, d domain.Dividends) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(d)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"month", "total_krw", "total_usd"}); err != nil {
+			return err
+		}
+		for _, m := range d.Monthly {
+			if err := cw.Write([]string{fmt.Sprintf("%d", m.Month), formatFloat(m.Summary.Total.KRW), formatFloat(m.Summary.Total.USD)}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		basis := "수령·예정 기준"
+		if d.ByPaymentDate {
+			basis = "지급일 기준"
+		}
+		if _, err := fmt.Fprintf(w, "%d년 배당 (%s)\n", d.Year, basis); err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "  총 배당  %s\n", divAmt(d.Summary.Total))
+		fmt.Fprintf(w, "  수령     %s\n", divAmt(d.Summary.Paid))
+		fmt.Fprintf(w, "  예정     %s\n", divAmt(d.Summary.Estimated))
+		if d.Summary.Tax != nil {
+			fmt.Fprintf(w, "  세금     %s\n", divAmt(*d.Summary.Tax))
+		}
+		if len(d.Regions) > 0 {
+			fmt.Fprintf(w, "지역별\n")
+			for _, r := range d.Regions {
+				fmt.Fprintf(w, "  %-3s  %s\n", strings.ToUpper(r.Region), divAmt(r.Summary.Total))
+			}
+		}
+		if len(d.Monthly) > 0 {
+			fmt.Fprintf(w, "월별\n")
+			for _, m := range d.Monthly {
+				if m.Summary.Total.KRW == 0 && m.Summary.Total.USD == 0 {
+					continue
+				}
+				fmt.Fprintf(w, "  %2d월  %s\n", m.Month, divAmt(m.Summary.Total))
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteCommunityRanking renders a community leaderboard. Columns vary by type.
+func WriteCommunityRanking(w io.Writer, format Format, r domain.CommunityRanking) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(r)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"rank", "nickname", "user_profile_id", "description", "profit_amount_krw", "profit_rate", "following_count", "following_increase"}); err != nil {
+			return err
+		}
+		for _, u := range r.Users {
+			if err := cw.Write([]string{
+				fmt.Sprintf("%d", u.Rank), u.Nickname, fmt.Sprintf("%d", u.UserProfileID), u.Description,
+				formatFloat(u.ProfitAmountKRW), formatFloat(u.ProfitRate),
+				fmt.Sprintf("%d", u.FollowingCount), fmt.Sprintf("%d", u.FollowingIncrease),
+			}); err != nil {
+				return err
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		if len(r.Users) == 0 {
+			_, err := fmt.Fprintln(w, "랭킹 데이터가 없습니다")
+			return err
+		}
+		switch r.Type {
+		case "TOP_10_PROFIT_ROSS_AMOUNT":
+			fmt.Fprintf(w, "수익금 랭킹\n순위  닉네임            수익금          수익률\n")
+			for _, u := range r.Users {
+				fmt.Fprintf(w, "%2d   %-16s  %12s원  %.1f%%\n", u.Rank, u.Nickname, formatKRW(u.ProfitAmountKRW), u.ProfitRate*100)
+			}
+		case "TOP_10_FOLLOWING_INCREASE":
+			fmt.Fprintf(w, "팔로워 급증 랭킹\n순위  닉네임            팔로워     증가\n")
+			for _, u := range r.Users {
+				fmt.Fprintf(w, "%2d   %-16s  %7d  +%d\n", u.Rank, u.Nickname, u.FollowingCount, u.FollowingIncrease)
+			}
+		default: // INFLUENCER
+			fmt.Fprintf(w, "인플루언서 랭킹\n순위  닉네임\n")
+			for _, u := range r.Users {
+				fmt.Fprintf(w, "%2d   %s\n", u.Rank, u.Nickname)
+				if u.Description != "" {
+					desc := strings.ReplaceAll(u.Description, "\n", " ")
+					fmt.Fprintf(w, "     %s\n", desc)
+				}
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteNewsBriefing renders the personalized AI news briefing.
+func WriteNewsBriefing(w io.Writer, format Format, b domain.NewsBriefing) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(b)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"category", "title", "agency", "created_at"}); err != nil {
+			return err
+		}
+		for _, it := range b.Items {
+			for _, n := range it.News {
+				if err := cw.Write([]string{it.CategoryType, n.Title, n.Agency, n.CreatedAt}); err != nil {
+					return err
+				}
+			}
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		if len(b.Items) == 0 {
+			_, err := fmt.Fprintln(w, "브리핑이 없습니다")
+			return err
+		}
+		for _, it := range b.Items {
+			header := it.CategoryType
+			if len(it.Keywords) > 0 {
+				header += " · " + strings.Join(it.Keywords, ", ")
+			}
+			fmt.Fprintf(w, "\n[%s]\n", header)
+			for _, n := range it.News {
+				agency := n.Agency
+				if agency != "" {
+					agency = " (" + agency + ")"
+				}
+				fmt.Fprintf(w, "  · %s%s\n", n.Title, agency)
 			}
 		}
 		return nil

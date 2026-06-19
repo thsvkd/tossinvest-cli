@@ -670,6 +670,79 @@ func (c *Client) GetInvestorRankings(ctx context.Context, size int) (domain.Inve
 	return out, nil
 }
 
+// GetEarningCallHome returns the curated major-company earnings-call lineup
+// (어닝콜 홈 — 주요 기업). 공식 API 에 없는 web 전용 기능.
+func (c *Client) GetEarningCallHome(ctx context.Context) (domain.EarningCalls, error) {
+	var envelope quoteEnvelope[struct {
+		MajorCompanies struct {
+			CurrentOrFuture []struct {
+				EventID     int64  `json:"eventId"`
+				Title       string `json:"eventTitle"`
+				Status      string `json:"status"`
+				LiveAt      string `json:"liveAt"`
+				CompanyCode string `json:"companyCode"`
+				CompanyName string `json:"companyName"`
+				Sub         string `json:"subContentText"`
+			} `json:"currentOrFuture"`
+		} `json:"majorCompanies"`
+	}]
+	endpoint := c.infoBaseURL + "/api/v1/earning-call/home"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.EarningCalls{}, err
+	}
+	out := domain.EarningCalls{FetchedAt: time.Now().UTC()}
+	for _, e := range envelope.Result.MajorCompanies.CurrentOrFuture {
+		out.Events = append(out.Events, domain.EarningCall{
+			EventID:     e.EventID,
+			Title:       e.Title,
+			Status:      e.Status,
+			LiveAt:      e.LiveAt,
+			CompanyCode: e.CompanyCode,
+			CompanyName: e.CompanyName,
+			Category:    e.Sub,
+		})
+	}
+	return out, nil
+}
+
+// GetNewsBriefing returns the personalized AI news briefing grouped by theme
+// (개인화 뉴스 브리핑). 공식 API 에 없는 web 전용 기능.
+func (c *Client) GetNewsBriefing(ctx context.Context) (domain.NewsBriefing, error) {
+	var envelope quoteEnvelope[struct {
+		CreatedAt string `json:"createdAt"`
+		Items     []struct {
+			Category struct {
+				Keywords []string `json:"keywords"`
+				Type     string   `json:"type"`
+			} `json:"category"`
+			News []struct {
+				Title      string `json:"title"`
+				AgencyName string `json:"agencyName"`
+				Source     string `json:"source"`
+				CreatedAt  string `json:"createdAt"`
+			} `json:"news"`
+		} `json:"items"`
+	}]
+	endpoint := c.infoBaseURL + "/api/v1/dashboard/wts/overview/ai-signals/personalized"
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.NewsBriefing{}, err
+	}
+	out := domain.NewsBriefing{CreatedAt: envelope.Result.CreatedAt, FetchedAt: time.Now().UTC()}
+	for _, it := range envelope.Result.Items {
+		bi := domain.BriefingItem{CategoryType: it.Category.Type, Keywords: it.Category.Keywords}
+		for _, n := range it.News {
+			bi.News = append(bi.News, domain.BriefingNews{
+				Title:     n.Title,
+				Agency:    n.AgencyName,
+				Source:    n.Source,
+				CreatedAt: n.CreatedAt,
+			})
+		}
+		out.Items = append(out.Items, bi)
+	}
+	return out, nil
+}
+
 // GetEarningCalls returns the upcoming earnings-call (어닝콜) calendar.
 func (c *Client) GetEarningCalls(ctx context.Context) (domain.EarningCalls, error) {
 	var envelope quoteEnvelope[[]struct {

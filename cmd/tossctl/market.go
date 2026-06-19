@@ -111,19 +111,41 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	}
 	investorsCmd.Flags().IntVar(&investorsSize, "size", 10, "top stocks per investor type")
 
+	var earningsMajor bool
 	earningsCmd := &cobra.Command{
 		Use:   "earnings",
-		Short: "Upcoming earnings-call calendar (어닝콜 일정)",
+		Short: "Upcoming earnings-call calendar (어닝콜 일정). --major 로 주요 기업만",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			app, err := newAppContext(opts)
 			if err != nil {
 				return err
 			}
-			ec, err := app.client.GetEarningCalls(cmd.Context())
+			get := app.client.GetEarningCalls
+			if earningsMajor {
+				get = app.client.GetEarningCallHome
+			}
+			ec, err := get(cmd.Context())
 			if err != nil {
 				return err
 			}
 			return output.WriteEarningCalls(cmd.OutOrStdout(), app.format, ec)
+		},
+	}
+	earningsCmd.Flags().BoolVar(&earningsMajor, "major", false, "주요 기업 어닝콜만 (큐레이션)")
+
+	briefingCmd := &cobra.Command{
+		Use:   "briefing",
+		Short: "Personalized AI news briefing (개인화 뉴스 브리핑). 공식 API 에 없음",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			app, err := newAppContext(opts)
+			if err != nil {
+				return err
+			}
+			b, err := app.client.GetNewsBriefing(cmd.Context())
+			if err != nil {
+				return err
+			}
+			return output.WriteNewsBriefing(cmd.OutOrStdout(), app.format, b)
 		},
 	}
 
@@ -173,6 +195,6 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	screenerCmd.Flags().IntVar(&screenerSize, "size", 30, "max stocks to return")
 	screenerCmd.Flags().StringVar(&screenerFilter, "filter", "", "custom raw filter JSON array (preset 대신)")
 
-	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, investorsCmd, earningsCmd, screenerCmd)
+	cmd.AddCommand(hoursCmd, fxCmd, indexCmd, rankingCmd, signalsCmd, investorsCmd, earningsCmd, briefingCmd, screenerCmd)
 	return cmd
 }
