@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WriteQuote(w io.Writer, format Format, quote domain.Quote) error {

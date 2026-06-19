@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderlineage"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
-	"github.com/junghoonkye/tossinvest-cli/internal/trading"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderintent"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderlineage"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/trading"
 	"github.com/spf13/cobra"
 )
 

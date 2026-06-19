@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/auth"
-	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/auth"
+	tossclient "github.com/JungHoonGhae/tossinvest-cli/internal/client"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
-	"github.com/junghoonkye/tossinvest-cli/internal/trading"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/trading"
 )
 
 func userFacingCommandError(err error) error {

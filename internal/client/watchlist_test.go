@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 func TestListWatchlistFromFixtures(t *testing.T) {

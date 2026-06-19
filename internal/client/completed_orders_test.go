@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/orderlineage"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderlineage"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 func TestListCompletedOrdersParsesStructuredFields(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
-	"github.com/junghoonkye/tossinvest-cli/internal/updatecheck"
-	"github.com/junghoonkye/tossinvest-cli/internal/version"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/updatecheck"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/version"
 	"github.com/spf13/cobra"
 )
 

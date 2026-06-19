@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 // getJSONWithAccountKey is getJSON with the account-scoping header the web app

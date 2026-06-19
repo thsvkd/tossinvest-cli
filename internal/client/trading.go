@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
-	tradingflow "github.com/junghoonkye/tossinvest-cli/internal/trading"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderintent"
+	tradingflow "github.com/JungHoonGhae/tossinvest-cli/internal/trading"
 )
 
 type pendingOrderDetails struct {

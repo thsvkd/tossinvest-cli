@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/push"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/push"
 	"github.com/spf13/cobra"
 )
 

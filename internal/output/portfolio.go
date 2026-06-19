@@ -7,7 +7,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WritePositions(w io.Writer, format Format, positions []domain.Position) error {

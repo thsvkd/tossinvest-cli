@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 var testPositions = []domain.Position{

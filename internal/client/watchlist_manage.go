@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 // new-watchlists is the folder-aware watchlist API (관심종목 폴더 + 종목).

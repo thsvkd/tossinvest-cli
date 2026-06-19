@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/doctor"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/doctor"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 

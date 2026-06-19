@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
 )
 
 func TestWriteConfigStatusJSON(t *testing.T) {

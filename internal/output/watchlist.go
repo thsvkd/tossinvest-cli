@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WriteWatchlist(w io.Writer, format Format, items []domain.WatchlistItem) error {

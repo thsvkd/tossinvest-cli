@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 // communityRankingTypes maps friendly aliases to the server enum.

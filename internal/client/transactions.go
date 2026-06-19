@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 const (

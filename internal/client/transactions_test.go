@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 func TestListTransactionsParsesTradeAndCashEntries(t *testing.T) {

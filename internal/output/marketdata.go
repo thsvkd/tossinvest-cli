@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WriteTrades(w io.Writer, format Format, list domain.TradeList) error {

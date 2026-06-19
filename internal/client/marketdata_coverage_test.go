@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 // testClientFor wires a client whose info+cert hosts both point at srv.

@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 // Locks the reverse-engineered new-watchlists mutation contract (method, path,

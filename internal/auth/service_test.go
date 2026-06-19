@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 type fakeLoginRunner struct {

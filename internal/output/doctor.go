@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/doctor"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/doctor"
 )
 
 func WriteDoctorReport(w io.Writer, format Format, report doctor.Report) error {

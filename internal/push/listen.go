@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	tossclient "github.com/JungHoonGhae/tossinvest-cli/internal/client"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 const (

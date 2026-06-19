@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/trading"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/trading"
 )
 
 func WriteTradingPreview(w io.Writer, format Format, preview trading.Preview) error {

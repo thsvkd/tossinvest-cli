@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 )
 
 func TestExpiryWarningWithin24Hours(t *testing.T) {

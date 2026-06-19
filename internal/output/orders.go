@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WriteOrders(w io.Writer, format Format, orders []domain.Order) error {

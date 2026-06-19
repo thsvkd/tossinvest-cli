@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/monitor"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/monitor"
 	"github.com/spf13/cobra"
 )
 

@@ -59,7 +59,7 @@ jobs:
           fi
           go build \
             -trimpath \
-            -ldflags "-X github.com/junghoonkye/tossinvest-cli/internal/version.Version=${VERSION} -X github.com/junghoonkye/tossinvest-cli/internal/version.Commit=${COMMIT} -X github.com/junghoonkye/tossinvest-cli/internal/version.Date=${DATE}" \
+            -ldflags "-X github.com/JungHoonGhae/tossinvest-cli/internal/version.Version=${VERSION} -X github.com/JungHoonGhae/tossinvest-cli/internal/version.Commit=${COMMIT} -X github.com/JungHoonGhae/tossinvest-cli/internal/version.Date=${DATE}" \
             -o "dist/${{ matrix.asset }}/${BINARY}" \
             ./cmd/tossctl
 

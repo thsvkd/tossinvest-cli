@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
-	tradingflow "github.com/junghoonkye/tossinvest-cli/internal/trading"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderintent"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
+	tradingflow "github.com/JungHoonGhae/tossinvest-cli/internal/trading"
 )
 
 func TestCancelPendingOrder(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderlineage"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderlineage"
 )
 
 type completedOrdersEnvelope struct {

@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 // ANSI color codes for chart rendering. Populated only when stdout is a TTY

@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/auth"
-	"github.com/junghoonkye/tossinvest-cli/internal/doctor"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
-	"github.com/junghoonkye/tossinvest-cli/internal/session"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/auth"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/doctor"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/session"
 	"github.com/spf13/cobra"
 )
 

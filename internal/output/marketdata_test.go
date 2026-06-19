@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func TestSessionTime(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 	"crypto/subtle"
 	"fmt"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/orderintent"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/orderintent"
 )
 
 type Broker interface {

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
+	tossclient "github.com/JungHoonGhae/tossinvest-cli/internal/client"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 

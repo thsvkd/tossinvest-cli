@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/domain"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/domain"
 )
 
 func WriteTransactions(w io.Writer, format Format, items []domain.Transaction) error {

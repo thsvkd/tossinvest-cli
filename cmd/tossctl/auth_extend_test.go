@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/auth"
-	"github.com/junghoonkye/tossinvest-cli/internal/output"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/auth"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/output"
 )
 
 func TestWriteAuthStatusIncludesServerExpiryInKST(t *testing.T) {

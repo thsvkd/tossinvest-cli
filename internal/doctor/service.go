@@ -10,10 +10,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/auth"
-	tossclient "github.com/junghoonkye/tossinvest-cli/internal/client"
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
-	"github.com/junghoonkye/tossinvest-cli/internal/version"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/auth"
+	tossclient "github.com/JungHoonGhae/tossinvest-cli/internal/client"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/version"
 )
 
 type CheckStatus string

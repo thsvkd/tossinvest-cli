@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/junghoonkye/tossinvest-cli/internal/config"
+	"github.com/JungHoonGhae/tossinvest-cli/internal/config"
 )
 
 func WriteConfigStatus(w io.Writer, format Format, status config.Status) error {
