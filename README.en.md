@@ -122,35 +122,35 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 
 | Feature | Command | Official API (planned) | tossctl |
 |------|--------|:--:|:--:|
-| Accounts / summary | `account list`, `account summary` | ✅ | ✅ | <!--since:2026-03-21-->
-| Portfolio | `portfolio positions`, `portfolio allocation` (USD for US) | ✅ | ✅ | <!--since:2026-04-23-->
-| 🆕 Trade ticks | `quote trades <symbol> --count N` | ✅ | ✅ | <!--since:2026-06-03-->
-| 🆕 Orderbook (10-level bid/ask) | `quote orderbook <symbol>` | ✅ | ✅ | <!--since:2026-06-04-->
-| 🆕 Price limits | `quote limits <symbol>` (KR) | ✅ | ✅ | <!--since:2026-06-03-->
-| 🆕 Trade warnings | `quote warnings <symbol>` (liquidation · alert · VI …) | ✅ | ✅ | <!--since:2026-06-03-->
-| 🆕 Trading hours | `market hours` (today + next session when closed) | ✅ | ✅ | <!--since:2026-06-03-->
-| 🆕 FX | `market fx` (USD rate · dollar index) | ✅ | ✅ | <!--since:2026-06-03-->
-| 🆕 Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ | <!--since:2026-06-04-->
-| 🆕 Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ | <!--since:2026-06-04-->
-| Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ | <!--since:2026-03-21-->
-| Quote | `quote get <symbol>` (OHLC · 52w · market cap · trading value · strength) | 🔸 *(no strength/52w etc.)* | ✅ | <!--since:2026-03-21-->
-| 🆕 Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ | <!--since:2026-05-20-->
-| **Multi-quote / live refresh** | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ | <!--since:2026-03-21-->
-| **🆕 Investor flows** | `quote flows <symbol>` (retail · foreign · inst., KR) | ❌ | ✅ | <!--since:2026-06-04-->
-| **🆕 Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ | <!--since:2026-06-04-->
-| **🆕 Live popularity ranking** | `market ranking --size N` | ❌ | ✅ | <!--since:2026-06-04-->
-| **🆕 Net-buy ranking by investor** | `market investors` (foreign · institution · retail top net-buy) | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Earnings calendar** | `market earnings` (`--major` for curated majors) | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Dividend report** | `portfolio dividends` (annual total · region · monthly, `--by-payment-date` tax) | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Community rankings** | `community rankings --type influencer\|profit\|followers` | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Sector movements** | `market sectors [id]` (industry tree, 1d·1m·1y returns) | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Personalized news briefing** | `market briefing` (headlines grouped by theme) | ❌ | ✅ | <!--since:2026-06-19-->
-| **🆕 Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ | <!--since:2026-06-04-->
-| **🆕 Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ | <!--since:2026-06-04-->
-| **🆕 Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ | <!--since:2026-06-04-->
-| **Transaction ledger** | `transactions list --market us\|kr` (trades · transfers · dividends) | ❌ | ✅ | <!--since:2026-04-23-->
-| **Cash overview** | `transactions overview --market us\|kr` (orderable · withdrawable · incoming) | ❌ | ✅ | <!--since:2026-04-23-->
-| **CSV export** | `export positions\|orders --market`, `transactions list --output csv` | ❌ | ✅ | <!--since:2026-04-23-->
+| Accounts / summary | `account list`, `account summary` | ✅ | ✅ |
+| Portfolio | `portfolio positions`, `portfolio allocation` (USD for US) | ✅ | ✅ |
+| 🆕 Trade ticks | `quote trades <symbol> --count N` | ✅ | ✅ |
+| 🆕 Orderbook (10-level bid/ask) | `quote orderbook <symbol>` | ✅ | ✅ |
+| 🆕 Price limits | `quote limits <symbol>` (KR) | ✅ | ✅ |
+| 🆕 Trade warnings | `quote warnings <symbol>` (liquidation · alert · VI …) | ✅ | ✅ |
+| 🆕 Trading hours | `market hours` (today + next session when closed) | ✅ | ✅ |
+| 🆕 FX | `market fx` (USD rate · dollar index) | ✅ | ✅ |
+| 🆕 Sellable quantity | `quote sellable <symbol>` (sellable shares for a held symbol) | ✅ | ✅ |
+| 🆕 Commission / tax rate | `quote commission <symbol>` | ✅ | ✅ |
+| Orders (pending / completed / single) | `orders list`, `orders completed`, `order show <id>` | ✅ | ✅ |
+| Quote | `quote get <symbol>` (OHLC · 52w · market cap · trading value · strength) | 🔸 *(no strength/52w etc.)* | ✅ |
+| 🆕 Candle chart | `quote chart --interval 1m\|3m\|5m\|10m\|15m\|30m\|60m` | 🔸 *(1m / daily only)* | ✅ |
+| **Multi-quote / live refresh** | `quote batch <sym>[,sym,...]` (`--chart` · `--live`) | ❌ | ✅ |
+| **🆕 Investor flows** | `quote flows <symbol>` (retail · foreign · inst., KR) | ❌ | ✅ |
+| **🆕 Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ |
+| **🆕 Live popularity ranking** | `market ranking --size N` | ❌ | ✅ |
+| **🆕 Net-buy ranking by investor** | `market investors` (foreign · institution · retail top net-buy) | ❌ | ✅ |
+| **🆕 Earnings calendar** | `market earnings` (`--major` for curated majors) | ❌ | ✅ |
+| **🆕 Dividend report** | `portfolio dividends` (annual total · region · monthly, `--by-payment-date` tax) | ❌ | ✅ |
+| **🆕 Community rankings** | `community rankings --type influencer\|profit\|followers` | ❌ | ✅ |
+| **🆕 Sector movements** | `market sectors [id]` (industry tree, 1d·1m·1y returns) | ❌ | ✅ |
+| **🆕 Personalized news briefing** | `market briefing` (headlines grouped by theme) | ❌ | ✅ |
+| **🆕 Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ |
+| **🆕 Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ |
+| **🆕 Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ |
+| **Transaction ledger** | `transactions list --market us\|kr` (trades · transfers · dividends) | ❌ | ✅ |
+| **Cash overview** | `transactions overview --market us\|kr` (orderable · withdrawable · incoming) | ❌ | ✅ |
+| **CSV export** | `export positions\|orders --market`, `transactions list --output csv` | ❌ | ✅ |
 | **Real-time push** | `push listen` (SSE stream — order/price change events) | ❌ *(official is REST only)* | ✅ |
 
 ### Trading

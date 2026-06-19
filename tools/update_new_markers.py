@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 """Maintain 🆕 markers on README comparison-table rows.
 
-Policy: a feature row is marked 🆕 if it was first released within the last
-NEW_WINDOW_DAYS (rolling, from today). Each taggable row carries its release
-date inline as an HTML comment, e.g.
-
-    | **배당 내역** | `portfolio dividends` ... | ❌ | ✅ | <!--since:2026-06-19-->
-
-This script reads those dates and adds/removes the leading "🆕 " in the first
-cell so the markers never go stale. Run it at every release (and it's safe to
-run anytime — it's idempotent).
+Policy: a feature row is marked 🆕 if its command was first released within the
+last NEW_WINDOW_DAYS (rolling, from today). Release dates live in FEATURE_DATES
+below (single source of truth — keyed by the command shown in the row), so the
+README tables stay clean (no inline date comments).
 
     python3 tools/update_new_markers.py          # uses today
     NEW_MARKER_DATE=2026-06-19 python3 tools/update_new_markers.py   # pin date
+    python3 tools/update_new_markers.py --check   # CI: non-zero if stale
 
-stdlib only. Exits non-zero if any file changed when --check is passed (for CI).
+When you add a new comparison-table row, add its command + release date here.
+stdlib only.
 """
 import datetime
 import os
@@ -24,9 +21,53 @@ import sys
 NEW_WINDOW_DAYS = 30
 FILES = ["README.md", "README.en.md"]
 
-since_re = re.compile(r"<!--since:(\d{4}-\d{2}-\d{2})-->")
+# command (as written in the row's `backticks`) -> first-release date.
+# Longest keys are matched first so e.g. "market ranking" never matches a
+# "community rankings" row. Date = CHANGELOG version date of first appearance.
+FEATURE_DATES = {
+    "portfolio dividends": "2026-06-19",
+    "community rankings": "2026-06-19",
+    "market sectors": "2026-06-19",
+    "market briefing": "2026-06-19",
+    "market investors": "2026-06-19",
+    "market earnings": "2026-06-19",
+    "quote orderbook": "2026-06-04",
+    "quote sellable": "2026-06-04",
+    "quote commission": "2026-06-04",
+    "market signals": "2026-06-04",
+    "market screener": "2026-06-04",
+    "market index": "2026-06-04",
+    "market ranking": "2026-06-04",
+    "quote flows": "2026-06-04",
+    "watchlist list": "2026-06-04",  # 관심종목 관리(group CRUD) 0.5.0
+    "market fx": "2026-06-03",
+    "market hours": "2026-06-03",
+    "quote trades": "2026-06-03",
+    "quote limits": "2026-06-03",
+    "quote warnings": "2026-06-03",
+    "quote chart": "2026-05-20",
+    "quote batch": "2026-03-21",
+    "quote get": "2026-03-21",
+    "orders list": "2026-03-21",
+    "transactions list": "2026-04-23",
+    "transactions overview": "2026-04-23",
+    "export positions": "2026-03-21",
+    "portfolio positions": "2026-04-23",
+    "account list": "2026-03-21",
+}
+_KEYS = sorted(FEATURE_DATES, key=len, reverse=True)
+
 # first table cell: | [**]['🆕 ']<name>[**] |
 cell_re = re.compile(r"^(\| )(\*\*)?(?:🆕 )?(.*?)(\*\*)?( \|)")
+# legacy inline date comments to strip (migrated into FEATURE_DATES)
+since_re = re.compile(r"\s*<!--since:\d{4}-\d{2}-\d{2}-->")
+
+
+def row_date(line):
+    for k in _KEYS:
+        if "`" + k in line:
+            return FEATURE_DATES[k]
+    return None
 
 
 def main():
@@ -44,11 +85,14 @@ def main():
         lines = src.split("\n")
         new_count = 0
         for i, ln in enumerate(lines):
-            m = since_re.search(ln)
-            if not m or not ln.startswith("|"):
+            if not ln.startswith("|") or "`" not in ln:
                 continue
-            since = datetime.date.fromisoformat(m.group(1))
-            is_new = since >= cutoff
+            ln = since_re.sub("", ln)  # drop legacy inline comments
+            date = row_date(ln)
+            if date is None:
+                lines[i] = ln
+                continue
+            is_new = datetime.date.fromisoformat(date) >= cutoff
             if is_new:
                 new_count += 1
 
@@ -56,8 +100,7 @@ def main():
                 pre, b1, name, b2, post = (
                     mm.group(1), mm.group(2) or "", mm.group(3), mm.group(4) or "", mm.group(5),
                 )
-                tag = "🆕 " if is_new else ""
-                return f"{pre}{b1}{tag}{name}{b2}{post}"
+                return f"{pre}{b1}{'🆕 ' if is_new else ''}{name}{b2}{post}"
 
             lines[i] = cell_re.sub(repl, ln, count=1)
         out = "\n".join(lines)
@@ -65,7 +108,7 @@ def main():
             changed_any = True
             if not check:
                 open(path, "w", encoding="utf-8").write(out)
-        print(f"{path}: {new_count} rows marked 🆕 (since >= {cutoff})"
+        print(f"{path}: {new_count} rows marked 🆕 (released >= {cutoff})"
               + (" [WOULD CHANGE]" if check and out != src else ""))
 
     if check and changed_any:
