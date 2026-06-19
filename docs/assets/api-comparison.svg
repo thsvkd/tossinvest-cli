@@ -18,7 +18,7 @@
 
   <rect width="940" height="660" fill="#FFFFFF"/>
 
-  <text x="32" y="42" class="title">조회 · 거래 표면 비교</text>
+  <text x="32" y="42" class="title">조회 · 거래 기능 비교</text>
   <text x="32" y="66" class="subtitle">tossctl = 공식 Open API <tspan font-weight="800" fill="#191F28">100% 커버</tspan> ＋ 공식엔 없는 12개 기능까지</text>
 
   <rect x="24" y="86" width="892" height="512" rx="16" fill="#EAF2FF" stroke="#3182F6" stroke-width="2.5"/>
@@ -61,5 +61,5 @@
   <text x="402" y="513" class="plus">＋</text><text x="424" y="513" class="item-strong">소수점 주문 (금액 기반)</text>
   <text x="402" y="544" class="plus">＋</text><text x="424" y="544" class="item-strong">dry-run preview · 안전 게이트 · CSV</text>
 
-  <text x="32" y="626" class="foot">공식 Open API 는 사전 신청자 대상 단계적 롤아웃 중(REST only) — 표면은 변동될 수 있습니다. tossctl 은 공식 전 범위를 100% 커버하고 12개 이상을 더 제공합니다.</text>
+  <text x="32" y="626" class="foot">공식 Open API 는 사전 신청자 대상 단계적 롤아웃 중(REST only) — 범위는 변동될 수 있습니다. tossctl 은 공식 전 범위를 100% 커버하고 12개 이상을 더 제공합니다.</text>
 </svg>

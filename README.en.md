@@ -2,8 +2,8 @@
 
 <div align="center">
   <h1>tossinvest-cli</h1>
-  <p><strong>An unofficial Toss Securities CLI that connects AI agents to your brokerage — with a broader read &amp; trade surface than the (upcoming) official Open API.</strong></p>
-  <p>Claude Code · Codex · Cursor · OpenClaw · bash · HTTP — any tool drives Toss Securities accounts, quotes, and trades through one command surface (<code>tossctl</code>). It works just as well by hand in a terminal.</p>
+  <p><strong>An unofficial Toss Securities CLI that connects AI agents to your brokerage — with a broader read &amp; trade coverage than the (upcoming) official Open API.</strong></p>
+  <p>Claude Code · Codex · Cursor · OpenClaw · bash · HTTP — any tool drives Toss Securities accounts, quotes, and trades through one command interface (<code>tossctl</code>). It works just as well by hand in a terminal.</p>
   <p><sub>Investor flows · market indices · Toss AI signals · screener · watchlist management · transaction ledger · real-time push · fractional orders · dry-run preview — <strong>tossctl covers areas the official Open API (upcoming) roadmap does not.</strong> <a href="#support-scope">Full comparison ↓</a></sub></p>
 </div>
 
@@ -21,7 +21,7 @@
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
   <a href="#support-scope"><strong>Support Scope</strong></a> ·
-  <a href="#command-surface"><strong>Command Surface</strong></a> ·
+  <a href="#command-reference"><strong>Command Reference</strong></a> ·
   <a href="#faq"><strong>FAQ</strong></a>
 </p>
 
@@ -104,14 +104,14 @@ Waiting for approval in the Toss app on your phone...
 
 ## Support Scope
 
-> **tossctl covers 100% of the official Toss Open API's read & trade surface — and goes beyond.**
+> **tossctl covers 100% of the official Toss Open API's read & trade coverage — and goes beyond.**
 > It maps to every endpoint in the official [Open API docs](https://developers.tossinvest.com/docs) (accounts, holdings, quotes, orderbook, ticks, candles, price limits, sellable quantity, commissions, orders, …), and adds investor flows, market indices, AI signals, screener, watchlist management, transaction ledger, real-time push, fractional orders, dry-run preview, and more — **12+ features that aren't in the official API are tossctl-only.**
 
 <p align="center">
   <img src="docs/assets/api-comparison.en.svg" alt="tossctl vs official Open API (upcoming) coverage — tossctl is a superset" width="900" />
 </p>
 
-The Toss Securities official Open API is currently **rolling out in stages to pre-applicants** and is a narrow, REST-only surface (public docs: <https://developers.tossinvest.com/docs>). The `Official API (planned)` column below reflects that documented surface, and the `tossctl` column is what we provide. **Every ✅ in the official column is also ✅ for tossctl — we cover 100% of the official surface.**
+The Toss Securities official Open API is currently **rolling out in stages to pre-applicants** and is a narrow, REST-only API (public docs: <https://developers.tossinvest.com/docs>). The `Official API (planned)` column below reflects that documented coverage, and the `tossctl` column is what we provide. **Every ✅ in the official column is also ✅ for tossctl — we cover 100% of the official API.**
 
 - ✅ supported · ❌ not supported · 🔸 partial
 - **`Official API (planned)` column = staged rollout to pre-applicants. ✅/🔸/❌ is expected coverage at launch** (subject to change across rollout phases).
@@ -173,14 +173,14 @@ The official Open API offers only **basic REST read/order** (~20 endpoints). Tos
 own web app (WTS) actually uses **~430 meaningful read/trade endpoints** — that's
 after excluding noise like onboarding, KYC, terms, promotions, and telemetry.
 
-> **The official Open API covers only ~4% of that surface.** tossctl works across the
+> **The official Open API covers only ~4% of that.** tossctl works across the
 > rest, already ships features the official API lacks (investor flows, market indices,
 > AI signals, screener, by-investor net-buy, earnings calendar, real-time push,
-> fractional orders, dry-run preview, …), and **keeps implementing the remaining surface.**
+> fractional orders, dry-run preview, …), and **keeps implementing the remaining endpoints.**
 
 Why tossctl wins long-term:
 
-- **Breadth** — the official API opens a narrow surface slowly; tossctl tracks the whole web surface (catalog below) and is always wider.
+- **Breadth** — the official API opens a narrow API slowly; tossctl tracks the whole web API (catalog below) and is always wider.
 - **Speed** — when Toss ships a new web feature, the weekly monitor flags the new endpoint and we implement it without waiting for an official release.
 - **Superset** — whatever the official API covers, tossctl [already covers 100%](#support-scope).
 
@@ -188,14 +188,14 @@ Why tossctl wins long-term:
 
 Every `/api/*` endpoint is extracted from the web bundles and classified as
 **implemented / next candidate / intentionally excluded**; additions, changes, and
-removals are caught by a weekly monitor. (Badge counts use the **meaningful surface,
+removals are caught by a weekly monitor. (Badge counts use the **meaningful API,
 excluding noise**, and auto-update from the catalog.)
 
 <p align="center">
-  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.meaningful&label=WTS%20meaningful%20surface&suffix=%20endpoints&color=3182F6" alt="WTS meaningful surface" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.meaningful&label=WTS%20meaningful%20API&suffix=%20endpoints&color=3182F6" alt="WTS meaningful API" /></a>
   <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.implemented&label=implemented&color=success" alt="implemented" /></a>
   <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.candidate_next&label=next%20candidates&color=orange" alt="next candidates" /></a>
-  <img src="https://img.shields.io/badge/official%20Open%20API-~4%25%20of%20surface-lightgrey" alt="official API coverage of WTS surface" />
+  <img src="https://img.shields.io/badge/official%20Open%20API-~4%25%20of%20WTS-lightgrey" alt="official API coverage of WTS" />
 </p>
 
 - Full catalog: [`docs/reverse-engineering/wts-endpoints.json`](docs/reverse-engineering/wts-endpoints.json).
@@ -368,7 +368,7 @@ python3 -m pip install -e .
 
 </details>
 
-## Command Surface
+## Command Reference
 
 ### Read-only
 
