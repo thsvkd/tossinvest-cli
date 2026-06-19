@@ -62,6 +62,11 @@ IMPLEMENTED = [
     r"^/api/v2/reasoning-contents/interest",
     r"^/api/v1/dashboard/wts/overview/rankings/by-investors$",  # market investors
     r"^/api/v1/earning-call/upcoming$",                          # market earnings
+    r"^/api/v1/earning-call/home$",                              # market earnings --major
+    r"^/api/v1/community/top-rankings/",                         # community rankings
+    r"^/api/v1/dashboard/wts/overview/ai-signals/personalized$", # market briefing
+    r"^/api/v1/dividends/accounts/annual/history",               # portfolio dividends
+    r"^/api/v1/tics/all$",                                        # market sectors
 ]
 
 # recommended: candidates worth implementing next (data/discovery features that

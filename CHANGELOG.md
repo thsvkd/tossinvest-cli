@@ -2,6 +2,17 @@
 
 tossctl 사용자 관점의 변경 이력입니다. 각 버전에서 "무엇을 할 수 있게 됐는지"를 정리합니다.
 
+## [0.9.0] - 2026-06-19
+
+### 새 기능
+- **`portfolio dividends`** — 연간 배당 내역(총액·수령·예정, 지역별 KR/US, 월별). `--by-payment-date` 로 지급일 기준(세금·수수료 포함), `--year` 로 연도 선택.
+- **`community rankings --type influencer|profit|followers`** — 토스 커뮤니티 랭킹(인플루언서·수익금·팔로워 급증).
+- **`market sectors [id]`** — 업종별 등락(대분류 39개·하위 업종, 1일·1개월·1년 수익률). 인자로 업종 id 를 주면 하위 업종.
+- **`market briefing`** — 개인화 AI 뉴스 브리핑(테마별로 묶인 뉴스 헤드라인).
+- **`market earnings --major`** — 주요 기업 어닝콜만 큐레이션해서 표시.
+
+(모두 토스 공식 Open API 에는 없는 tossctl 고유 기능입니다.)
+
 ## [0.8.0] - 2026-06-19
 
 ### 새 기능

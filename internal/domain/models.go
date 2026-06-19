@@ -468,3 +468,111 @@ type EarningCalls struct {
 	Events    []EarningCall `json:"events"`
 	FetchedAt time.Time     `json:"fetched_at"`
 }
+
+// DividendAmount is a dividend value in both KRW and USD.
+type DividendAmount struct {
+	KRW float64 `json:"krw"`
+	USD float64 `json:"usd"`
+}
+
+// DividendSummary is a total/paid/estimated dividend breakdown. Tax and
+// Commission are only populated for the payment-date view.
+type DividendSummary struct {
+	Total      DividendAmount  `json:"total"`
+	Paid       DividendAmount  `json:"paid"`
+	Estimated  DividendAmount  `json:"estimated"`
+	Tax        *DividendAmount `json:"tax,omitempty"`
+	Commission *DividendAmount `json:"commission,omitempty"`
+}
+
+// DividendRegion is a per-market (kr/us) dividend summary.
+type DividendRegion struct {
+	Region  string          `json:"region"`
+	Summary DividendSummary `json:"summary"`
+}
+
+// DividendStock is a single holding's dividend within a month.
+type DividendStock struct {
+	ProductCode string         `json:"product_code"`
+	Name        string         `json:"name"`
+	Quantity    float64        `json:"quantity"`
+	Amount      DividendAmount `json:"amount"`
+}
+
+// DividendMonth is one month's dividend schedule.
+type DividendMonth struct {
+	Month   int             `json:"month"`
+	Summary DividendSummary `json:"summary"`
+	Stocks  []DividendStock `json:"stocks,omitempty"`
+}
+
+// Dividends is an annual dividend report for an account.
+type Dividends struct {
+	Year          int              `json:"year"`
+	ByPaymentDate bool             `json:"by_payment_date"`
+	Summary       DividendSummary  `json:"summary"`
+	Regions       []DividendRegion `json:"regions"`
+	Monthly       []DividendMonth  `json:"monthly"`
+	FetchedAt     time.Time        `json:"fetched_at"`
+}
+
+// CommunityUser is one ranked community profile. Fields vary by ranking type:
+// Description for influencers, Profit* for return rankings, Following* for
+// fastest-growing rankings.
+type CommunityUser struct {
+	Rank              int     `json:"rank"`
+	Nickname          string  `json:"nickname"`
+	UserProfileID     int64   `json:"user_profile_id"`
+	Description       string  `json:"description,omitempty"`
+	ProfitAmountKRW   float64 `json:"profit_amount_krw,omitempty"`
+	ProfitRate        float64 `json:"profit_rate,omitempty"`
+	FollowingCount    int     `json:"following_count,omitempty"`
+	FollowingIncrease int     `json:"following_increase,omitempty"`
+}
+
+// CommunityRanking is a community leaderboard of one type.
+type CommunityRanking struct {
+	Type      string          `json:"type"`
+	Users     []CommunityUser `json:"users"`
+	FetchedAt time.Time       `json:"fetched_at"`
+}
+
+// BriefingNews is a single news headline backing a briefing theme.
+type BriefingNews struct {
+	Title     string `json:"title"`
+	Agency    string `json:"agency"`
+	Source    string `json:"source"`
+	CreatedAt string `json:"created_at"`
+}
+
+// BriefingItem is one themed briefing (수급 변동·실적 등) with its headlines.
+type BriefingItem struct {
+	CategoryType string         `json:"category_type"`
+	Keywords     []string       `json:"keywords"`
+	News         []BriefingNews `json:"news"`
+}
+
+// NewsBriefing is the personalized AI news briefing grouped by theme.
+type NewsBriefing struct {
+	CreatedAt string         `json:"created_at"`
+	Items     []BriefingItem `json:"items"`
+	FetchedAt time.Time      `json:"fetched_at"`
+}
+
+// Sector is one industry (TICS) with its fluctuation rates and sub-industries.
+type Sector struct {
+	ID             int      `json:"id"`
+	Title          string   `json:"title"`
+	CompanyCount   int      `json:"company_count"`
+	OneDayRate     float64  `json:"one_day_rate"`
+	OneMonthRate   float64  `json:"one_month_rate"`
+	ThreeMonthRate float64  `json:"three_month_rate"`
+	OneYearRate    float64  `json:"one_year_rate"`
+	SubSectors     []Sector `json:"sub_sectors,omitempty"`
+}
+
+// Sectors is the industry (TICS) tree with fluctuation rates.
+type Sectors struct {
+	Items     []Sector  `json:"items"`
+	FetchedAt time.Time `json:"fetched_at"`
+}
