@@ -4,10 +4,10 @@
   "chunk_count": 26,
   "total": 927,
   "counts": {
-    "implemented": 61,
-    "candidate": 369,
+    "implemented": 68,
+    "candidate": 362,
     "excluded": 497,
-    "candidate_next": 19,
+    "candidate_next": 12,
     "meaningful": 430
   },
   "overrides": {},
@@ -825,21 +825,15 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/community/top-rankings/INFLUENCER": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "커뮤니티 랭킹(인플루언서/수익률)",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/community/top-rankings/TOP_10_FOLLOWING_INCREASE": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "커뮤니티 랭킹(인플루언서/수익률)",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/community/top-rankings/TOP_10_PROFIT_ROSS_AMOUNT": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "커뮤니티 랭킹(인플루언서/수익률)",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/companies/tics/rankings": {
@@ -905,9 +899,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/dashboard/wts/overview/ai-signals/personalized": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "AI 시그널 확장",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/dashboard/wts/overview/exchange-rates": {
@@ -945,15 +937,11 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/dividends/accounts/annual/history": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "배당 내역/캘린더",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/dividends/accounts/annual/history/by-payment-date": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "배당 내역/캘린더",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/earning-call/events": {
@@ -963,9 +951,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/earning-call/home": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "실적발표(어닝콜) 일정",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/earning-call/major-companies": {

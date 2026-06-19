@@ -140,7 +140,10 @@ The Toss Securities official Open API is currently **rolling out in stages to pr
 | **Market indices** | `market index` (KOSPI · KOSDAQ · Nasdaq · S&P500 · VIX …) | ❌ | ✅ |
 | **Live popularity ranking** | `market ranking --size N` | ❌ | ✅ |
 | **Net-buy ranking by investor** | `market investors` (foreign · institution · retail top net-buy) | ❌ | ✅ |
-| **Earnings calendar** | `market earnings` (upcoming earnings calls) | ❌ | ✅ |
+| **Earnings calendar** | `market earnings` (`--major` for curated majors) | ❌ | ✅ |
+| **Dividend report** | `portfolio dividends` (annual total · region · monthly, `--by-payment-date` tax) | ❌ | ✅ |
+| **Community rankings** | `community rankings --type influencer\|profit\|followers` | ❌ | ✅ |
+| **Personalized news briefing** | `market briefing` (headlines grouped by theme) | ❌ | ✅ |
 | **Toss AI signals** | `market signals` (per-symbol AI signal · keywords · move) | ❌ | ✅ |
 | **Stock screener** | `market screener [id]` (preset) · `--filter '<json>'` (custom) `--nation kr\|us` | ❌ | ✅ |
 | **Watchlist read & management** | `watchlist list`·`groups`, `watchlist group create\|rename\|delete`, `watchlist add\|remove --group <id>` | ❌ | ✅ |
@@ -175,8 +178,9 @@ after excluding noise like onboarding, KYC, terms, promotions, and telemetry.
 
 > **The official Open API covers only ~4% of that.** tossctl works across the
 > rest, already ships features the official API lacks (investor flows, market indices,
-> AI signals, screener, by-investor net-buy, earnings calendar, real-time push,
-> fractional orders, dry-run preview, …), and **keeps implementing the remaining endpoints.**
+> AI signals, screener, by-investor net-buy, earnings calendar, dividend reports,
+> community rankings, news briefing, real-time push, fractional orders, dry-run preview, …),
+> and **keeps implementing the remaining endpoints.**
 
 Why tossctl wins long-term:
 
@@ -377,6 +381,9 @@ tossctl account list
 tossctl account summary
 tossctl portfolio positions
 tossctl portfolio allocation
+tossctl portfolio dividends [--year YYYY] [--by-payment-date]
+tossctl market investors|earnings|briefing|index|ranking|signals
+tossctl community rankings --type influencer|profit|followers
 tossctl orders list
 tossctl orders completed --market us|kr|all
 tossctl order show <id>
