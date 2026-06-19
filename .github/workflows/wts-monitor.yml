@@ -1,0 +1,71 @@
+name: WTS API Monitor
+
+# Weekly: re-extract the Toss WTS web API surface, reclassify, and detect
+# added / removed / changed endpoints. Commits the refreshed catalog and
+# alerts Discord when the surface changes (new candidates = features to add).
+
+on:
+  schedule:
+    - cron: "0 1 * * 1" # Mondays 01:00 UTC (10:00 KST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wts-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Extract + classify WTS endpoints
+        id: scan
+        run: |
+          export WTS_DATE="$(date -u +%F)"
+          export WTS_DIFF_OUT=/tmp/wts_diff.json
+          python3 tools/wts_endpoints.py | tee /tmp/wts_summary.txt
+          {
+            echo "added=$(jq '.added | length' /tmp/wts_diff.json)"
+            echo "removed=$(jq '.removed | length' /tmp/wts_diff.json)"
+            echo "new_candidates=$(jq '.new_candidates | length' /tmp/wts_diff.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Compose Discord message
+        if: steps.scan.outputs.added != '0' || steps.scan.outputs.removed != '0'
+        run: |
+          {
+            echo "🛰️ **WTS API 표면 변동 감지**"
+            echo ""
+            head -1 /tmp/wts_summary.txt
+            ADDED=$(jq -r '.added[]?' /tmp/wts_diff.json | head -20)
+            REMOVED=$(jq -r '.removed[]?' /tmp/wts_diff.json | head -20)
+            if [ -n "$ADDED" ]; then echo ""; echo "➕ 신규:"; echo "$ADDED" | sed 's/^/• /'; fi
+            if [ -n "$REMOVED" ]; then echo ""; echo "➖ 삭제/변경:"; echo "$REMOVED" | sed 's/^/• /'; fi
+            echo ""
+            echo "카탈로그: docs/reverse-engineering/wts-endpoints.json"
+          } > /tmp/wts_msg.txt
+          cat /tmp/wts_msg.txt
+
+      - name: Send Discord
+        if: steps.scan.outputs.added != '0' || steps.scan.outputs.removed != '0'
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "::warning::DISCORD_WEBHOOK 미설정 — 알림 skip"; exit 0; fi
+          MSG=$(head -c 1900 /tmp/wts_msg.txt)
+          PAYLOAD=$(printf '%s' "$MSG" | jq -Rs '{content: .}')
+          HTTP=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data "$PAYLOAD" "$WEBHOOK")
+          echo "Discord status: $HTTP"
+
+      - name: Commit catalog if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/reverse-engineering/wts-endpoints.json
+          git diff --cached --quiet && { echo "변동 없음 — commit skip"; exit 0; }
+          git commit -m "chore(wts-monitor): WTS API 카탈로그 갱신 [skip ci]"
+          git push origin HEAD:main

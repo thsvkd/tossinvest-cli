@@ -202,6 +202,22 @@ preview·config 기반 안전 게이트** 등 tossctl 의 거래 UX/안전장치
 
 US 지정가는 `--currency-mode`로 가격 해석을 선택합니다: `KRW` (기본, 서버 환율로 USD 변환) 또는 `USD` (입력을 USD 가격 그대로 전송). 예: `order place --symbol MRVL --side buy --qty 1 --price 158.01 --currency-mode USD`.
 
+### WTS 웹 API 전체 추적
+
+공식 Open API 와 별개로, **토스 웹앱(WTS)의 전체 API 표면을 자동 추출·분류해 지속 추적**합니다. 웹 번들에서 모든 `/api/*` 엔드포인트를 뽑아 **구현됨 / 다음 추가 후보 / 의도적 제외**로 나누고, 새 기능이 출시되며 엔드포인트가 추가·변경·삭제되면 주간 모니터가 감지합니다.
+
+<p align="center">
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.total&label=WTS%20API%20surface&suffix=%20endpoints&color=3182F6" alt="WTS API surface" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.implemented&label=implemented&color=success" alt="implemented" /></a>
+  <a href="docs/reverse-engineering/wts-endpoints.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FJungHoonGhae%2Ftossinvest-cli%2Fmain%2Fdocs%2Freverse-engineering%2Fwts-endpoints.json&query=%24.counts.candidate_next&label=next%20candidates&color=orange" alt="next candidates" /></a>
+</p>
+
+- **분류** (전체 카탈로그: [`docs/reverse-engineering/wts-endpoints.json`](docs/reverse-engineering/wts-endpoints.json)):
+  - `implemented` — tossctl 이 이미 제공 (각 tossctl 명령에 대응)
+  - `candidate` / `priority: next` — 아직 미구현, 그중 **다음에 추가하면 좋을 고가치 후보**를 별도 표기 (예: 배당 내역, 실적(어닝콜) 일정, 가상자산·지수 시세, AI 시그널 확장, 투자자별/업종 랭킹)
+  - `excluded` — 의도적 제외 (계좌개설·KYC·약관·프로모션·텔레메트리 등 범위 밖, 사유 기록)
+- **지속 추적**: 매주 웹 번들을 다시 추출해 신규/삭제/변경 엔드포인트를 감지하고 (`first_seen` 으로 수명주기 기록), 변동 시 알림 + 카탈로그 자동 갱신. 새 후보는 여기서 골라 구현해 나갑니다.
+
 ### Safety Model
 
 거래 기능은 기본 전부 꺼져 있습니다. 한 건의 live 주문이 broker 에 닿으려면 **영속(config) 게이트**와 **런타임(flag) 게이트**를 모두 통과해야 합니다.
