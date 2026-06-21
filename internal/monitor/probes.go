@@ -242,6 +242,17 @@ func Probes() []Probe {
 			},
 		},
 		{
+			Name:   "index-prices",
+			Method: "GET",
+			URL:    info + "/api/v1/index-prices/KGG01P",
+			Check: func(status int, body []byte) error {
+				if err := expectStatus(status, 200); err != nil {
+					return err
+				}
+				return expectPath(body, "result.close", "number")
+			},
+		},
+		{
 			Name:   "investor-rankings",
 			Method: "GET",
 			URL:    info + "/api/v1/dashboard/wts/overview/rankings/by-investors",

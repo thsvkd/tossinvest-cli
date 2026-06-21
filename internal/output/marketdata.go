@@ -368,12 +368,12 @@ func WriteMarketIndices(w io.Writer, format Format, mi domain.MarketIndices) err
 		return enc.Encode(mi)
 	case FormatCSV:
 		cw := csv.NewWriter(w)
-		if err := cw.Write([]string{"name", "nation", "latest", "base", "change", "change_rate"}); err != nil {
+		if err := cw.Write([]string{"code", "name", "nation", "latest", "base", "change", "change_rate"}); err != nil {
 			return err
 		}
 		for _, x := range mi.Indices {
 			if err := cw.Write([]string{
-				x.Name, x.Nation, formatFloat(x.Latest), formatFloat(x.Base),
+				x.Code, x.Name, x.Nation, formatFloat(x.Latest), formatFloat(x.Base),
 				formatFloat(x.Change), formatFloat(x.ChangeRate),
 			}); err != nil {
 				return err
@@ -382,7 +382,7 @@ func WriteMarketIndices(w io.Writer, format Format, mi domain.MarketIndices) err
 		cw.Flush()
 		return cw.Error()
 	case FormatTable:
-		headers := []string{"지수", "현재", "변동", "변동률"}
+		headers := []string{"지수", "코드", "현재", "변동", "변동률"}
 		rows := make([][]string, 0, len(mi.Indices))
 		for _, x := range mi.Indices {
 			sign := ""
@@ -391,12 +391,53 @@ func WriteMarketIndices(w io.Writer, format Format, mi domain.MarketIndices) err
 			}
 			rows = append(rows, []string{
 				x.Name,
+				x.Code,
 				fmt.Sprintf("%.2f", x.Latest),
 				sign + fmt.Sprintf("%.2f", x.Change),
 				formatPct(x.ChangeRate),
 			})
 		}
 		return renderTable(w, headers, rows)
+	default:
+		return fmt.Errorf("unsupported output format: %s", format)
+	}
+}
+
+// WriteIndexQuote renders a single index's detailed quote.
+func WriteIndexQuote(w io.Writer, format Format, q domain.IndexQuote) error {
+	switch format {
+	case FormatJSON:
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		return enc.Encode(q)
+	case FormatCSV:
+		cw := csv.NewWriter(w)
+		if err := cw.Write([]string{"code", "name", "open", "high", "low", "close", "change", "change_rate", "high_52w", "low_52w"}); err != nil {
+			return err
+		}
+		if err := cw.Write([]string{
+			q.Code, q.Name, formatFloat(q.Open), formatFloat(q.High), formatFloat(q.Low), formatFloat(q.Close),
+			formatFloat(q.Change), formatFloat(q.ChangeRate), formatFloat(q.High52w), formatFloat(q.Low52w),
+		}); err != nil {
+			return err
+		}
+		cw.Flush()
+		return cw.Error()
+	case FormatTable:
+		sign := ""
+		if q.Change > 0 {
+			sign = "+"
+		}
+		fmt.Fprintf(w, "%s (%s)\n", q.Name, q.Code)
+		fmt.Fprintf(w, "  현재     %.2f  (%s%.2f, %s)\n", q.Close, sign, q.Change, formatPct(q.ChangeRate))
+		fmt.Fprintf(w, "  시/고/저  %.2f / %.2f / %.2f\n", q.Open, q.High, q.Low)
+		if q.High52w != 0 || q.Low52w != 0 {
+			fmt.Fprintf(w, "  52주     고 %.2f / 저 %.2f\n", q.High52w, q.Low52w)
+		}
+		if q.Volume != 0 {
+			fmt.Fprintf(w, "  거래량   %s\n", formatFloat(q.Volume))
+		}
+		return nil
 	default:
 		return fmt.Errorf("unsupported output format: %s", format)
 	}

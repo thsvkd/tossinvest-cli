@@ -1,13 +1,13 @@
 {
   "source": "tossinvest.com web bundles",
-  "build_id": "shN8I0wfVEr_0Jy_rR746",
+  "build_id": "a6KWhWRFGyw8qrX8aimmN",
   "chunk_count": 26,
   "total": 927,
   "counts": {
-    "implemented": 69,
-    "candidate": 361,
+    "implemented": 70,
+    "candidate": 360,
     "excluded": 497,
-    "candidate_next": 12,
+    "candidate_next": 11,
     "meaningful": 430
   },
   "overrides": {},
@@ -1049,9 +1049,7 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/index-prices": {
-      "status": "candidate",
-      "priority": "next",
-      "note": "지수 시세",
+      "status": "implemented",
       "first_seen": "2026-06-19"
     },
     "/api/v1/intelligence/user/mark": {
@@ -4242,5 +4240,5 @@
       "first_seen": "2026-06-19"
     }
   },
-  "updated_at": "2026-06-19"
+  "updated_at": "2026-06-21"
 }

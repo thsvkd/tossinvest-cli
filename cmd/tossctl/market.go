@@ -62,12 +62,20 @@ func newMarketCmd(opts *rootOptions) *cobra.Command {
 	}
 
 	indexCmd := &cobra.Command{
-		Use:   "index",
-		Short: "Major market indices (코스피·코스닥·나스닥·S&P500·VIX 등)",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		Use:   "index [code|name]",
+		Short: "Major market indices (코스피·코스닥·나스닥·S&P500·VIX). 인자 주면 지수 상세(OHLC·52주)",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			app, err := newAppContext(opts)
 			if err != nil {
 				return err
+			}
+			if len(args) == 1 {
+				q, err := app.client.GetIndexDetail(cmd.Context(), args[0])
+				if err != nil {
+					return err
+				}
+				return output.WriteIndexQuote(cmd.OutOrStdout(), app.format, q)
 			}
 			mi, err := app.client.GetMarketIndices(cmd.Context())
 			if err != nil {
