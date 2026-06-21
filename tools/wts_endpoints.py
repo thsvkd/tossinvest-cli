@@ -67,6 +67,7 @@ IMPLEMENTED = [
     r"^/api/v1/dashboard/wts/overview/ai-signals/personalized$", # market briefing
     r"^/api/v1/dividends/accounts/annual/history",               # portfolio dividends
     r"^/api/v1/tics/all$",                                        # market sectors
+    r"^/api/v1/index-prices$",                                    # market index <code> (지수 상세)
 ]
 
 # recommended: candidates worth implementing next (data/discovery features that
@@ -76,7 +77,6 @@ RECOMMENDED = [
     (r"^/api/v1/dividends/", "배당 내역/캘린더"),
     (r"^/api/v1/earning-call/", "실적발표(어닝콜) 일정"),
     (r"^/api/v1/crypto-prices", "가상자산 시세"),
-    (r"^/api/v1/index-prices", "지수 시세"),
     (r"^/api/v\d+/dashboard/wts/overview/ai-signals", "AI 시그널 확장"),
     (r"^/api/v\d+/dashboard/wts/overview/rankings/by-investors", "투자자별 랭킹(수급 discovery)"),
     (r"^/api/v1/companies/tics/rankings", "업종(TICS) 랭킹"),

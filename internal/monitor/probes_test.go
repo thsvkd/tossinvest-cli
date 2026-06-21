@@ -20,6 +20,7 @@ func TestProbesRegistryStableNames(t *testing.T) {
 		"market-index":             true,
 		"stock-ranking":            true,
 		"investor-rankings":        true,
+		"index-prices":             true,
 		"earning-call":             true,
 		"earning-call-home":        true,
 		"community-rankings":       true,

@@ -141,6 +141,37 @@ func TestGetEarningCallHome(t *testing.T) {
 	}
 }
 
+func TestGetIndexDetail(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.URL.Path, "/indicator/index"):
+			w.Write([]byte(`{"result":{"majorIndicatorInfos":[{"code":"COMP.NAI","displayName":"나스닥","nation":"us","price":{"latestPrice":26517.93,"basePrice":26021.65}}]}}`))
+		case strings.Contains(r.URL.Path, "/api/v1/index-prices/COMP.NAI"):
+			w.Write([]byte(`{"result":{"open":26410.62,"high":26559.74,"low":26188.68,"close":26517.93,"volume":17780101967,"base":26021.65,"high52w":27190.20,"low52w":19334.98}}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	// resolve by alias
+	q, err := testClientFor(srv).GetIndexDetail(context.Background(), "nasdaq")
+	if err != nil {
+		t.Fatalf("GetIndexDetail error: %v", err)
+	}
+	if q.Code != "COMP.NAI" || q.Name != "나스닥" || q.Close != 26517.93 || q.High52w != 27190.20 {
+		t.Errorf("unexpected quote: %+v", q)
+	}
+	if q.Change == 0 || q.ChangeRate == 0 {
+		t.Errorf("expected computed change, got %+v", q)
+	}
+
+	// unknown index -> error
+	if _, err := testClientFor(srv).GetIndexDetail(context.Background(), "no-such-index"); err == nil {
+		t.Error("expected error for unknown index")
+	}
+}
+
 func TestGetSectors(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.URL.Path, "/api/v1/tics/all") {

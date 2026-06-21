@@ -101,13 +101,13 @@ func TestWriteTradingFlowsTableSigned(t *testing.T) {
 func TestWriteMarketIndicesCSV(t *testing.T) {
 	var buf bytes.Buffer
 	mi := domain.MarketIndices{Indices: []domain.MarketIndex{
-		{Name: "코스피", Nation: "kr", Latest: 8801.49, Base: 8788.38, Change: 13.11, ChangeRate: 0.0015},
+		{Code: "KGG01P", Name: "코스피", Nation: "kr", Latest: 8801.49, Base: 8788.38, Change: 13.11, ChangeRate: 0.0015},
 	}}
 	if err := WriteMarketIndices(&buf, FormatCSV, mi); err != nil {
 		t.Fatal(err)
 	}
 	out := buf.String()
-	if !strings.HasPrefix(out, "name,nation,latest,base,change,change_rate") {
+	if !strings.HasPrefix(out, "code,name,nation,latest,base,change,change_rate") {
 		t.Errorf("unexpected CSV header: %q", out)
 	}
 	if !strings.Contains(out, "코스피") {

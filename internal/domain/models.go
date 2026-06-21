@@ -215,6 +215,7 @@ type TradingFlows struct {
 // MarketIndex is one market index quote (코스피·나스닥·VIX 등). 공식 API 에 없는
 // 표면 — web 전용 해자.
 type MarketIndex struct {
+	Code       string  `json:"code,omitempty"`
 	Name       string  `json:"name"`
 	Nation     string  `json:"nation,omitempty"` // kr | us
 	Latest     float64 `json:"latest"`
@@ -226,6 +227,24 @@ type MarketIndex struct {
 type MarketIndices struct {
 	Indices   []MarketIndex `json:"indices"`
 	FetchedAt time.Time     `json:"fetched_at"`
+}
+
+// IndexQuote is a detailed quote for a single market index (지수 상세 시세).
+type IndexQuote struct {
+	Code       string    `json:"code"`
+	Name       string    `json:"name"`
+	Nation     string    `json:"nation,omitempty"`
+	Open       float64   `json:"open"`
+	High       float64   `json:"high"`
+	Low        float64   `json:"low"`
+	Close      float64   `json:"close"`
+	Base       float64   `json:"base"`
+	Change     float64   `json:"change"`
+	ChangeRate float64   `json:"change_rate"`
+	Volume     float64   `json:"volume,omitempty"`
+	High52w    float64   `json:"high_52w,omitempty"`
+	Low52w     float64   `json:"low_52w,omitempty"`
+	FetchedAt  time.Time `json:"fetched_at"`
 }
 
 // RankedStock is one entry in the realtime popularity ranking (실시간 인기 순위).

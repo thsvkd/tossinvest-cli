@@ -421,6 +421,7 @@ func (c *Client) GetTradingFlows(ctx context.Context, symbol string, size int) (
 
 type marketIndexRaw struct {
 	MajorIndicatorInfos []struct {
+		Code        string `json:"code"`
 		DisplayName string `json:"displayName"`
 		Nation      string `json:"nation"`
 		Price       struct {
@@ -431,7 +432,7 @@ type marketIndexRaw struct {
 }
 
 // GetMarketIndices returns major market index quotes (코스피·나스닥·VIX 등).
-// 공식 API 에 없는 web 전용 표면.
+// 공식 API 에 없는 web 전용 기능.
 func (c *Client) GetMarketIndices(ctx context.Context) (domain.MarketIndices, error) {
 	var envelope quoteEnvelope[marketIndexRaw]
 	endpoint := c.certBaseURL + "/api/v1/dashboard/wts/overview/indicator/index"
@@ -442,6 +443,7 @@ func (c *Client) GetMarketIndices(ctx context.Context) (domain.MarketIndices, er
 	out.Indices = make([]domain.MarketIndex, 0, len(envelope.Result.MajorIndicatorInfos))
 	for _, r := range envelope.Result.MajorIndicatorInfos {
 		idx := domain.MarketIndex{
+			Code:   r.Code,
 			Name:   r.DisplayName,
 			Nation: r.Nation,
 			Latest: r.Price.LatestPrice,
@@ -452,6 +454,70 @@ func (c *Client) GetMarketIndices(ctx context.Context) (domain.MarketIndices, er
 			idx.ChangeRate = idx.Change / idx.Base
 		}
 		out.Indices = append(out.Indices, idx)
+	}
+	return out, nil
+}
+
+// indexAliases maps friendly English/Korean names to index display names so a
+// caller can pass "nasdaq" / "코스피" instead of the raw code.
+var indexAliases = map[string]string{
+	"nasdaq": "나스닥", "kospi": "코스피", "kosdaq": "코스닥",
+	"sp500": "S&P 500", "s&p500": "S&P 500", "snp": "S&P 500",
+	"sox": "필라델피아 반도체", "vix": "VIX",
+}
+
+// GetIndexDetail returns a detailed quote for one index. query may be an index
+// code (COMP.NAI), a display name (나스닥), or an alias (nasdaq). 공식 API 에
+// 없는 web 전용 기능.
+func (c *Client) GetIndexDetail(ctx context.Context, query string) (domain.IndexQuote, error) {
+	indices, err := c.GetMarketIndices(ctx)
+	if err != nil {
+		return domain.IndexQuote{}, err
+	}
+	want := strings.TrimSpace(query)
+	if alias, ok := indexAliases[strings.ToLower(want)]; ok {
+		want = alias
+	}
+	var matched *domain.MarketIndex
+	for i := range indices.Indices {
+		idx := &indices.Indices[i]
+		if strings.EqualFold(idx.Code, want) || strings.EqualFold(idx.Name, want) || strings.Contains(idx.Name, want) {
+			matched = idx
+			break
+		}
+	}
+	if matched == nil {
+		names := make([]string, 0, len(indices.Indices))
+		for _, idx := range indices.Indices {
+			names = append(names, idx.Name)
+		}
+		return domain.IndexQuote{}, fmt.Errorf("index %q not found (available: %s)", query, strings.Join(names, ", "))
+	}
+
+	var envelope quoteEnvelope[struct {
+		Open    float64 `json:"open"`
+		High    float64 `json:"high"`
+		Low     float64 `json:"low"`
+		Close   float64 `json:"close"`
+		Volume  float64 `json:"volume"`
+		Base    float64 `json:"base"`
+		High52w float64 `json:"high52w"`
+		Low52w  float64 `json:"low52w"`
+	}]
+	endpoint := fmt.Sprintf("%s/api/v1/index-prices/%s", c.infoBaseURL, url.PathEscape(matched.Code))
+	if err := c.getJSON(ctx, endpoint, &envelope); err != nil {
+		return domain.IndexQuote{}, err
+	}
+	r := envelope.Result
+	out := domain.IndexQuote{
+		Code: matched.Code, Name: matched.Name, Nation: matched.Nation,
+		Open: r.Open, High: r.High, Low: r.Low, Close: r.Close, Base: r.Base,
+		Volume: r.Volume, High52w: r.High52w, Low52w: r.Low52w,
+		FetchedAt: time.Now().UTC(),
+	}
+	out.Change = out.Close - out.Base
+	if out.Base != 0 {
+		out.ChangeRate = out.Change / out.Base
 	}
 	return out, nil
 }
