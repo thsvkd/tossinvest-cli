@@ -1,0 +1,45 @@
+#!/bin/sh
+# pre-commit — formatting + lint + test gate.
+#
+# Mirrors the CI gate in .github/workflows/ci.yml (gofmt, go vet, go test) so a
+# clean local commit means a green CI run.
+#
+# The gofmt step inspects each *staged blob* via `git show :<file>` rather than
+# the working tree. Staged blobs are LF-normalized (core.autocrlf=true), so a
+# Windows CRLF checkout does not trip a false "needs formatting" failure — only
+# the content that will actually be committed is checked.
+#
+# Bypass in an emergency with:  git commit --no-verify
+set -eu
+
+fail() { echo "pre-commit FAILED: $1" >&2; exit 1; }
+
+# 1. Formatting — gofmt over staged Go files (staged blob = LF, CRLF-safe).
+staged_go=$(git diff --cached --name-only --diff-filter=ACM -- '*.go')
+if [ -n "$staged_go" ]; then
+	unformatted=
+	oldifs=$IFS
+	IFS='
+'
+	for f in $staged_go; do
+		if [ -n "$(git show ":$f" | gofmt -l)" ]; then
+			unformatted="$unformatted  $f
+"
+		fi
+	done
+	IFS=$oldifs
+	if [ -n "$unformatted" ]; then
+		printf 'These staged files are not gofmt-clean:\n%s' "$unformatted" >&2
+		fail "run 'make fmt' then re-stage the files"
+	fi
+fi
+
+# 2. Lint — go vet across the module.
+echo "pre-commit: go vet ./..."
+go vet ./... || fail "go vet reported problems"
+
+# 3. Tests.
+echo "pre-commit: go test ./..."
+go test ./... || fail "tests failed"
+
+echo "pre-commit OK (gofmt, vet, test)"
