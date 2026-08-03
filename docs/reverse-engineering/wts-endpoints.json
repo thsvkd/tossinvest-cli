@@ -1,14 +1,14 @@
 {
   "source": "tossinvest.com web bundles",
-  "build_id": "xkQNNf2H_FwrnlhjqBSW_",
-  "chunk_count": 25,
-  "total": 935,
+  "build_id": "1fBomD3D0Cbl8kcbaAnYo",
+  "chunk_count": 26,
+  "total": 949,
   "counts": {
     "implemented": 66,
-    "candidate": 365,
-    "excluded": 504,
+    "candidate": 368,
+    "excluded": 515,
     "candidate_next": 10,
-    "meaningful": 431
+    "meaningful": 434
   },
   "overrides": {},
   "endpoints": {
@@ -281,6 +281,11 @@
       "note": "onboarding/eligibility UI",
       "first_seen": "2026-06-19"
     },
+    "/api/v1/account/frontend/product-eligibility/domestic-single-stock-etp/deposit": {
+      "status": "excluded",
+      "note": "onboarding/eligibility UI",
+      "first_seen": "2026-08-03"
+    },
     "/api/v1/account/frontend/product-eligibility/domestic-single-stock-etp/required-educations": {
       "status": "excluded",
       "note": "onboarding/eligibility UI",
@@ -295,6 +300,11 @@
       "status": "excluded",
       "note": "onboarding/eligibility UI",
       "first_seen": "2026-06-19"
+    },
+    "/api/v1/account/frontend/product-eligibility/overseas-single-stock-etp/deposit": {
+      "status": "excluded",
+      "note": "onboarding/eligibility UI",
+      "first_seen": "2026-08-03"
     },
     "/api/v1/account/frontend/product-eligibility/overseas-single-stock-etp/required-educations": {
       "status": "excluded",
@@ -874,10 +884,6 @@
       "status": "candidate",
       "first_seen": "2026-06-19"
     },
-    "/api/v1/dashboard/intelligences/all": {
-      "status": "candidate",
-      "first_seen": "2026-06-19"
-    },
     "/api/v1/dashboard/wts/overview/ai-signal-home/latest": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -1025,6 +1031,11 @@
       "status": "excluded",
       "note": "community/UGC",
       "first_seen": "2026-06-19"
+    },
+    "/api/v1/feed/recommend/boards": {
+      "status": "excluded",
+      "note": "community/UGC",
+      "first_seen": "2026-08-03"
     },
     "/api/v1/fomc-live/alimy": {
       "status": "candidate",
@@ -2101,6 +2112,16 @@
       "note": "marketing/promotion",
       "first_seen": "2026-06-19"
     },
+    "/api/v1/promotion/bingsu-run/status": {
+      "status": "excluded",
+      "note": "marketing/promotion",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/promotion/bingsu-run/user": {
+      "status": "excluded",
+      "note": "marketing/promotion",
+      "first_seen": "2026-08-03"
+    },
     "/api/v1/promotion/book-coupon/already-rewarded": {
       "status": "excluded",
       "note": "marketing/promotion",
@@ -2356,6 +2377,16 @@
       "note": "marketing/promotion",
       "first_seen": "2026-06-19"
     },
+    "/api/v1/promotion/terms/user/events/participating": {
+      "status": "excluded",
+      "note": "marketing/promotion",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/promotion/terms/user/events/participating/count": {
+      "status": "excluded",
+      "note": "marketing/promotion",
+      "first_seen": "2026-08-03"
+    },
     "/api/v1/properties/member": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -2488,6 +2519,26 @@
       "status": "candidate",
       "first_seen": "2026-06-19"
     },
+    "/api/v1/rights/us/categories": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/rights/us/categories/dividend-option/detail": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/rights/us/dividend-option/account-give-type": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/rights/us/exercises/categories/dividend-option/account-default-give-type": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
+    "/api/v1/rights/us/exercises/categories/dividend-option/account-give-type": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
     "/api/v1/search-all/auto-complete": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -2568,6 +2619,11 @@
       "note": "UI personalization/prefs",
       "first_seen": "2026-06-19"
     },
+    "/api/v1/settings/privacy/info": {
+      "status": "excluded",
+      "note": "UI personalization/prefs",
+      "first_seen": "2026-08-03"
+    },
     "/api/v1/settings/privacy/init": {
       "status": "excluded",
       "note": "UI personalization/prefs",
@@ -2622,10 +2678,6 @@
       "first_seen": "2026-06-19"
     },
     "/api/v1/stock-internal-transfer/transferable-balances": {
-      "status": "candidate",
-      "first_seen": "2026-06-19"
-    },
-    "/api/v1/stock-prices/after": {
       "status": "candidate",
       "first_seen": "2026-06-19"
     },
@@ -2986,10 +3038,6 @@
       "status": "candidate",
       "first_seen": "2026-06-19"
     },
-    "/api/v1/user-permissions/grant/guidelines": {
-      "status": "candidate",
-      "first_seen": "2026-06-19"
-    },
     "/api/v1/user-price-alimy": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -3043,6 +3091,11 @@
       "status": "excluded",
       "note": "UI personalization/prefs",
       "first_seen": "2026-06-19"
+    },
+    "/api/v1/user-profiles/relation/alimy/shareholding/badge": {
+      "status": "excluded",
+      "note": "UI personalization/prefs",
+      "first_seen": "2026-08-03"
     },
     "/api/v1/user-profiles/represent": {
       "status": "excluded",
@@ -3282,6 +3335,10 @@
       "status": "candidate",
       "first_seen": "2026-06-19"
     },
+    "/api/v2/dashboard/intelligences/all": {
+      "status": "candidate",
+      "first_seen": "2026-08-03"
+    },
     "/api/v2/dashboard/wts/overview/calendar/economic-events": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -3360,6 +3417,11 @@
       "status": "excluded",
       "note": "stock lending product",
       "first_seen": "2026-07-13"
+    },
+    "/api/v2/lending/stock-balance": {
+      "status": "excluded",
+      "note": "stock lending product",
+      "first_seen": "2026-08-03"
     },
     "/api/v2/lens/issues": {
       "status": "candidate",
@@ -4160,6 +4222,11 @@
       "note": "legal terms",
       "first_seen": "2026-06-19"
     },
+    "/api/v3/terms/toss/third-party": {
+      "status": "excluded",
+      "note": "legal terms",
+      "first_seen": "2026-08-03"
+    },
     "/api/v3/trading/auto-trading": {
       "status": "candidate",
       "first_seen": "2026-06-19"
@@ -4277,5 +4344,5 @@
       "first_seen": "2026-06-19"
     }
   },
-  "updated_at": "2026-07-27"
+  "updated_at": "2026-08-03"
 }
